@@ -167,6 +167,14 @@
       Z = ((i/cl/rw|0)-br/2+.5)*sp*2
       if(Math.hypot(X,Y,Z)<sp*(rw/2)) B = [...B, [X, Y, Z]]
     })
+    Rn = Math.random
+    iSTc = 3e3, G_ = 3e3
+    ST = Array(iSTc).fill().map((v,i) => {
+      X = (Rn()-.5) * G_
+      Y = (Rn()-.5) * G_
+      Z = (Rn()-.5) * G_
+      return [X,Y,Z]
+    })
   }
 
   oX=oY=0, oZ=2+Math.min(16,Math.max(2,((C(t/2)/2+.25)*20)*3))
@@ -196,12 +204,28 @@
       s = Math.min(1e3, 600/Z)
       x.fillStyle = '#00ff4402'
       x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      s/=20
+      s/=12
       x.fillStyle = '#fffc'
       x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
     }
   })
   
+  ST.map((v,i)=>{
+    X = v[0]
+    Y = v[1]
+    Z = v[2]
+    R(Rl,Pt,Yw,1)
+    if(Z>0){
+      l=Q()
+      s = Math.min(1e3,1e4/Z)
+      x.fillStyle = `hsla(${i*9},99%,50%,.1)`
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      s/=3
+      x.fillStyle = '#fff'
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+    }
+  })
+	      
 
         t+=1/60
       }
