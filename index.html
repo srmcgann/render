@@ -142,9 +142,9 @@
       H=M.hypot
       X=S(p=A(X,Y)+Rl)*(d=H(X,Y))
       Y=C(p)*d
-      X=S(p=A(X,Z)+Yw)*(d=H(X,Z))
-      Z=C(p)*d
       Y=S(p=A(Y,Z)+Pt)*(d=H(Y,Z))
+      Z=C(p)*d
+      X=S(p=A(X,Z)+Yw)*(d=H(X,Z))
       Z=C(p)*d
       if(m){
         X+=oX
@@ -152,73 +152,57 @@
         Z+=oZ
       }
     }
-    Q=()=>[c.width/2+X/Z*800,c.height/2+Y/Z*800]
+    Q=()=>[c.width/2+X/Z*300,c.height/2+Y/Z*300]
     I=(A,B,M,D,E,F,G,H)=>(K=((G-E)*(B-F)-(H-F)*(A-E))/(J=(H-F)*(M-A)-(G-E)*(D-B)))>=0&&K<=1&&(L=((M-A)*(B-F)-(D-B)*(A-E))/J)>=0&&L<=1?[A+K*(M-A),B+K*(D-B)]:0
     
-    rw = 8
-    cl = 8
-    br = 2
-    sp = .1
-    Rn = Math.random
-    iBc = rw * cl * br
-    B = [], iBv = .1
-    Array(iBc).fill().map((v,i)=>{
-      X = ((i%cl)-cl/2+.5)*sp
-      Y = (((i/cl|0)%rw)-rw/2+.5)*sp
-      Z = ((i/cl/rw|0)-br/2+.5)*(Rn()*sp/4)
-      vx = S(q=Math.atan2(X,Y)+Math.PI/2+(Rn()/2))*iBv //+S(p=Math.PI*2/(rw*sp)*Y)*iBv
-      vy = C(q)*iBv
-      vz = 0//C(p)*iBv
-      if(Math.hypot(X,Y,Z)<rw/2*sp) B = [...B, [X,Y,Z,vx,vy,vz]]
-    })
+    cl = 80
+    rw = 30
+    br = 30
+    sp = .125
+    iBc = rw*cl*br
+    init = () => {
+      B = []
+      Array(iBc).fill().map((v,i) => {
+        X = ((i%cl)-cl/2+.5)*sp
+        Y = (((i/cl|0)%rw)-rw/2+.5)*sp
+        Z = ((i/cl/rw|0)-br/2+.5)*sp
+        if((d=Math.abs(Math.hypot(Y,Z)*(1+S(p=S(t/4)*64+Math.PI*4/cl*(i%cl)))))>1.45&&d<1.6) B = [...B, [X,Y,Z]]
+      })
+    }
+    bg = new Image()
+    bg.src = 'Phantom_Galaxy_across_the_spectrum_pillars.jpg'
   }
 
   oX=oY=0, oZ=5
-  Rl=0, Pt=t/4, Yw=t/4
+  Rl=t, Pt=S(t/2)*4, Yw=S(t/4)*16
   
-  x.fillStyle='#0001'
+  x.globalAlpha = .2
+  x.drawImage(bg,0,0,c.width,c.height)
+  x.globalAlpha = 1
+  x.fillStyle='#0003'
   x.fillRect(0,0,c.width,c.height)
   
-  B.map((v,i)=>{
-    tx = v[0]
-    ty = v[1]
-    tz = v[2]
-    B.map((q,j)=>{
-      if(i!=j){
-        X2 = q[0]
-        Y2 = q[1]
-        Z2 = q[2]
-        vx = X2 - tx
-        vy = Y2 - ty
-        vz = Z2 - tz
-        d = (3.5+Math.hypot(vx,vy,vz))**6/(50+S(t)*40)
-        v[3]+=vx/d
-        v[4]+=vy/d
-        v[5]+=vz/d
-      }
-    })
-    v[3]-=v[0]/.4
-    v[4]-=v[1]/.4
-    v[5]-=v[2]/.4
-    X = v[0] += v[3]
-    Y = v[1] += v[4]
-    Z = v[2] += v[5]
-    v[3]/=1.25
-    v[4]/=1.25
-    v[5]/=1.25
+  init()
+  B.map(v=>{
+    X = v[0]
+    Y = v[1]
+    Z = v[2]
     R(Rl,Pt,Yw,1)
     if(Z>0){
       l = Q()
-      s = Math.min(1e3,300/Z)
-      x.fillStyle = '#00ff7c02'
+      s = Math.min(1e3, 500/Z)
+      x.fillStyle = '#4400ff02'
       x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      s/=10
-      x.fillStyle = '#fffa'
+      s/=4
+      x.fillStyle = '#ff008804'
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      s/=6
+      x.fillStyle = '#fff'
       x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
     }
   })
 
-	      
+
         t+=1/60
       }
 
