@@ -140,68 +140,218 @@
       M=Math
       A=M.atan2
       H=M.hypot
-      X=S(p=A(X,Y)+Rl)*(d=H(X,Y))
-      Y=C(p)*d
-      Y=S(p=A(Y,Z)+Pt)*(d=H(Y,Z))
-      Z=C(p)*d
       X=S(p=A(X,Z)+Yw)*(d=H(X,Z))
       Z=C(p)*d
+      Y=S(p=A(Y,Z)+Pt)*(d=H(Y,Z))
+      Z=C(p)*d
+      X=S(p=A(X,Y)+Rl)*(d=H(X,Y))
+      Y=C(p)*d
       if(m){
         X+=oX
         Y+=oY
         Z+=oZ
       }
     }
-    Q=()=>[c.width/2+X/Z*300,c.height/2+Y/Z*300]
+    Q=()=>[c.width/2+X/Z*1000,c.height/2+Y/Z*1000]
     I=(A,B,M,D,E,F,G,H)=>(K=((G-E)*(B-F)-(H-F)*(A-E))/(J=(H-F)*(M-A)-(G-E)*(D-B)))>=0&&K<=1&&(L=((M-A)*(B-F)-(D-B)*(A-E))/J)>=0&&L<=1?[A+K*(M-A),B+K*(D-B)]:0
-    
-    cl = 80
-    rw = 30
-    br = 30
-    sp = .125
-    iBc = rw*cl*br
-    init = () => {
-      B = []
-      Array(iBc).fill().map((v,i) => {
-        X = ((i%cl)-cl/2+.5)*sp
-        Y = (((i/cl|0)%rw)-rw/2+.5)*sp
-        Z = ((i/cl/rw|0)-br/2+.5)*sp
-        if((d=Math.abs(Math.hypot(Y,Z)*(1+S(p=S(t/4)*64+Math.PI*4/cl*(i%cl)))))>1.45&&d<1.6) B = [...B, [X,Y,Z]]
-      })
+    stroke = (scol,fcol,oga=1) =>{
+      oga = Math.min(1,oga)
+      if(scol){
+        x.closePath()
+        x.strokeStyle = scol
+        //x.globalAlpha = .1*oga
+        x.lineWidth = Math.min(200, 4000/Z)
+        //x.stroke()
+        x.lineWidth /= 4
+        x.globalAlpha = 1*oga
+        x.stroke()
+      }
+      if(fcol){
+        x.globalAlpha = 1*oga
+        x.fillStyle = fcol
+        x.fill()
+      }
+      x.globalAlpha = 1
     }
+    ofx = 0, ofy = 0, ofz = 0
+    Rn = Math.random
+    ox = 0
+    oy = 0
+    oz = 0
+
+    vx = 0, vy = 0, vz = 0
+    floor = (X, Z) => {
+      let tx = X+ofx
+      let tz = Z+ofz
+      let ret = Math.max(-10,Math.min(30,((S(tz/16)*S(tx/16)/2-S(tz/64) * S(tx/64))**9*500) + 2))
+      return ret
+    }
+    
+    rw = 75
+    cl = 75
+    sp = 5
+    iPc = rw*cl
+    
+    P = Array(iPc).fill().map((v,i)=>{
+      X = ((i%cl)-cl/2+.5)*sp
+      Z = (((i/cl|0)%rw)-rw/2+.5)*sp
+      Y = floor(X,Z)
+      return [X,Y,Z]
+    })
+    anchorx = P[0][0]
+    anchory = P[0][1]
+    anchorz = P[0][2]
+    
+    G = 500, iSTc = 1e4
+    ST = Array(iSTc).fill().map(v=>{
+      X = (Rn()-.5)*G
+      Y = (Rn()-.5)*G
+      Z = (Rn()-.5)*G
+      return [X,Y,Z]
+    })
     bg = new Image()
-    bg.src = 'Phantom_Galaxy_across_the_spectrum_pillars.jpg'
+    bg.src = 'https://i.imgur.com/8P0rmq9.jpeg'
   }
 
-  oX=oY=0, oZ=5
-  Rl=t, Pt=S(t/2)*4, Yw=S(t/4)*16
+  vel = -4
+  dir = C(t/4)*Math.PI/3/(Math.abs(vel))*10
+
+  oX=0
+  oY=50-C(t/2)*40
+  oZ=10
+  Rl=(-S(t/4)*2*Math.PI/3)/3
+  Pt=S(t/2)/8-.5
+  Yw = -(Math.PI+dir)
   
-  x.globalAlpha = .2
+  x.globalAlpha = .4
   x.drawImage(bg,0,0,c.width,c.height)
+  x.fillStyle='#0002'
   x.globalAlpha = 1
-  x.fillStyle='#0003'
   x.fillRect(0,0,c.width,c.height)
   
-  init()
-  B.map(v=>{
-    X = v[0]
-    Y = v[1]
-    Z = v[2]
-    R(Rl,Pt,Yw,1)
-    if(Z>0){
-      l = Q()
-      s = Math.min(1e3, 500/Z)
-      x.fillStyle = '#4400ff02'
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      s/=4
-      x.fillStyle = '#ff008804'
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      s/=6
-      x.fillStyle = '#fff'
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+  x.lineJoin = x.lineCap = 'roun'
+  
+  vx = -S(dir)*vel
+  vy = 0
+  vz = -C(dir)*vel
+
+  X = P[0][0]
+  Y = P[0][1]
+  Z = P[0][2]
+  if(X < anchorx-sp/2){
+    //X += sp
+    ox -= sp
+  }
+  if(X > anchorx+sp/2){
+    //X -= sp
+    ox += sp
+  }
+  if(Y < anchory-sp/2){
+    //Y += sp
+    oy -= sp
+  }
+  if(Y > anchory+sp/2){
+    //Y -= sp
+    oy += sp
+  }
+  if(Z < anchorz-sp/2){
+    //Z += sp
+    oz -= sp
+  }
+  if(Z > anchorz+sp/2){
+    //Z -= sp
+    oz += sp
+  }
+  P.map(v=>{
+    if(X < anchorx-sp/2){
+      v[0] += sp
+    }
+    if(X > anchorx+sp/2){
+      v[0] -= sp
+    }
+    if(Y < anchory-sp/2){
+      v[1] += sp
+    }
+    if(Y > anchory+sp/2){
+      v[1] -= sp
+    }
+    if(Z < anchorz-sp/2){
+      v[2] += sp
+    }
+    if(Z > anchorz+sp/2){
+      v[2] -= sp
     }
   })
-
+  
+  ST.map(v=>{
+    X = v[0]+=vx
+    Y = v[1]+=vy
+    Z = v[2]+=vz
+    if(X>G/2)  v[0]-=G
+    if(X<-G/2) v[0]+=G
+    if(Y>G/2)  v[1]-=G
+    if(Y<-G/2) v[1]+=G
+    if(Z>G/2)  v[2]-=G
+    if(Z<-G/2) v[2]+=G
+    R(Rl,Pt,Yw,1)
+    if(Z>0){
+      x.globalAlpha = Math.min(1, Z**3/1400000/(1+Z**8/4e17))
+      if(x.globalAlpha>.1){
+        s= Math.min(1500,1e5/Z**1.5)
+        x.fillStyle = '#ffffff04'
+        l = Q()
+        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+        s/=16
+        x.fillStyle = '#fff'
+        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      }
+    }
+  })
+  x.globalAlpha = 1
+  
+  ofx-=vx
+  ofy-=vy
+  ofz-=vz
+  P.map((v,i) => {
+    v[0] += vx
+    v[1] += vy
+    v[2] += vz
+    if(i%cl && i>cl){
+      ay=0
+      x.beginPath()
+      l = i
+      X = P[l][0]
+      Z = P[l][2]
+      ay += Y = floor(X,Z)
+      R(Rl,Pt,Yw,1)
+      if(Z>0) x.lineTo(...Q())
+      l = i-1
+      X = P[l][0]
+      Z = P[l][2]
+      ay += Y = floor(X,Z)
+      R(Rl,Pt,Yw,1)
+      if(Z>0) x.lineTo(...Q())
+      l = i-cl-1
+      X = P[l][0]
+      Z = P[l][2]
+      ay += Y = floor(X,Z)
+      R(Rl,Pt,Yw,1)
+      if(Z>0) x.lineTo(...Q())
+      l = i-cl
+      X = P[l][0]
+      Z = P[l][2]
+      ay += Y = floor(X,Z)
+      d_ = Math.hypot(X,Z)
+      R(Rl,Pt,Yw,1)
+      if(Z>0) {
+        x.lineTo(...Q())
+        oga = 1/(d_**7/1e13)
+        ay/=4
+        if(oga>.01)stroke('#0483',`hsla(${200},99%,${Math.max(10,90-ay*3)}%,.75`,oga)
+      }
+    }
+  })
+	      
 
         t+=1/60
       }
