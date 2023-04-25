@@ -140,217 +140,292 @@
       M=Math
       A=M.atan2
       H=M.hypot
+      X=S(p=A(X,Y)+Rl)*(d=H(X,Y))
+      Y=C(p)*d
       X=S(p=A(X,Z)+Yw)*(d=H(X,Z))
       Z=C(p)*d
       Y=S(p=A(Y,Z)+Pt)*(d=H(Y,Z))
       Z=C(p)*d
-      X=S(p=A(X,Y)+Rl)*(d=H(X,Y))
-      Y=C(p)*d
       if(m){
         X+=oX
         Y+=oY
         Z+=oZ
       }
     }
-    Q=()=>[c.width/2+X/Z*1000,c.height/2+Y/Z*1000]
+    Q=()=>[c.width/2+X/Z*1400,c.height/2+Y/Z*1400]
     I=(A,B,M,D,E,F,G,H)=>(K=((G-E)*(B-F)-(H-F)*(A-E))/(J=(H-F)*(M-A)-(G-E)*(D-B)))>=0&&K<=1&&(L=((M-A)*(B-F)-(D-B)*(A-E))/J)>=0&&L<=1?[A+K*(M-A),B+K*(D-B)]:0
-    stroke = (scol,fcol,oga=1) =>{
-      oga = Math.min(1,oga)
+    
+    stroke = (scol, fcol) =>{
       if(scol){
         x.closePath()
         x.strokeStyle = scol
-        //x.globalAlpha = .1*oga
-        x.lineWidth = Math.min(200, 4000/Z)
-        //x.stroke()
-        x.lineWidth /= 4
-        x.globalAlpha = 1*oga
+        x.lineWidth = Math.min(300,500/Z)
+        x.globalAlpha = .1
+        x.stroke()
+        x.lineWidth/=6
+        x.globalAlpha = 1
         x.stroke()
       }
       if(fcol){
-        x.globalAlpha = 1*oga
         x.fillStyle = fcol
         x.fill()
       }
-      x.globalAlpha = 1
-    }
-    ofx = 0, ofy = 0, ofz = 0
-    Rn = Math.random
-    ox = 0
-    oy = 0
-    oz = 0
-
-    vx = 0, vy = 0, vz = 0
-    floor = (X, Z) => {
-      let tx = X+ofx
-      let tz = Z+ofz
-      let ret = Math.max(-10,Math.min(30,((S(tz/16)*S(tx/16)/2-S(tz/64) * S(tx/64))**9*500) + 2))
-      return ret
     }
     
-    rw = 75
-    cl = 75
-    sp = 5
-    iPc = rw*cl
+    Sphere = (rw,cl,size) => {
+      a = []
+      Array(rw*cl).fill().map((v,i)=>{
+        b = []
+        X = S(p=Math.PI*2/cl*i)*S(q=Math.PI/rw*(i/cl|0))*size
+        Y = C(q)*size
+        Z = C(p)*S(q)*size
+        b = [...b, [X,Y,Z]]
+        X = S(p=Math.PI*2/cl*(i+1))*S(q=Math.PI/rw*(i/cl|0))*size
+        Y = C(q)*size
+        Z = C(p)*S(q)*size
+        b = [...b, [X,Y,Z]]
+        X = S(p=Math.PI*2/cl*(i+1))*S(q=Math.PI/rw*((i/cl|0)+1))*size
+        Y = C(q)*size
+        Z = C(p)*S(q)*size
+        b = [...b, [X,Y,Z]]
+        X = S(p=Math.PI*2/cl*i)*S(q=Math.PI/rw*((i/cl|0)+1))*size
+        Y = C(q)*size
+        Z = C(p)*S(q)*size
+        b = [...b, [X,Y,Z]]
+        a = [...a, b]
+      })
+      return a
+    }
     
-    P = Array(iPc).fill().map((v,i)=>{
-      X = ((i%cl)-cl/2+.5)*sp
-      Z = (((i/cl|0)%rw)-rw/2+.5)*sp
-      Y = floor(X,Z)
-      return [X,Y,Z]
+    grw = 16
+    gcl = 32
+    gsp = 1
+    grid = []
+    Array(grw*gcl).fill().map((v,i)=>{
+      a = []
+      X = ((i%gcl)-gcl/2)*gsp
+      Y = (((i/gcl|0)%grw)-grw/2)*gsp
+      Z = 0
+      a = [...a, [X,Y,Z]]
+      grid = [...grid, a]
     })
-    anchorx = P[0][0]
-    anchory = P[0][1]
-    anchorz = P[0][2]
-    
-    G = 500, iSTc = 1e4
-    ST = Array(iSTc).fill().map(v=>{
-      X = (Rn()-.5)*G
-      Y = (Rn()-.5)*G
-      Z = (Rn()-.5)*G
-      return [X,Y,Z]
-    })
-    bg = new Image()
-    bg.src = 'clouds.jpg'
   }
 
-  vel = -3
-  dir = C(t/4)*Math.PI/3/(Math.abs(vel))*10
-
-  oX=0
-  oY=40-C(t/2)*30
-  oZ=10
-  Rl=(-S(t/4)*2*Math.PI/3)/3
-  Pt=S(t/2)/8-.5
-  Yw = -(Math.PI+dir)
+  oX=0, oY=-2, oZ=26
+  Rl=0, Pt=0, Yw=S(t/2)*Math.PI/2
   
-  x.globalAlpha = .4
-  x.drawImage(bg,0,0,c.width,c.height)
-  x.fillStyle='#0004'
-  x.globalAlpha = 1
+  iSphereSize = 5
+  shp = [[11,0,6,Sphere(10,20,iSphereSize)]]
+
+  x.fillStyle='#0008'
   x.fillRect(0,0,c.width,c.height)
-  
-  x.lineJoin = x.lineCap = 'roun'
-  
-  vx = -S(dir)*vel
-  vy = 0
-  vz = -C(dir)*vel
+  x.lineCap = x.lineJoin = 'round'
 
-  X = P[0][0]
-  Y = P[0][1]
-  Z = P[0][2]
-  if(X < anchorx-sp/2){
-    //X += sp
-    ox -= sp
-  }
-  if(X > anchorx+sp/2){
-    //X -= sp
-    ox += sp
-  }
-  if(Y < anchory-sp/2){
-    //Y += sp
-    oy -= sp
-  }
-  if(Y > anchory+sp/2){
-    //Y -= sp
-    oy += sp
-  }
-  if(Z < anchorz-sp/2){
-    //Z += sp
-    oz -= sp
-  }
-  if(Z > anchorz+sp/2){
-    //Z -= sp
-    oz += sp
-  }
-  P.map(v=>{
-    if(X < anchorx-sp/2){
-      v[0] += sp
-    }
-    if(X > anchorx+sp/2){
-      v[0] -= sp
-    }
-    if(Y < anchory-sp/2){
-      v[1] += sp
-    }
-    if(Y > anchory+sp/2){
-      v[1] -= sp
-    }
-    if(Z < anchorz-sp/2){
-      v[2] += sp
-    }
-    if(Z > anchorz+sp/2){
-      v[2] -= sp
-    }
-  })
-  
-  ST.map(v=>{
-    X = v[0]+=vx
-    Y = v[1]+=vy
-    Z = v[2]+=vz
-    if(X>G/2)  v[0]-=G
-    if(X<-G/2) v[0]+=G
-    if(Y>G/2)  v[1]-=G
-    if(Y<-G/2) v[1]+=G
-    if(Z>G/2)  v[2]-=G
-    if(Z<-G/2) v[2]+=G
-    R(Rl,Pt,Yw,1)
-    if(Z>0){
-      x.globalAlpha = Math.min(1, Z**3/1400000/(1+Z**8/4e17))
-      if(x.globalAlpha>.1){
-        s= Math.min(1500,1e5/Z**1.5)
-        x.fillStyle = '#ffffff04'
-        l = Q()
-        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-        s/=16
-        x.fillStyle = '#fff'
-        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      }
-    }
-  })
-  x.globalAlpha = 1
-  
-  ofx-=vx
-  ofy-=vy
-  ofz-=vz
-  P.map((v,i) => {
-    v[0] += vx
-    v[1] += vy
-    v[2] += vz
-    if(i%cl && i>cl){
-      ay=0
+  ls = gsp/1*(2**.5/2)
+  grid.map(v=>{
+    v.map(q=>{
+      tx = q[0]
+      ty = q[1]
+      tz = q[2]
       x.beginPath()
-      l = i
-      X = P[l][0]
-      Z = P[l][2]
-      ay += Y = floor(X,Z)
-      R(Rl,Pt,Yw,1)
-      if(Z>0) x.lineTo(...Q())
-      l = i-1
-      X = P[l][0]
-      Z = P[l][2]
-      ay += Y = floor(X,Z)
-      R(Rl,Pt,Yw,1)
-      if(Z>0) x.lineTo(...Q())
-      l = i-cl-1
-      X = P[l][0]
-      Z = P[l][2]
-      ay += Y = floor(X,Z)
-      R(Rl,Pt,Yw,1)
-      if(Z>0) x.lineTo(...Q())
-      l = i-cl
-      X = P[l][0]
-      Z = P[l][2]
-      ay += Y = floor(X,Z)
-      d_ = Math.hypot(X,Z)
-      R(Rl,Pt,Yw,1)
-      if(Z>0) {
-        x.lineTo(...Q())
-        oga = 1/(d_**7/1e13)
-        ay/=4
-        if(oga>.01)stroke('#0483',`hsla(${200},99%,${Math.max(10,90-ay*3)}%,.75`,oga)
+      for(k=4;k--;){
+        X = tx + S(p=Math.PI*2/4*k+Math.PI/4)*ls
+        Y = ty + C(p)*ls
+        Z = tz
+        R(Rl,Pt,Yw,1)
+        if(Z>0) x.lineTo(...Q())
       }
-    }
+      stroke('#00ffff04')
+    })
+    
   })
+  
+  shp.map(v=>{
+    tx = v[0]
+    ty = v[1]
+    tz = v[2]
+    v[3].map(q=>{
+      x.beginPath()
+      q.map(n=>{
+        X = n[0]
+        Y = n[1]
+        Z = n[2]
+        R(-t/4,0,t/2)
+        X += tx
+        Y += ty
+        Z += tz
+        R(Rl,Pt,Yw,1)
+        if(Z>0) x.lineTo(...Q())
+      })
+      stroke('#ffffff04','#0088ff04')
+    })
+  })
+  
+  for(m=2;m--;){
+    x.beginPath()
+    X1 = X = -4-8*(m?1:-1.5)
+    Y1 = Y = -3-C(t*4)*2
+    Z1 = Z = 0
+    R(Rl,Pt,Yw,1)
+    if(Z>0) x.lineTo(...Q())
+    X2 = X = -4-8*(m?1:-1.5)
+    Y2 = Y = 1
+    Z2 = Z = 0
+    R(Rl,Pt,Yw,1)
+    if(Z>0) x.lineTo(...Q())
+    X3 = X = S(t*4)*2-8*(m?1:-1.5)
+    Y3 = Y = 1
+    Z3 = Z = 0
+    R(Rl,Pt,Yw,1)
+    if(Z>0) x.lineTo(...Q())
+    stroke(m?'#fff6':'#fff6')
+    ip1 = m ? 1 : .5 + S(t/2)/2
+    ip2 = 1 - ip1
+    
+    if(!m){
+      shp.map(q=>{
+        tx = q[0]
+        ty = q[1]
+        tz = q[2]
+        x.beginPath()
+        X = -4-8*(m?1:-1.5)-tx
+        Y = -3-C(t*4)*2-ty
+        Z = -tz
+        d = H(X,Y,Z)
+        X /= d
+        Y /= d
+        Z /= d
+        X *= iSphereSize
+        Y *= iSphereSize
+        Z *= iSphereSize
+        X1b = X+=tx
+        Y1b = Y+=ty
+        Z1b = Z+=tz
+        R(Rl,Pt,Yw,1)
+        if(Z>0) x.lineTo(...Q())
+        X = -4-8*(m?1:-1.5)-tx
+        Y = 1-ty
+        Z = -tz
+        d = H(X,Y,Z)
+        X /= d
+        Y /= d
+        Z /= d
+        X *= iSphereSize
+        Y *= iSphereSize
+        Z *= iSphereSize
+        X2b = X+=tx
+        Y2b = Y+=ty
+        Z2b = Z+=tz
+        R(Rl,Pt,Yw,1)
+        if(Z>0) x.lineTo(...Q())
+        X =  S(t*4)*2-8*(m?1:-1.5)-tx
+        Y = 1-ty
+        Z = -tz
+        d = H(X,Y,Z)
+        X /= d
+        Y /= d
+        Z /= d
+        X *= iSphereSize
+        Y *= iSphereSize
+        Z *= iSphereSize
+        X3b = X+=tx
+        Y3b = Y+=ty
+        Z3b = Z+=tz
+        R(Rl,Pt,Yw,1)
+        if(Z>0) x.lineTo(...Q())
+        stroke('#0f0','#0f41')
+        
+        x.beginPath()
+        X = X1
+        Y = Y1
+        Z = Z1
+        R(Rl,Pt,Yw,1)
+        if(Z>0) x.lineTo(...Q())
+        X = X1b
+        Y = Y1b
+        Z = Z1b
+        R(Rl,Pt,Yw,1)
+        if(Z>0) x.lineTo(...Q())
+        stroke('#fff6')
+        x.beginPath()
+        X = X2
+        Y = Y2
+        Z = Z2
+        R(Rl,Pt,Yw,1)
+        if(Z>0) x.lineTo(...Q())
+        X = X2b
+        Y = Y2b
+        Z = Z2b
+        R(Rl,Pt,Yw,1)
+        if(Z>0) x.lineTo(...Q())
+        stroke('#fff6')
+        x.beginPath()
+        X = X3
+        Y = Y3
+        Z = Z3
+        R(Rl,Pt,Yw,1)
+        if(Z>0) x.lineTo(...Q())
+        X = X3b
+        Y = Y3b
+        Z = Z3b
+        R(Rl,Pt,Yw,1)
+        if(Z>0) x.lineTo(...Q())
+        stroke('#fff6')
+      })
+    }
+
+    x.font = '60px courier'
+    x.fillStyle = '#fff'
+
+    X = -4-8*(m?1:-1.5)
+    Y = 0
+    Z = 0
+    R(Rl,Pt,Yw,1)
+    l = Q()
+    x.fillText('a',l[0]-50,l[1]-20)
+
+    X = -3-8*(m?1:-1.5)
+    Y = 1
+    Z = 0
+    R(Rl,Pt,Yw,1)
+    l = Q()
+    x.fillText('b',l[0]+20,l[1]+50)
+
+    X = (X1+X3)/2
+    Y = (Y1+Y3)/2
+    Z = (Z1+Z3)/2
+    R(Rl,Pt,Yw,1)
+    l = Q()
+    x.fillText('c',l[0]+10,l[1]-10)
+
+    a2__ = a_ = Math.hypot(X2-X1,Y2-Y1,Z2-Z1)
+    b2__ = b_ = Math.hypot(X3-X2,Y3-Y2,Z3-Z2)
+    c_ = Math.sqrt(a_**2 + b_**2)
+    c2_ = c2__ = c_
+    divergence = c_-c2_
+    if(!m){
+      a2__ = Math.hypot(X2b-X1b,Y2b-Y1b,Z2b-Z1b)
+      b2__ = Math.hypot(X3b-X2b,Y3b-Y2b,Z3b-Z2b)
+      c2__ = Math.sqrt(a2__**2 + b2__**2)
+      divergence = c_-c2__
+    }
+    x.fillText('a = ' + Math.round(a2__*1000)/1000, 960-900*(m?1:-.1), 1080-400)
+    x.fillText('b = ' + Math.round(b2__*1000)/1000, 960-900*(m?1:-.1), 1080-350)
+    x.fillText('c (expected)   = ' + Math.round(c_*1000)/1000, 960-900*(m?1:-.1), 1080-300)
+    x.fillText('c (actual)     = ' + Math.round(c2__*1000)/1000, 960-900*(m?1:-.1), 1080-250)
+    x.fillStyle = divergence ? '#f00' : '#0f4'
+    x.fillText('c (divergence) = ' + Math.round(divergence*1000)/1000, 960-900*(m?1:-.1), 1080-200)
+  }
+  x.fillStyle = '#fff'
+  x.fillText('notice that in noneuclidean space',0,50)
+  x.fillText('the Pythagorian Theroem breaks down',0,100)
+  x.fillText('such as when a triangle is projected',0,150)
+  x.fillText('onto the curved surface of a sphere',0,200)
+  
+  x.beginPath()
+  x.lineTo(960,0)
+  x.lineTo(960,1080)
+  stroke('#f002')
 	      
 
         t+=1/60
