@@ -417,16 +417,17 @@
     x.fillText('c (divergence) = ' + Math.round(divergence*1000)/1000, 960-900*(m?1:-.1), 1080-200)
   }
   x.fillStyle = '#fff'
-  x.fillText('notice that in noneuclidean space',0,50)
-  x.fillText('the Pythagorian Theroem breaks down',0,100)
-  x.fillText('such as when a triangle is projected',0,150)
-  x.fillText('onto the curved surface of a sphere',0,200)
+
   
   x.beginPath()
   x.lineTo(960,0)
   x.lineTo(960,1080)
   stroke('#f002')
 	      
+x.fillText('notice that in noneuclidean space',0,50)
+  x.fillText('the Pythagorean Theorem breaks down',0,100)
+  x.fillText('such as when a triangle is projected',0,150)
+  x.fillText('onto the curved surface of a sphere',0,200)
 
         t+=1/60
       }
