@@ -160,8 +160,8 @@
     
     Rn = Math.random
 
-    segLen = .66
-    targB = 1000
+    segLen = .5
+    targB = 1500
     G = 12, iPv = segLen/2
     spawnP = () =>{
       X = S(p=Rn()*Math.PI*2) * G
@@ -183,8 +183,8 @@
       if(scol){
         x.closePath()
         x.strokeStyle = scol
-        x.globalAlpha = .1
-        x.lineWidth = Math.min(50,500/Z)
+        x.globalAlpha = .06
+        x.lineWidth = Math.min(50,700/Z)
         x.stroke()
         x.globalAlpha = 1
         x.lineWidth /= 10
