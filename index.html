@@ -160,8 +160,8 @@
     
     Rn = Math.random
 
-    segLen = .5
-    targB = 1500
+    segLen = .4
+    targB = 2000
     G = 12, iPv = segLen/2
     spawnP = () =>{
       X = S(p=Rn()*Math.PI*2) * G
@@ -184,10 +184,10 @@
         x.closePath()
         x.strokeStyle = scol
         x.globalAlpha = .06
-        x.lineWidth = Math.min(50,700/Z)
+        x.lineWidth = Math.min(50,500/Z)
         x.stroke()
         x.globalAlpha = 1
-        x.lineWidth /= 10
+        x.lineWidth /= 6
         x.stroke()
       }
       if(fcol){
@@ -204,14 +204,14 @@
   oZ=15+S(t/2)*8
   Rl=S(t/3), Pt=Math.PI/2, Yw=C(t/1.5)
   
-  x.globalAlpha = .1
+  x.globalAlpha = .2
   x.drawImage(bg,0,0,c.width,c.height)
   x.globalAlpha = 1
-  x.fillStyle='#0004'
+  x.fillStyle='#0006'
   x.fillRect(0,0,c.width,c.height)
   x.lineCap = x.lineJoin = 'round'
   
-  if(B.length<targB && !((t*60|0)%0)) for(m=Math.max(2,2+B.length/200|0);m--;)spawnP()
+  if(B.length<targB && !((t*60|0)%0)) for(m=Math.max(5,5+B.length/400|0);m--;)spawnP()
   
   B.map(v=>{
     ty1=ty2=0
