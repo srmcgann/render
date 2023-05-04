@@ -465,11 +465,11 @@
     stroke = (scol, fcol, lwo=1) => {
       if(scol){
         x.closePath()
-        x.globalAlpha = .2
+        x.globalAlpha = .1
         x.strokeStyle = scol
-        x.lineWidth = Math.min(100,5000*lwo/Z)
+        x.lineWidth = Math.min(100,15000*lwo/Z)
         x.stroke()
-        x.lineWidth /= 4
+        x.lineWidth /= 8
         x.globalAlpha = 1
         x.stroke()
       }
@@ -538,17 +538,17 @@
     }
 
     guns = []
-    a = Cylinder(1,6,2,2.5)
+    a = Cylinder(1,6,2*14,2.5*14)
     a.map(v=>{
       v.map(q=>{
-        q[1]-=1.25
+        q[1]-=1.25*14
       })
     })
     guns = [...guns, a]
-    a = Cylinder(1,6,1,5)
+    a = Cylinder(1,6,1*14,5*14)
     a.map(v=>{
       v.map(q=>{
-        q[1]-=5
+        q[1]-=5*14
       })
     })
     guns = [...guns, a]
@@ -556,35 +556,66 @@
     progIdx = prog = 0 
     
     shots = []
-    iPv = .01
+    iPv = .02
     shotFreq = 0
     spawnShot = () =>{
       X = ofx
-      Y = ofy-7
+      Y = ofy-100
       Z = ofz
       vx = 0
       vy = -iPv
       vz = 0
+      shots.map(v=>{
+        v[4]*=1.034
+      })
       shots = [...shots, [X, Y, Z, vx, vy, vz, 1]]
     }
+    
+    rw = 40
+    cl = 40
+    br = 1
+    sp = 15
+    iKc = rw*cl*br
+    K = []
+    Array(iKc).fill().map((v,i) => {
+      X = ((i%cl)-cl/2+.5)*sp
+      Y = ((i/cl/rw|0)-br/2+.5)*sp-50
+      Z = (((i/cl|0)%rw)-rw/2+.5)*sp
+      if(Math.hypot(X,Z)<cl*sp/2) K = [...K, [X, Y, Z, X, Y, Z, 0, 0, 0]]
+    })
+    
     bg = new Image()
-    bg.src = 'pink_forest.jpg'
+    bg.src = 'https://i.imgur.com/MCjtiXN.jpeg'
+
+    iSTc = 3e3
+    G = 1e5
+    ST = Array(iSTc).fill().map(v=>{
+      X = (Rn()-.5)*G
+      Y = (Rn()-.5)*G
+      Z = (Rn()-.5)*G
+      return [X, Y, Z]
+    })
   }
 
-  oX=0, oY=20, oZ=300+Math.min(100,Math.max(-150,S(t/2)*600))
-  Rl=S(t/4), Pt=-.4+C(t/2)/3, Yw=S(t/8)*6
+  oX = 0
+  oY = -50
+  oZ = 500+Math.min(150,Math.max(-150,S(t/2)*1200))
+  Rl = 0//S(t/4)
+  Pt = -S(t)/4//-.4+C(t/2)/3
+  Yw = S(t/10)*6
   
-  path = [], sd=100
+  path = [], sd=200
   for(i=sd+1;i--;){
-    ls = 120+S(Math.PI*2*(sd/20|0)/sd*i)*8**2/2
-    X = S(p=Math.PI*2/sd*i)*ls
+    ls = 150+S(Math.PI*2*(sd/60|0)/sd*i)*8**2
+    X = S(p=Math.PI*2/sd*i+S(ls/30)/2)*ls
     Z = C(p)*ls
-    Y = ((Math.hypot(X,Z)*99)**7/1600000000000000000000000000)*S(t*2)
+    Y = 180//((Math.hypot(X,Z)*99)**7/1600000000000000000000000000)*Math.max(-1,Math.min(1,S(t*4)))
+    R(0,0,-S(t/8)*4)
     path=[...path, [X,Y,Z]]
   }
 
-  for(j=80;j--;){
-    prog +=.6666
+  for(j=4; j--;){
+    prog +=.8
     if(prog>=1) prog-=1,progIdx++
 
     el1 = path[progIdx%path.length]
@@ -595,16 +626,39 @@
     ofz = el1[2] + (el2[2]-el1[2]) * prog
 
     if(!((t*60|0)%shotFreq)) spawnShot()
+    
   }
   
-  x.globalAlpha = .1
-  x.drawImage(bg,0,0,c.width,c.height)
+  //x.globalAlpha = .1
+  //x.drawImage(bg,0,0,c.width,c.height)
   x.globalAlpha = 1
-  x.fillStyle='#0003'
+  x.fillStyle='#0008'
   x.fillRect(0,0,c.width,c.height)
-  x.lineJoin = x.lineCap = 'round'
+  x.lineJoin = x.lineCap = 'roun'
     
-  /*guns.map(gun=>{
+  ST.map(v=>{
+    X = v[0]
+    Y = v[1]
+    Z = v[2]
+    R(Rl,Pt,Yw,1)
+    if(Z>0){
+      alpha = Math.min(1,(Z**3/1000000000000))
+      if(alpha > .1){
+        s = Math.min(1e3, 6e5/Z)
+        x.fillStyle = '#ffffff05'
+        x.globalAlpha = alpha
+        l = Q()
+        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+        s/=6
+        x.fillStyle = '#fff'
+        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      }
+    }
+  })
+
+  x.globalAlpha = 1
+  
+  guns.map(gun=>{
     gun.map(v=>{
       x.beginPath()
       v.map(q=>{
@@ -616,40 +670,85 @@
       })
       stroke('#0f84')
     })
-  })*/
+  })
   
   x.beginPath()
   path.map((v,i)=>{
     X = v[0]
     Y = v[1]
     Z = v[2]
-    R(0,0,S(t)/4/30)
-    v[0] = X
-    v[1] = Y
-    v[2] = Z
     R(Rl,Pt,Yw,1)
     if(Z>0)x.lineTo(...Q())
   })
-  stroke('#f00','#40f1')
+  stroke('#0f8','#40f1')
   shots = shots.filter(v=>v[6]>0)
-  shots.map(v=>{
-    v[0]/=1.03
-    v[2]/=1.03
-    X = v[0] += v[3]*=1.05
-    Y = v[1] += v[4]*=1.05
-    Z = v[2] += v[5]*=1.05
-    v[6]-=.007
+  shots.map((v,i)=>{
+    K.map(q=>{
+      d = (2+Math.hypot(a=q[0]-v[0],b=q[1]-v[1],e=q[2]-v[2]))
+      if(d<sp*5){
+        q[6]+=a/d/1
+        q[7]+=b/d*3
+        q[8]+=e/d/1
+      }
+    })
+    //v[0]/=(1+S(t/2)/150)
+    //v[2]/=(1+S(t/2)/150)
+    X = v[0] += v[3]//*=1.025
+    Y = v[1] += v[4]//*=1.16
+    Z = v[2] += v[5]//*=1.025
+    v[6]-=.02
+    if(i){
+      R(Rl,Pt,Yw,1)
+      if(Z>0){
+        x.beginPath()
+        x.lineTo(...Q())
+        X = shots[i-1][0]
+        Y = shots[i-1][1]
+        Z = shots[i-1][2]
+        R(Rl,Pt,Yw,1)
+        x.lineTo(...Q())
+        stroke('#f008')
+        s = Math.min(1e3,40000/Z)
+        x.fillStyle = '#2200ff03'
+        l = Q()
+        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+        s/=12
+        x.fillStyle = '#fff8'
+        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      }
+    }
+  })
+  
+  elasticity = 150
+  K.map(v=>{
+    v[6] += (v[3]-v[0])/elasticity
+    v[7] += (v[4]-v[1])/elasticity
+    v[8] += (v[5]-v[2])/elasticity
+    v[6] /= 1.2
+    v[7] /= 1.2
+    v[8] /= 1.2
+    v[0] += v[6]
+    v[1] += v[7]
+    v[2] += v[8]
+    X = v[0]+=v[6]
+    Y = v[1]+=v[7]
+    Z = v[2]+=v[8]
     R(Rl,Pt,Yw,1)
     if(Z>0){
-      s = Math.min(1e3,14000/Z)
-      x.fillStyle = '#00ff8801'
-      l = Q()
+      d1=Math.hypot(v[3]-v[0],v[4]-v[1],v[5]-v[2])/3
+      s = Math.min(1e3, 3e4/Z)
+      l=Q()
+      x.fillStyle = `hsla(${d1*4+t*250},99%,${10+d1**2/50}%,${Math.min(.05,Math.max(.01,d1**2/9999))})`
       x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      s/=20
-      x.fillStyle = '#fff8'
+      s/=4
+      x.fillStyle = `hsla(${d1*4+t*250+50},99%,${20+d1**2/50}%,${Math.min(.25,Math.max(.04,d1**2/9999))})`
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      s/=3
+      x.fillStyle = '#fffa'
       x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
     }
   })
+	      
 	      
 	      
         t+=1/60
