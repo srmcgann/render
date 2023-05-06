@@ -465,10 +465,10 @@
     stroke = (scol, fcol, lwo=1) => {
       if(scol){
         x.closePath()
-        x.globalAlpha = .05
+        //x.globalAlpha = .2
         x.strokeStyle = scol
-        x.lineWidth = Math.min(100,600*lwo/Z)
-        x.stroke()
+        x.lineWidth = Math.min(100,50*lwo/Z)
+        //x.stroke()
         x.lineWidth /= 4
         x.globalAlpha = 1
         x.stroke()
@@ -481,7 +481,7 @@
     Rn = Math.random
     
     LsystemRecurse = (size, splits, p1, p2, stem, theta, LsystemReduction, twistFactor) => {
-      if(size<.5) return
+      if(size<.25) return
       let X1 = stem[0]
       let Y1 = stem[1]
       let Z1 = stem[2]
@@ -521,9 +521,9 @@
         R(Rl,Pt,Yw,1)
         if(Z>0)x.lineTo(...Q())
         lwo = Math.hypot(v[0]-v[3],v[1]-v[4],v[2]-v[5])
-        //stroke(v[6]?'#f002':'#0f82','',lwo)
-        stroke('#fff8','',lwo)
+        stroke('#0f82','',lwo)
       })
+      
     }
     Lsystem = (size, splits, theta, LsystemReduction, twistFactor) => {
       Lshp = []
@@ -534,65 +534,233 @@
         v[1]+=size*1.5
         v[4]+=size*1.5
       })
-      minLength = 6e6
-      Lshp.map(v=>{
-        X1 = v[0]
-        Y1 = v[1]
-        Z1 = v[2]
-        X2 = v[3]
-        Y2 = v[4]
-        Z2 = v[5]
-        if((d = Math.hypot(X2-X1, Y2-Y1, Z2-Z1)) < minLength) minLength=d
-      })
-      
-      Lshp.map((v,i) => {
-        X1 = v[0]
-        Y1 = v[1]
-        Z1 = v[2]
-        X2 = v[3]
-        Y2 = v[4]
-        Z2 = v[5]
-        v[6]= ((d = Math.hypot(X2-X1, Y2-Y1, Z2-Z1)) <= minLength * 1.001) ? 1 : 0
-        v[7] = typeof shp == 'undefined' ? [] : shp[i][7]
-      })
       return Lshp
     }
-    iPv = 4
-    shotFreq = 0
     
-    bounding = Cube(16)
+    Sphere = (ls, rw, cl) => {
+      a = []
+      ls/=1.25
+      for(j = rw; j--;){
+        for(i = cl; i--;){
+          b = []
+          X = S(p = Math.PI*2/cl*i) * S(q = Math.PI/rw*j) * ls
+          Y = C(q) * ls
+          Z = C(p) * S(q) * ls
+          b = [...b, [X,Y,Z]]
+          X = S(p = Math.PI*2/cl*(i+1)) * S(q = Math.PI/rw*j) * ls
+          Y = C(q) * ls
+          Z = C(p) * S(q) * ls
+          b = [...b, [X,Y,Z]]
+          X = S(p = Math.PI*2/cl*(i+1)) * S(q = Math.PI/rw*(j+1)) * ls
+          Y = C(q) * ls
+          Z = C(p) * S(q) * ls
+          b = [...b, [X,Y,Z]]
+          X = S(p = Math.PI*2/cl*i) * S(q = Math.PI/rw*(j+1)) * ls
+          Y = C(q) * ls
+          Z = C(p) * S(q) * ls
+          b = [...b, [X,Y,Z]]
+          a = [...a, b]
+        }
+      }
+      return a
+    }
+    
+    ls = 1
+    shapes = [
+      //Sphere(ls, 10, 16),
+      Tetrahedron(ls),
+      Cube(ls),
+      Octahedron(ls),
+      Dodecahedron(ls),
+      Icosahedron(ls)
+    ]
+    
+    Rn = Math.random
+    G = 15
+    d = geoSphere(0, 0, 0, 80, G/3) 
+    shps = []
+    d[4].map(v=>{
+      X = v[0]
+      Y = v[1]
+      Z = v[2]
+      vx = vy = vz = 0
+      shps = [...shps, [X, Y, Z, X, Y, Z, vx, vy, vz, shapes[shapes.length*Rn()|0]]]
+    })
+    
+    iBv = .5, iBc = 3
+    B=Array(iBc).fill().map(v=>{
+      X = (Rn()-.5)*G/2
+      Y = (Rn()-.5)*G/2
+      Z = (Rn()-.5)*G/2
+      vx = (Rn()-.5)*iBv
+      vy = (Rn()-.5)*iBv
+      vz = (Rn()-.5)*iBv
+      return [X, Y, Z, vx, vy, vz, Dodecahedron(ls)]
+    })
+    
+    shootFreq = 0
+    P = [], iPv = 1
+    spawnP = (X, Y, Z) =>{
+      vx = (Rn()-.5)*iPv
+      vy = (Rn()-.5)*iPv
+      vz = (Rn()-.5)*iPv
+      P = [...P, [X, Y, Z, vx, vy, vz, 1]]
+    }
+    
+    sparks = [], iSparksv = .2
+    spawnSparks = (X, Y, Z) =>{
+      for(let m = 5; m--;){
+        vx = (Rn()-.5)*iSparksv
+        vy = (Rn()-.5)*iSparksv
+        vz = (Rn()-.5)*iSparksv
+        sparks = [...sparks, [X, Y, Z, vx, vy, vz, 1]]
+      }
+    }
+    grav = .005
+    
+    bounding = Cube(G/1.1)
+    
+    bg = new Image()
+    bg.src = 'https://cdn.pixabay.com/photo/2022/10/04/04/53/nebula-7497360_960_720.jpg'
   }
 
-  oX=0, oY=0, oZ=20
-  Rl=S(t/4)/4, Pt=-.4-S(t)/8, Yw=-S(t/4)*4
-
-  shp = Lsystem(6, 2, .6+S(t*2)/2.5, 1.6, S(t/2)*4)
+  oX=0, oY=0, oZ=16
+  Rl=t/8, Pt=-t/4, Yw=S(t/4)*4
   
-  x.fillStyle='#000'
+  x.globalAlpha = .1
+  x.drawImage(bg,0,0,c.width,c.height)
+  x.globalAlpha = 1
+  x.fillStyle='#0006'
   x.fillRect(0,0,c.width,c.height)
-  x.lineJoin = x.lineCap = 'round'
-  if(!((t*60|0)%shotFreq)){
-    shp.map(v=>{
-      if(v[6]){
-        X1 = v[0]
-        Y1 = v[1]
-        Z1 = v[2]
-        X2 = v[3]
-        Y2 = v[4]
-        Z2 = v[5]
-        d = Math.hypot(a=X2-X1,b=Y2-Y1,e=Z2-Z1)
-        X = X2
-        Y = Y2
-        Z = Z2
-        vx = a/d*iPv
-        vy = b/d*iPv
-        vz = e/d*iPv
-        v[7] = [...v[7], [X,Y,Z,vx,vy,vz,1]]
-      } else {
-        v[7] = []
-      }
+  x.lineJoin = x.lineCap = 'roud'
+  
+  if(!((t*60|0)%shootFreq)) {
+    for(m=50;m--;)B.map(v=>{
+      X = v[0]
+      Y = v[1]
+      Z = v[2]
+      spawnP(X, Y, Z)
     })
   }
+    
+  sparks = sparks.filter(v=>v[6]>0)
+  sparks.map(v=>{
+    X1 = v[0]
+    Y1 = v[1]
+    Z1 = v[2]
+    X = v[0] += v[3]
+    Y = v[1] += v[4] += grav
+    Z = v[2] += v[5]
+    v[6] -= .025
+    R(Rl,Pt,Yw,1)
+    if(Z>0){
+      l = Q()
+      x.globalAlpha = Math.max(0, v[6]**2)
+      s = Math.min(1e3, 1e3/Z)
+      x.fillStyle = '#ff000003'
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      s/=4
+      x.fillStyle = '#ff01'
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      s/=4
+      x.fillStyle = '#ffff'
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+    }
+  })
+  x.globalAlpha = 1
+  
+  P = P.filter(v=>v[6]>.2)
+  
+  P.map(v=>{
+    X1 = v[0]
+    Y1 = v[1]
+    Z1 = v[2]
+    shps.map(q=>{
+      X2 = q[0]
+      Y2 = q[1]
+      Z2 = q[2]
+      if((d = Math.hypot(a=X2-X1,b=Y2-Y1,e=Z2-Z1))<ls*.85){
+        q[6]+=a/30
+        q[7]+=b/30
+        q[8]+=e/30
+        v[3]-=a/9
+        v[4]-=b/9
+        v[5]-=e/9
+        d = Math.hypot(a,b,e)
+        tx = a/d*ls*.85
+        ty = b/d*ls*.85
+        tz = e/d*ls*.85
+        spawnSparks(X2-tx,Y2-ty,Z2-tz)
+      }
+    })
+    X = v[0] += v[3]
+    Y = v[1] += v[4]
+    Z = v[2] += v[5]
+    v[6] -= .25
+    R(Rl,Pt,Yw,1)
+    if(Z>0){
+      l = Q()
+      x.globalAlpha = Math.max(0, v[6])
+      s = Math.min(1e3, 1500/Z)
+      x.fillStyle = '#00ffaa01'
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      s/=16
+      x.fillStyle = '#fffa'
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+    }
+  })
+  x.globalAlpha = 1
+  
+  elasticity = 100
+  shps.map((shp, shpIdx) => {
+    shp[6] /= 1.1
+    shp[7] /= 1.1
+    shp[8] /= 1.1
+    shp[6] += (shp[3] - shp[0]) / elasticity
+    shp[7] += (shp[4] - shp[1]) / elasticity
+    shp[8] += (shp[5] - shp[2]) / elasticity
+    tx = shp[0]+=shp[6]
+    ty = shp[1]+=shp[7]
+    tz = shp[2]+=shp[8]
+    shp[9].map(v=>{
+      x.beginPath()
+      v.map(q=>{
+        X = q[0]+tx
+        Y = q[1]+ty
+        Z = q[2]+tz
+        R(Rl,Pt,Yw,1)
+        if(Z>0)x.lineTo(...Q())
+      })
+      d=Math.hypot(shp[3]-shp[0],shp[4]-shp[1],shp[5]-shp[2])*150
+      col1 = `hsla(${d+t*5000},99%,${Math.max(50,100-d/20)}%,${Math.max(.05,d/500)})`
+      col2 = `hsla(${d+t*5000},99%,${Math.max(50,100-d/20)}%,${Math.min(.2,Math.max(.0125,d/2000))})`
+      stroke(col1, col2)
+    })
+  })
+  
+  B.map(v=>{
+    tx = v[0] += v[3]
+    ty = v[1] += v[4]
+    tz = v[2] += v[5]
+    if(tx>G/2.5 || tx<-G/2.5) v[3]*=-1
+    if(ty>G/2.5 || ty<-G/2.5) v[4]*=-1
+    if(tz>G/2.5 || tz<-G/2.5) v[5]*=-1
+    v[6].map(q=>{
+      x.beginPath()
+      q.map(n=>{
+        X = n[0]
+        Y = n[1]
+        Z = n[2]
+        R(0, 0, .04)
+        X = (n[0] = X)/1 + tx
+        Y = (n[1] = Y)/1 + ty
+        Z = (n[2] = Z)/1 + tz
+        R(Rl,Pt,Yw,1)
+        if(Z>0)x.lineTo(...Q())
+      })
+      stroke('#0f88', '#0f82')
+    })
+  })
   
   bounding.map(v=>{
     x.beginPath()
@@ -601,56 +769,12 @@
       Y = q[1]
       Z = q[2]
       R(Rl,Pt,Yw,1)
-      if(Z>0) x.lineTo(...Q())
+      if(Z>0)x.lineTo(...Q())
     })
-    stroke('#40f1', '#4400ff08')
+    stroke('#ffffff03','#4400ff04',10)
   })
+
   
-  shp.map(v=>{
-    v[7] = v[7].filter(q => q[6] > 0)
-    v[7].map((q,j) => {
-      if(j){
-        x.beginPath()
-        l = j-1
-        X = v[7][l][0]
-        Y = v[7][l][1]
-        Z = v[7][l][2]
-        console.log(X,Y,Z)
-        R(Rl, Pt, Yw, 1)
-        if(Z>0) x.lineTo(...Q())
-        l = j
-        X = v[7][l][0]
-        Y = v[7][l][1]
-        Z = v[7][l][2]
-        R(Rl, Pt, Yw, 1)
-        if(Z>0) x.lineTo(...Q())
-        stroke(
-          `hsla(${t*50+j*10},99%,${50+(j*2)**2/10}%,${.5*q[6]**.75})`,
-          ``,
-          q[6]
-          )
-        /*l = Q()
-        x.globalAlpha = q[6]**1.75
-        s = Math.min(1e3, 600/Z)
-        x.fillStyle = '#4400ff08'
-        x.fillRect(l[0]-s/2, l[1]-s/2, s, s)
-        s /= 10
-        x.fillStyle = '#f00'
-        x.fillRect(l[0]-s/2, l[1]-s/2, s, s)*/
-      }
-    })
-    v[7].map((q,j) => {
-      q[0] += q[3]/(l=1+(v[7].length-j)*2)
-      q[1] += q[4]/l
-      q[2] += q[5]/l
-      q[6] -= .1
-    })
-  })
-  
-  x.globalAlpha = 1
-  
-  DrawLsystem(shp)
-	      
 	      
 	      
         t+=1/60
