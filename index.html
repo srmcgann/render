@@ -316,7 +316,7 @@
     init = () =>{
       
       iTeamsc = 2+(Rn()*3)|0
-      iTeamsPlayers = 500/iTeamsc|0
+      iTeamsPlayers = 600/iTeamsc|0
       
       victoryMessageVisible = false
       teams =[]
@@ -341,14 +341,14 @@
   oZ = 35
   Rl = -t/6
   Pt = -t/3
-  Yw = S(t/3)*9
+  Yw = S(t/4)*8
   
   x.globalAlpha = 1
-  x.fillStyle='#000c'
+  x.fillStyle='#0008'
   x.fillRect(0,0,c.width,c.height)
   x.lineJoin = x.lineCap = 'round'
 
-  for(let m = 2;m--;){
+  for(let m = 1;m--;){
     teams.map((v, i) => {
       X1 = v[0]
       Y1 = v[1]
