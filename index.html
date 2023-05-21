@@ -136,16 +136,16 @@
       } else { //base animation (pre freq)
 
 
-  if(!t){
+ if(!t){
     R=(Rl,Pt,Yw,m)=>{
       M=Math
       A=M.atan2
       H=M.hypot
       X=S(p=A(X,Y)+Rl)*(d=H(X,Y))
       Y=C(p)*d
-      Y=S(p=A(Y,Z)+Pt)*(d=H(Y,Z))
-      Z=C(p)*d
       X=S(p=A(X,Z)+Yw)*(d=H(X,Z))
+      Z=C(p)*d
+      Y=S(p=A(Y,Z)+Pt)*(d=H(Y,Z))
       Z=C(p)*d
       if(m){
         X+=oX
@@ -153,7 +153,7 @@
         Z+=oZ
       }
     }
-    Q=()=>[c.width/2+X/Z*800,c.height/2+Y/Z*800]
+    Q=()=>[c.width/2+X/Z*400,c.height/2+Y/Z*400]
     I=(A,B,M,D,E,F,G,H)=>(K=((G-E)*(B-F)-(H-F)*(A-E))/(J=(H-F)*(M-A)-(G-E)*(D-B)))>=0&&K<=1&&(L=((M-A)*(B-F)-(D-B)*(A-E))/J)>=0&&L<=1?[A+K*(M-A),B+K*(D-B)]:0
     
     Rn = Math.random
@@ -166,7 +166,7 @@
         Z = Rn()-.5
         return  [X,Y,Z]
       })
-      for(let m = 200;m--;){
+      for(let m=99;m--;){
         B.map((v,i)=>{
           X = v[0]
           Y = v[1]
@@ -177,9 +177,9 @@
               Y2=q[1]
               Z2=q[2]
               d=1+(Math.hypot(X-X2,Y-Y2,Z-Z2)*(3+iBc/40)*3)**4
-              X+=(X-X2)*500/d
-              Y+=(Y-Y2)*500/d
-              Z+=(Z-Z2)*500/d
+              X+=(X-X2)*99/d
+              Y+=(Y-Y2)*99/d
+              Z+=(Z-Z2)*99/d
             }
           })
           d=Math.hypot(X,Y,Z)
@@ -410,7 +410,7 @@
     
     Icosahedron = size => {
       ret = []
-      let B = [
+      B = [
         [[0,3],[1,0],[2,2]],
         [[0,3],[1,0],[1,3]],
         [[0,3],[2,3],[1,3]],
@@ -469,7 +469,7 @@
         x.closePath()
         x.globalAlpha = .2
         x.strokeStyle = scol
-        x.lineWidth = Math.min(100,500*lwo/Z)
+        x.lineWidth = Math.min(100,200*lwo/Z)
         x.stroke()
         x.lineWidth /= 4
         x.globalAlpha = 1
@@ -641,80 +641,70 @@
       return a
     }
     
-    G = 20
-    turrets = 4
-    size = 1
-    iCannonsc = 6
-    iCannonsv = .2
-    cannons = Array(iCannonsc).fill().map(v => {
-      X = (Rn()-.5)*G
-      Y = (Rn()-.5)*G
-      Z = (Rn()-.5)*G
-      vx = (Rn()-.5)*iCannonsv
-      vy = (Rn()-.5)*iCannonsv
-      vz = (Rn()-.5)*iCannonsv
-      return [X, Y, Z, vx, vy, vz, geoSphere(0, 0, 0, turrets, size)[4]]
-    })
-    
-    turret = Cylinder(1, 3, .5, 1.5)
-    
-    P = [], pfreq = 0, iPv = 1
-    spawnP = (X, Y, Z, vx, vy, vz) => {
-      P = [...P, [X, Y, Z, vx, vy, vz, 1]]
+    G = 12
+    P = [], iPc = 600, pfreq = 160, iPv = 1.5
+    spawnP = (tx, ty ,tz) => {
+      for(let m = iPc;m--;){
+        mv = .1+Rn()*.9
+        X = tx// + (Rn()-.5)*G
+        Y = ty //+ (Rn()-.5)*G
+        Z = tz //+ (Rn()-.5)*G
+        l=Rn()<.5?1:-1
+        vx = -S(p1=Math.PI*2*Rn()) * S(p2=Math.PI/2*Rn()**.5) * iPv * mv
+        vy = -C(p2) * iPv * mv * l * 2
+        vz = -C(p1) * S(p2) * iPv * mv
+        P = [...P, [X, Y, Z, vx, vy, vz, 1, []]]
+      }
     }
     
-    iBls = 2, iBc = 10, iBv = .25
-    base_tgt = Octahedron(iBls)
-    
+    bounding = Cylinder(4,16,G/1.5,G*1.2)
+    Bshp = Dodecahedron(2)
+    iBc = 2, iBv = .45
     B = Array(iBc).fill().map(v=>{
       X = (Rn()-.5)*G
-      Y = (Rn()-.5)*G
+      Y = -G/2+G/2*Rn()
       Z = (Rn()-.5)*G
       vx = (Rn()-.5)*iBv
       vy = (Rn()-.5)*iBv
       vz = (Rn()-.5)*iBv
-      return [X, Y, Z, vx, vy, vz]
+      return [X, Y, Z, vx, vy ,vz]
     })
-
-    bounding = subDividedIcosahedron(3, G*1.1, 1)
     
-    iSTc = 6e3, iSTG = 3e4
-    ST = Array(iSTc).fill().map(v=>{
-      X = (Rn()-.5) * iSTG
-      Y = (Rn()-.5) * iSTG
-      Z = (Rn()-.5) * iSTG
-      return [X, Y, Z]
+    rw = 48*2
+    cl = 16*2
+    sp = 8
+    grid = []
+    Array(rw*cl).fill().map((v,i)=>{
+      ls = sp/2
+      tx = ((i%cl)-cl/2+.5)*sp*1.5 + ((i/cl|0)%2?sp*1.5/2:0)
+      ty = G/2*1.2
+      tz = (((i/cl|0)%rw)-rw/2+.5)*sp*0.8660254037844386/2
+      d = Math.hypot(tx,tz)
+      if(d<42.5*1.5){
+        a = []
+        for(j=6;j--;){
+          X = tx + S(p=Math.PI*2/6*j+Math.PI/6)*ls
+          Y = ty
+          Z = tz + C(p)*ls
+          a = [...a, [X,Y,Z]]
+        }
+        grid = [...grid, a]
+      }
     })
+    
+    grav = .04
   }
 
-  oX=0, oY=0, oZ=Math.max(16, Math.min(30,.3+S(t/2)*100))
-  //Rl = t, Pt = -t/4, Yw = S(t/10)*4
-  Rl = 0, Pt = C(t/6)*2, Yw = S(t/3)*2
+  oX=0, oY=0, oZ=24//Math.max(20,Math.min(50,(.3+S(t/2)*100)))
+  Rl = 0, Pt = -.3+S(t*2)/2, Yw = S(t/2)*6
+  //Rl = 0, Pt = -Math.PI/2, Yw = 0
   
   x.globalAlpha = 1
-  x.fillStyle='#0006'
+  x.fillStyle='#000a'
   x.fillRect(0,0,c.width,c.height)
   x.lineJoin = x.lineCap = 'roud'
   
-  ST.map(v=>{
-    X = v[0]
-    Y = v[1]
-    Z = v[2]
-    R(Rl,Pt,Yw,1)
-    if(Z>0){
-      if((x.globalAlpha = Math.min(1,(Z/5000)**2))>.1){
-        s = Math.min(1e3, 300000/Z)
-        x.fillStyle = '#ffffff03'
-        l = Q()
-        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-        s/=16
-        x.fillStyle = '#fff'
-        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      }
-    }
-  })
-
-  bounding.map((v,i)=>{
+  grid.map(v=>{
     x.beginPath()
     v.map(q=>{
       X = q[0]
@@ -723,128 +713,98 @@
       R(Rl,Pt,Yw,1)
       if(Z>0)x.lineTo(...Q())
     })
-    if(((i*5+(t*120|0))%bounding.length)){
-      col1=''
-      col2=`hsla(${i+t*1000},99%,${50+S(i)*100}%,.05)`
-    }else{
-      col1=''
-      col2='#fff'
-    }
-    stroke(col1,col2)
+    stroke('#00ffcc04', '#4400ff06', 2)
   })
   
-  cannons.map(cannon=>{
-    cx = cannon[0] += cannon[3]
-    cy = cannon[1] += cannon[4]
-    cz = cannon[2] += cannon[5]
-    if(cx > G/2 || cx < -G/2)cannon[3] *= -1
-    if(cy > G/2 || cy < -G/2)cannon[4] *= -1
-    if(cz > G/2 || cz < -G/2)cannon[5] *= -1
-    cannon[6].map((v,i)=>{
-      X = v[0]
-      Y = v[1]
-      Z = v[2]
-      R(C(t/2)*8,0,S(t/2)*8)
-      tx = X
-      ty = Y
-      tz = Z
-      p1 = Math.atan2(tx, tz)
-      p2 = -Math.acos(ty / Math.hypot(tx, ty, tz))
-      d = Math.hypot(tx, ty, tz)
-      vx = tx / d * iPv
-      vy = ty / d * iPv
-      vz = tz / d * iPv
-      if(!((t*60|0)%pfreq)) spawnP(tx + cx, ty + cy, tz + cz, vx, vy, vz)
-      turret.map(q=>{
-        x.beginPath()
-        q.map( n => {
-          X = n[0]
-          Y = n[1]
-          Z = n[2]
-          R(0, p2, 0)
-          R(0, 0, p1)
-          X += tx + cx
-          Y += ty + cy
-          Z += tz + cz
-          R(Rl,Pt,Yw,1)
-          if(Z>0)x.lineTo(...Q())
-        })
-        stroke('#8f8', '#0f02', .1)
-      })
+  bounding.map(v=>{
+    x.beginPath()
+    v.map(q=>{
+      X = q[0]
+      Y = q[1]
+      Z = q[2]
+      R(Rl,Pt,Yw,1)
+      if(Z>0) x.lineTo(...Q())
     })
+    stroke('#fff1','#40F1',.5)
   })
-  
-  B.map((v, i) => {
-    tx = v[0]+=v[3]
-    ty = v[1]+=v[4]
-    tz = v[2]+=v[5]
-    if(tx > G/2 || tx < -G/2)v[3] *= -1
-    if(ty > G/2 || ty < -G/2)v[4] *= -1
-    if(tz > G/2 || tz < -G/2)v[5] *= -1
-    base_tgt.map(q=>{
+
+  B.map((v,i) => {
+    tx = v[0] + v[3]
+    ty = v[1] + v[4] + grav
+    tz = v[2] + v[5]
+    if(tx>G/2 || tx<-G/2) v[3] *=-1
+    if(ty>G/2 || ty<-G/2) {v[4] *=-1, v[4]-=grav}
+    if(tz>G/2 || tz<-G/2) v[5] *=-1
+    tx = v[0] += v[3]
+    ty = v[1] += v[4] += grav
+    tz = v[2] += v[5]
+    
+    if(t&&!(((i*B.length/60+t*60)|0)%pfreq)) spawnP(tx, ty, tz)
+    Bshp.map(q=>{
       x.beginPath()
       q.map(n=>{
-        X = n[0]
-        Y = n[1]
-        Z = n[2]
-        R(0,C(p_=t/4 + Math.PI*2/iBc*i)*10,S(p_)*10)
-        X += tx
-        Y += ty
-        Z += tz
-        R(Rl, Pt, Yw, 1)
-        if(Z > 0) x.lineTo(...Q())
+        X = n[0] + tx
+        Y = n[1] + ty
+        Z = n[2] + tz
+        R(Rl,Pt,Yw,1)
+        if(Z>0)x.lineTo(...Q())
       })
-      stroke('#f001','#ff000005')
+      stroke('#f005', '#40f2', .5)
     })
   })
   
   P = P.filter(v=>v[6]>0)
-  
-  lim = .5
   P.map(v=>{
-    cx = X1 = v[0]
-    cy = Y1 = v[1]
-    cz = Z1 = v[2]
-    //if(cx > G/2 || cx < -G/2)v[3] *= -1
-    //if(cy > G/2 || cy < -G/2)v[4] *= -1
-    //if(cz > G/2 || cz < -G/2)v[5] *= -1
-    B.map(q=>{
-      X2 = q[0]
-      Y2 = q[1]
-      Z2 = q[2]
-      d = (2+Math.hypot(a=X2-X1,b=Y2-Y1,e=Z2-Z1))**7/60000
-      v[3] += a / d
-      v[4] += b / d
-      v[5] += e / d
-    })
-    v[3]/=1.01
-    v[4]/=1.01
-    v[5]/=1.01
-    d1 = Math.hypot(v[3],v[4],v[5])
-    d2 = Math.min(d1,lim)
-    v[3] = v[3]/d1*d2
-    v[4] = v[4]/d1*d2
-    v[5] = v[5]/d1*d2
+    tx = v[0] + v[3]
+    ty = v[1] + v[4] + grav
+    tz = v[2] + v[5]
+    d = Math.hypot(tx,tz)
+    if(d<G/1.2 && ty>-G/1.5 && (tx>G/2 || tx<-G/2)) v[3] *=-1
+    if(ty>G/2) {v[4] *=-1, v[4]-=grav}
+    if(d<G/1.2 && ty>-G/1.5 && (tz>G/2 || tz<-G/2)) v[5] *=-1
     X = v[0] += v[3]
-    Y = v[1] += v[4]
+    Y = v[1] += v[4] += grav
     Z = v[2] += v[5]
-    v[6] -= .025
+    v[6] -= .01
+    v[7]=[...v[7],[X,Y,Z]]
     R(Rl,Pt,Yw,1)
     if(Z>0){
-      l = Q()
       x.globalAlpha = Math.max(0, v[6])
-      s = Math.min(1e3, (100+3000*v[6])/Z)
-      x.fillStyle = '#4400ff02'
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      s/=4
-      x.fillStyle = '#44ff8820'
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      s/=6
-      x.fillStyle = '#fff'
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      l = Q()
+      s = Math.min(1e3, 3000/Z)
+      x.fillStyle = '#ff000006'
+      x.fillRect(l[0]-s/2, l[1]-s/2, s, s)
+      s/=2
+      x.fillStyle = '#ff88020'
+      x.fillRect(l[0]-s/2, l[1]-s/2, s, s)
+      s/=2
+      x.fillStyle = '#ff03'
+      x.fillRect(l[0]-s/2, l[1]-s/2, s, s)
+      s/=3
+      x.fillStyle = '#fffd'
+      x.fillRect(l[0]-s/2, l[1]-s/2, s, s)
     }
+    v[7] = v[7].filter((q,j)=>j||v[7].length<20)
+    v[7].map((q,j)=>{
+      if(j){
+        x.beginPath()
+        l = j
+        X = v[7][l][0]
+        Y = v[7][l][1]
+        Z = v[7][l][2]
+        R(Rl,Pt,Yw,1)
+        if(Z>0)x.lineTo(...Q())
+        l = (j-1)
+        X = v[7][l][0]
+        Y = v[7][l][1]
+        Z = v[7][l][2]
+        R(Rl,Pt,Yw,1)
+        if(Z>0)x.lineTo(...Q())
+        if(1/v[7].length*j*v[6]>.15) stroke(`hsla(${360*1.5/v[7].length*j-t*100},99%,${30+80/v[7].length*j}%,${1/v[7].length*j*v[6]**2})`,'',v[6]*2)
+      }
+    })
   })
-
+  
 	      
 	      
 	      
