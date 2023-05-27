@@ -136,7 +136,8 @@
       } else { //base animation (pre freq)
 
 
- if(!t){
+  
+  if(!t){
     R=(Rl,Pt,Yw,m)=>{
       M=Math
       A=M.atan2
@@ -153,7 +154,7 @@
         Z+=oZ
       }
     }
-    Q=()=>[c.width/2+X/Z*800,c.height/2+Y/Z*800]
+    Q=()=>[c.width/2+X/Z*500,c.height/2+Y/Z*500]
     I=(A,B,M,D,E,F,G,H)=>(K=((G-E)*(B-F)-(H-F)*(A-E))/(J=(H-F)*(M-A)-(G-E)*(D-B)))>=0&&K<=1&&(L=((M-A)*(B-F)-(D-B)*(A-E))/J)>=0&&L<=1?[A+K*(M-A),B+K*(D-B)]:0
     
     Rn = Math.random
@@ -194,6 +195,38 @@
           }
         })
       }
+      mind = 6e6
+      B.map((v,i)=>{
+        X1 = v[0]
+        Y1 = v[1]
+        Z1 = v[2]
+        B.map((q,j)=>{
+          X2 = q[0]
+          Y2 = q[1]
+          Z2 = q[2]
+          if(i!=j){
+            d = Math.hypot(a=X1-X2, b=Y1-Y2, e=Z1-Z2)
+            if(d<mind) mind = d
+          }
+        })
+      })
+      a = []
+      B.map((v,i)=>{
+        X1 = v[0]
+        Y1 = v[1]
+        Z1 = v[2]
+        B.map((q,j)=>{
+          X2 = q[0]
+          Y2 = q[1]
+          Z2 = q[2]
+          if(i!=j){
+            d = Math.hypot(X1-X2, Y1-Y2, Z1-Z2)
+            if(d<mind*1.55){
+              if(!a.filter(q=>q[0]==X2&&q[1]==Y2&&q[2]==Z2&&q[3]==X1&&q[4]==Y1&&q[5]==Z1).length) a = [...a, [X1*size,Y1*size,Z1*size,X2*size,Y2*size,Z2*size]]
+            }
+          }
+        })
+      })
       B.map(v=>{
         v[0]*=size
         v[1]*=size
@@ -202,7 +235,7 @@
         v[1]+=my
         v[2]+=mz
       })
-      return [mx, my, mz, size, B]
+      return [mx, my, mz, size, B, a]
     }
 
     Cylinder = (rw,cl,ls1,ls2) => {
@@ -464,13 +497,13 @@
       return out
     }
     
-    stroke = (scol, fcol, lwo=1) => {
+    stroke = (scol, fcol, lwo=1, od=false) => {
       if(scol){
         x.closePath()
-        x.globalAlpha = .2
+        if(od) x.globalAlpha = .2
         x.strokeStyle = scol
-        x.lineWidth = Math.min(100,50*lwo/Z)
-        x.stroke()
+        x.lineWidth = Math.min(100,200*lwo/Z)
+        if(od) x.stroke()
         x.lineWidth /= 4
         x.globalAlpha = 1
         x.stroke()
@@ -641,67 +674,73 @@
       return a
     }
     
-    
-    tgtDpth = 4, ls=1.5, brnch = 4
-    recurse = (dpth, X,Y,Z,theta) => {
-      if(dpth>tgtDpth || (dpth>1 && Rn()<.5)) return
-      for(let i=brnch;i--;){
-        let tx = X+S(p=theta + (Rn()-.5)*2)*ls/(1+dpth/2)
-        let ty = Y+C(p)*ls/(1+dpth/4)
-        let tz = Z+(Rn()-.5)*2
-        d = Math.hypot(tx-X,ty-Y,tz-Z)
-        B = [...B, [X,Y,Z,tx,ty,tz,p,d]]
-        recurse(dpth+1,tx,ty,tz,p,d)
+    Torus = (rw,cl,ls1,ls2) => {
+      let ret = []
+      for(j=rw;j--;)for(let i = cl;i--;){
+        a = []
+        X = S(p=Math.PI*2/cl*i) * ls1 + ls2
+        Y = C(p) * ls1 + ls2
+        Z = 0
+        R(0, 0, Math.PI*2/rw*j)
+        a = [...a, [X,Y,Z]]
+        X = S(p=Math.PI*2/cl*(i+1)) * ls1 + ls2
+        Y = C(p) * ls1 + ls2
+        Z = 0
+        R(0, 0, Math.PI*2/rw*j)
+        a = [...a, [X,Y,Z]]
+        X = S(p=Math.PI*2/cl*(i+1)) * ls1 + ls2
+        Y = C(p) * ls1 + ls2
+        Z = 0
+        R(0, 0, Math.PI*2/rw*(j+1))
+        a = [...a, [X,Y,Z]]
+        X = S(p=Math.PI*2/cl*i) * ls1 + ls2
+        Y = C(p) * ls1 + ls2
+        Z = 0
+        R(0, 0, Math.PI*2/rw*(j+1))
+        a = [...a, [X,Y,Z]]
+        ret = [...ret, a]
       }
+      return ret
     }
     
-    B = []
-    recurse(0, 0, 0, 0, Math.PI)
-    cx = B[0][0]
-    cy = B[0][1]
-    cz = B[0][2]
-    roots = []
-    B.map((v,i)=>{
-      X = v[0]
-      Y = v[1]
-      Z = v[2]
-      d = Math.hypot(X-cx,Y-cy,Z-cz)
-      if(d<.01) roots = [...roots, i]
-    })
-    B.map((v,i)=>{
-      shared = []
-      X1 = v[0]
-      Y1 = v[1]
-      Z1 = v[2]
-      B.map((q, j) => {
-        if(i != j){
-          X2 = q[3]
-          Y2 = q[4]
-          Z2 = q[5]
-          d = Math.hypot(X2-X1, Y2-Y1, Z2-Z1)
-          if(d<.01) shared = [...shared, j]
-        }
-      })
-      v[8] = shared
-      shared = []
-      X1 = v[3]
-      Y1 = v[4]
-      Z1 = v[5]
-      B.map((q, j) => {
-        if(i != j){
-          X2 = q[0]
-          Y2 = q[1]
-          Z2 = q[2]
-          d = Math.hypot(X2-X1, Y2-Y1, Z2-Z1)
-          if(d<.01) shared = [...shared, j]
-        }
-      })
-      v[9] = shared
-    })
-    iBv = 2
-    mvx=mvy=mvz=mvx_=mvy_=mvz_=0
+    container = Cylinder(10,20,cylLs1=2,cylLs2=6)
+    toruses = [
+      [0,0,0,Torus(20,10,1,3)],
+      [0,-6,0,Torus(20,10,1,3)]
+    ]
+    
+    baseGeo = geoSphere(0, 0, 0, 200, .001)
 
-   iSTc = 3e3, iSTG = 3e4
+    
+    ret = []
+    P = [], G = 20, iPv = .1, pfreq = 60, instances = 5
+    spawnP = () => {
+      ins = []
+      for(m=instances;m--;){
+        tx = S(p=Math.PI*Rn()*2)*cylLs1/2
+        ty = (Rn()-.5)*cylLs2
+        tz = C(p)*cylLs1/2
+        ins = [...ins, [tx, ty, tz, m]]
+        baseGeo[5].map(v=>{
+          X1 = tx + v[0]
+          Y1 = ty + v[1]
+          Z1 = tz + v[2]
+          d1 = Math.hypot(v[0],v[1],v[2])
+          vx1 = v[0] / d1 * iPv
+          vy1 = v[1] / d1 * iPv
+          vz1 = v[2] / d1 * iPv
+          X2 = tx + v[3]
+          Y2 = ty + v[4]
+          Z2 = tz + v[5]
+          d2 = Math.hypot(v[3], v[4], v[5])
+          vx2 = v[3] / d2 * iPv
+          vy2 = v[4] / d2 * iPv
+          vz2 = v[5] / d2 * iPv
+          P = [...P, [X1,Y1,Z1,vx1,vy1,vz1,X2,Y2,Z2,vx2,vy2,vz2,1,tx,ty,tz,1,m,1]]
+        })
+      }
+    }
+    iSTc = 3e3, iSTG = 3e4
     ST = Array(iSTc).fill().map(v=>{
       X = (Rn()-.5) * iSTG
       Y = (Rn()-.5) * iSTG
@@ -710,8 +749,8 @@
     })  
   }
 
-  oX=0, oY=0, oZ=6
-  Rl=0, Pt=-t/2, Yw=S(t)*3
+  oX=0, oY=0, oZ=Math.max(3,Math.min(9,(.3+C(t/2))*50))
+  Rl=t/10, Pt=-t/6, Yw=C(t/2)*2
   
 
   x.fillStyle='#0008'
@@ -724,8 +763,8 @@
     Z = v[2]
     R(Rl,Pt,Yw,1)
     if(Z>0){
-      if((x.globalAlpha = Math.min(1,(Z/5000)**2))>.1){
-        s = Math.min(1e3, 300000/Z)
+      if((x.globalAlpha = Math.min(1,(Z/3000)**2))>.1){
+        s = Math.min(1e3, 400000/Z)
         x.fillStyle = '#ffffff03'
         l = Q()
         x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
@@ -736,102 +775,93 @@
     }
   })
   
-
+  container.map(v=>{
+    x.beginPath()
+    v.map(q=>{
+      X = q[0]
+      Y = q[1]
+      Z = q[2]
+      R(Rl,Pt,Yw,1)
+      if(Z>0) x.lineTo(...Q())
+    })
+    stroke('#4400ff20',  '#4400ff06', .5, true)
+  })
+ 
+  toruses.map(torus=>{
+    tx = torus[0]
+    ty = torus[1]
+    tz = torus[2]
+    torus[3].map(v=>{
+      x.beginPath()
+      v.map(q=>{
+        X = q[0]+tx
+        Y = q[1]+ty
+        Z = q[2]+tz
+        R(Rl, Pt, Yw, 1)
+        if(Z>0)x.lineTo(...Q())
+      })
+      stroke('#4400ff20',  '#4400ff06', .5, true)
+    })
+  })
   
-  mvx_ += (Rn()-.5) * iBv
-  mvy_ += (Rn()-.5) * iBv
-  mvz_ += 0//(Rn()-.5) * iBv
+  if(!((t*60|0)%pfreq))spawnP()
   
-  mvx_ /= 1.2
-  mvy_ /= 1.2
-  mvz_ /= 1.2
-  
-  mvx += mvx_
-  mvy += mvy_
-  mvz += mvz_
-  
-  d1 = Math.hypot(mvx,mvy,mvz)
-  min=.5
-  d2 = Math.min(min,d1)
-  mvx/=d1
-  mvy/=d1
-  mvz/=d1
-  mvx*=d2
-  mvy*=d2
-  mvz*=d2
-  
-  B.map((v,i)=>{
-    wasroot = false
-    roots.map(q=>{
-      if(q==i){
-        v[0] += mvx -=v[0]/100
-        v[1] += mvy -=v[1]/100
-        v[2] += mvz -=v[2]/100
-        wasroot = true
-        if(i){
-          v[0] = B[0][0]
-          v[1] = B[0][2]
-          v[2] = B[0][2]
+  P = P.filter(v=>v[12]>0)
+  P.map((v,i)=>{
+    v[12] -= .0005
+    if(Math.abs(v[1])>cylLs2/2 || (!v[16] && !v[18])) v[12] -= .03
+    X = v[0] += v[3]
+    Y = v[1] += v[4]
+    Z = v[2] += v[5]
+    d = Math.hypot(X,Z)
+    if(d>cylLs1){
+      v[3]=v[4]=v[5]=0
+      v[16]=0
+    }
+    
+    cx = v[13]
+    cy = v[14]
+    cz = v[15]
+    if(v[16]) ins.map((q,j) => {
+      if(v[17] != q[3]){
+        d1 = Math.hypot(X-cx,Y-cy,Z-cz)
+        d2 = Math.hypot(X-q[0],Y-q[1],Z-q[2])
+        if(d1>d2){
+          v[16] = 0
+          v[3]=v[4]=v[5]=0
         }
       }
     })
-    if(!wasroot){
-      v[0] += (Rn()-.5)/10 - v[0]/100
-      v[1] += (Rn()-.5)/10 - v[1]/100
-      v[2] += (Rn()-.5)/10 - v[2]/100
-      v[3] += (Rn()-.5)/10 - v[3]/100
-      v[4] += (Rn()-.5)/10 - v[4]/100
-      v[5] += (Rn()-.5)/10 - v[5]/100
+    x.beginPath()
+    R(Rl,Pt,Yw,1)
+    if(Z>0) x.lineTo(...Q())
+    X = v[6] += v[9]
+    Y = v[7] += v[10]
+    Z = v[8] += v[11]
+    d = Math.hypot(X,Z)
+    if(d>cylLs1){
+      v[9]=v[10]=v[11]=0
+      v[18]=0
     }
-    
-    X1 = v[0]
-    Y1 = v[1]
-    Z1 = v[2]
-    X2 = v[3]
-    Y2 = v[4]
-    Z2 = v[5]
-    d = Math.hypot(a=X2-X1,b=Y2-Y1,e=Z2-Z1)
-    a/=d
-    b/=d
-    e/=d
-    X2 = v[3] = X1 + a * v[7]
-    Y2 = v[4] = Y1 + b * v[7]
-    Z2 = v[5] = Z1 + e * v[7]
-    v[9].map(q => {
-      B[q][0] = X2
-      B[q][1] = Y2
-      B[q][2] = Z2
+
+    if(v[18]) ins.map((q,j) => {
+      if(v[17] != q[3]){
+        d1 = Math.hypot(X-cx,Y-cy,Z-cz)
+        d2 = Math.hypot(X-q[0],Y-q[1],Z-q[2])
+        if(d1>d2){
+          v[18] = 0
+          v[9]=v[10]=v[11]=0
+        }
+      }
     })
     
-    X = v[0]
-    Y = v[1]
-    Z = v[2]
     R(Rl,Pt,Yw,1)
-    if(Z>0){
-      l = Q()
-      /*s = Math.min(1e3,500/Z)
-      x.fillStyle = '#fff2'
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      x.fillStyle = '#fff2'
-      s/=5
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)*/
-      x.beginPath()
-      x.lineTo(...l)
-      X = v[3]
-      Y = v[4]
-      Z = v[5]
-      R(Rl,Pt,Yw,1)
-      if(Z>0) x.lineTo(...Q())
-      stroke('#40f8','',1)
-      s = Math.min(1e3,250/Z)
-      x.fillStyle = '#00ff8804'
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      s/=8
-      x.fillStyle = '#fff'
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-    }
+    if(Z>0) x.lineTo(...Q())
+    stroke(`hsla(${v[16]||v[18]?t*15000:v[12]*800+t*1000},99%,${Math.max(50,100-(1-v[12])*2000)}%,${.15*v[12]})`, '', .25, true)
+    
   })
-  
+
+	      
 	      
 	      
 	      
