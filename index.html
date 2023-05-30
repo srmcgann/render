@@ -137,17 +137,17 @@
 
 
   
- if(!t){
+  if(!t){
     R=(Rl,Pt,Yw,m)=>{
       M=Math
       A=M.atan2
       H=M.hypot
+      X=S(p=A(X,Y)+Rl)*(d=H(X,Y))
+      Y=C(p)*d
       X=S(p=A(X,Z)+Yw)*(d=H(X,Z))
       Z=C(p)*d
       Y=S(p=A(Y,Z)+Pt)*(d=H(Y,Z))
       Z=C(p)*d
-      X=S(p=A(X,Y)+Rl)*(d=H(X,Y))
-      Y=C(p)*d
       if(m){
         X+=oX
         Y+=oY
@@ -167,7 +167,7 @@
         Z = Rn()-.5
         return  [X,Y,Z]
       })
-      for(let m=99;m--;){
+      for(let m=20;m--;){
         B.map((v,i)=>{
           X = v[0]
           Y = v[1]
@@ -221,7 +221,7 @@
           Z2 = q[2]
           if(i!=j){
             d = Math.hypot(X1-X2, Y1-Y2, Z1-Z2)
-            if(d<mind*1.55){
+            if(d<mind*1.65){
               if(!a.filter(q=>q[0]==X2&&q[1]==Y2&&q[2]==Z2&&q[3]==X1&&q[4]==Y1&&q[5]==Z1).length) a = [...a, [X1*size,Y1*size,Z1*size,X2*size,Y2*size,Z2*size]]
             }
           }
@@ -703,36 +703,34 @@
       return ret
     }
     
-    iConfinementsc = 2
-    confinements = Array(iConfinementsc).fill().map((v,i)=>{
-      a = Cylinder(12,24*(1+i/3|0),cylLs1=5+i*5,cylLs2=16)
-      a.map(v=>{
+    ils = 6
+    ols = 12
+    bounding = subDividedIcosahedron (2, 15, 1)
+    boundings = Array(2).fill().map((v,i)=>{
+      
+      ls = i ? ols : ils
+      return [0, 0, 0, JSON.parse(JSON.stringify(bounding.map(v=>{
         v.map(q=>{
-          X = q[0]
-          Y = q[1]
-          Z = q[2]
-          R(Math.PI/2,0,0)
-          q[0] = X
-          q[1] = Y
-          q[2] = Z
+          d = Math.hypot(...q)
+          q[0] = q[0]/d*ls
+          q[1] = q[1]/d*ls
+          q[2] = q[2]/d*ls
+          return q
         })
-      })
-      return [a, cylLs1]
+        return v
+      }))),ls]
     })
     
-    base_geo = geoSphere(0,0,0, 50, .001)
-    P = [], pfreq = 120, iPv = .3
-    spawnP = () =>{
-      for(let m = 16; m--;){
-        let p
-        let d1 = 5
-        let d2 = 10
-        let v
-        tx = (Rn()-.5)*cylLs2
-        ty = S(p=Math.PI*2*Rn())*(v=d1+Rn()*(d2-d1))
-        tz = C(p)*v
-        a = []
-        base_geo[5].map(v=>{
+    base_geo = geoSphere (0, 0, 0, 600, .001)[5]
+    P = [], iPv = .2, pfreq = 120
+    spawnP = ()=> {
+      for(let m=5;m--;){
+        let ls = ils + (ols-ils)/2 //Rn() * (ols-ils)
+        let tx = S(p1=Rn()*Math.PI*2) * S(p2=Rn()*Math.PI) * ls
+        let ty = C(p2) * ls
+        let tz = C(p1) * S(p2) * ls
+        a=[]
+        base_geo.map(v => {
           X1 = v[0]
           Y1 = v[1]
           Z1 = v[2]
@@ -747,120 +745,28 @@
           vx2 = X2/d2*iPv
           vy2 = Y2/d2*iPv
           vz2 = Z2/d2*iPv
-          a = [...a, [X1,Y1,Z1,X2,Y2,Z2,1,vx1,vy1,vz1,vx2,vy2,vz2,m,true]]
+          a = [...a, [X1,Y1,Z1,vx1,vy1,vz1,X2,Y2,Z2,vx2,vy2,vz2,1,m,false,false]]
         })
-        P = [...P, [tx,ty,tz,a,m]]
+        P = [...P, [tx, ty, tz, a]]
       }
     }
-    iSTc = 3e3, iSTG = 3e4
-    ST = Array(iSTc).fill().map(v=>{
-      X = (Rn()-.5) * iSTG
-      Y = (Rn()-.5) * iSTG
-      Z = (Rn()-.5) * iSTG
-      return [X, Y, Z]
-    })  
   }
 
-  oX=0, oY=0, oZ=Math.min(26,Math.max(18,(.3+C(t*2))*50))
-  Rl=t/2, Pt=-S(t*2)/4, Yw=S(t)+Math.PI/2
+  oX=0, oY=0, oZ=Math.min(24,Math.max(5,(.3+C(t/2))*100))
+  Rl=0, Pt=-t/8, Yw=t/3
 
-  //LS = Lsystem(16, 3, 1.25, 1.8, t)
-  
-  if(!((t*60|0)%pfreq)) spawnP()
 
-  x.fillStyle='#000c'
+  x.fillStyle='#0008'
   x.fillRect(0,0,c.width,c.height)
   x.lineJoin = x.lineCap = 'roud'
   
-  //DrawLsystem(LS)
-  ST.map(v=>{
-    X = v[0]
-    Y = v[1]
-    Z = v[2]
-    R(Rl,Pt,Yw,1)
-    if(Z>0){
-      if((x.globalAlpha = Math.min(1,(Z/3000)**2))>.1){
-        s = Math.min(1e3, 400000/Z)
-        x.fillStyle = '#ffffff03'
-        l = Q()
-        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-        s/=16
-        x.fillStyle = '#fff'
-        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      }
-    }
-  })
+  if(!((t*60|0)%pfreq)) spawnP()
   
-  P.map((n, idx)=>{
-    tx = n[0]
-    ty = n[1]
-    tz = n[2]
-    n[3] = n[3].filter(v=>v[6]>0)
-    n[3].map(v=>{
-      v[6]-=.02
-      X = v[0] + v[7]
-      Y = v[1] + v[8]
-      Z = v[2] + v[9]
-      X1 = X += tx
-      Y1 = Y += ty
-      Z1 = Z += tz
-      R(Rl,Pt,Yw,1)
-      x.beginPath()
-      if(Z>0) x.lineTo(...Q())
-      X = v[3] + v[10]
-      Y = v[4] + v[11]
-      Z = v[5] + v[12]
-      X2 = X += tx
-      Y2 = Y += ty
-      Z2 = Z += tz
-      if(v[13]!=idx){
-        d_ = Math.hypot(Y1,Z1)
-        if(d_<5||d_>10||Math.abs(X1)>cylLs2/2){
-          v[7]=v[8]=v[9]=0
-          v[14]=false
-        }
-        d_ = Math.hypot(Y2,Z2)
-        if(d_<5||d_>10||Math.abs(X2)>cylLs2/2){
-          v[10]=v[11]=v[12]=0
-          v[14]=false
-        }
-        if(1||v[14]){
-          d1 = Math.hypot(X1-tx,Y1-ty,Z1-tz)
-          d3 = Math.hypot(X2-tx,Y2-ty,Z2-tz)
-          dx = (d1+d3)/2
-          P.map(q=>{
-            tx_ = q[0]
-            ty_ = q[1]
-            tz_ = q[2]
-            d2 = Math.hypot(X1-tx_,Y1-ty_,Z1-tz_)
-            if(d1>d2){
-              v[7]=v[8]=v[9]=0
-              v[14]=false
-            }
-            d2 = Math.hypot(X2-tx_,Y2-ty_,Z2-tz_)
-            if(d3>d2){
-              v[10]=v[11]=v[12]=0
-              v[14]=false
-            }
-          })
-        }
-      }
-      v[0] += v[7]
-      v[1] += v[8]
-      v[2] += v[9]
-      v[3] += v[10]
-      v[4] += v[11]
-      v[5] += v[12]
-      R(Rl,Pt,Yw,1)
-      if(Z>0) x.lineTo(...Q())
-      stroke(`hsla(${dx*50-t*150},99%,${!v[14]?50:100}%,${v[6]*.25})`,'',2,true)
-    })
-  })
-
-  P = P.filter(v=>v[3].length)
-  
-  if(1) confinements.map((conf,idx)=>{
-    conf[0].map(v=>{
+  boundings.map((bounding,idx) => {
+    bx = bounding[0]
+    by = bounding[1]
+    bz = bounding[2]
+    bounding[3].map(v=>{
       x.beginPath()
       v.map(q=>{
         X = q[0]
@@ -869,7 +775,74 @@
         R(Rl,Pt,Yw,1)
         if(Z>0)x.lineTo(...Q())
       })
-      stroke('#0f81','#4f00ff06',1,true)
+      stroke('#ffffff08','#4400ff04',1,true)
+    })
+  })
+  
+  
+  P = P.filter(v=>v[3].length)
+  
+  P.map(v=>{
+    tx = v[0]
+    ty = v[1]
+    tz = v[2]
+    v[3] = v[3].filter(q=>q[12]>0)
+    v[3].map(q=>{
+      x.beginPath()
+      X1 = q[0] + q[3]
+      Y1 = q[1] + q[4]
+      Z1 = q[2] + q[5]
+      X = X1 += tx
+      Y = Y1 += ty
+      Z = Z1 += tz
+      if((d = Math.hypot(X,Y,Z))<ils || d>ols){
+        q[3]=q[4]=q[5]=0
+        q[14] = true
+      }
+      R(Rl,Pt,Yw,1)
+      if(Z>0)x.lineTo(...Q())
+      X2 = q[6] + q[9]
+      Y2 = q[7] + q[10]
+      Z2 = q[8] + q[11]
+      X = X2 += tx
+      Y = Y2 += ty
+      Z = Z2 += tz
+      if((d = Math.hypot(X,Y,Z))<ils || d>ols){
+        q[9]=q[10]=q[11]=0
+        q[15] = true
+      }
+      P.map(n=>{
+        tx_ = n[0]
+        ty_ = n[1]
+        tz_ = n[2]
+        d1a = Math.hypot(X1-tx,Y1-ty,Z1-tz)
+        d2a = Math.hypot(X1-tx_,Y1-ty_,Z1-tz_)
+        if(d1a>d2a){
+          q[3]=q[4]=q[5]=0
+          q[14] = true
+        }
+        d1b = Math.hypot(X2-tx,Y2-ty,Z2-tz)
+        d2b = Math.hypot(X2-tx_,Y2-ty_,Z2-tz_)
+        if(d1b>d2b){
+          q[9]=q[10]=q[11]=0
+          q[15] = true
+        }
+      })
+      R(Rl,Pt,Yw,1)
+      if(Z>0)x.lineTo(...Q())
+      ad = (d1a+d1b)/2
+      stroke(`hsla(${ad*50+t*600},99%,${q[14]&&q[15]?50:100}%,${q[12]*.125})`,'',1,false)
+      if(!q[14]){
+        q[0]+=q[3]
+        q[1]+=q[4]
+        q[2]+=q[5]
+      }
+      if(!q[15]){
+        q[6]+=q[9]
+        q[7]+=q[10]
+        q[8]+=q[11]
+      }
+      q[12]-=.01
     })
   })
 	      
