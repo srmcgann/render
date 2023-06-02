@@ -189,7 +189,9 @@
   if(1){
     x.lineJoin=x.lineCap='round'
     x.globalAlpha = .4
-    x.drawImage(bgimg,0,0,c.width,c.height)
+	  x.fillStyle='#0008'
+    x.fillRect(0,0,c.width,c.height)
+    //x.drawImage(bgimg,0,0,c.width,c.height)
     x.globalAlpha = 1
     x.fillStyle = '#0003'
     x.fillRect(0,0,c.width,c.height)
