@@ -137,761 +137,160 @@
 
 
   
+        if(!t){
+          go=playing=false
+          mp3 = new Audio()
+          mp3.loop=true
+          mp3.onplaying=()=>{playing=true}
+          mp3.oncanplay=()=>{go=true;if(!playing)mp3.play()}
+          mp3.src='d5bca9c2b570366d930d52cd4a44b566.MP3'
+          Rn=Math.random
+        }
+  w=c.width,h=800
+  R=(Rl,Pt,Yw)=>{X=S(p=(A=(M=Math).atan2)(X,Y)+Rl)*(d=(H=M.hypot)(X,Y)),Y=C(p)*d,Y=S(p=A(Y,Z)+Pt)*(d=H(Y,Z)),Z=C(p)*d,X=S(p=A(X,Z)+Yw)*(d=H(X,Z)),Z=C(p)*d}
+  Q=q=>[960+X/Z*h,540+Y/Z*h]
+
+  Rl=0,Pt=0,Yw=0
+
   if(!t){
-    R=(Rl,Pt,Yw,m)=>{
-      M=Math
-      A=M.atan2
-      H=M.hypot
-      X=S(p=A(X,Y)+Rl)*(d=H(X,Y))
-      Y=C(p)*d
-      X=S(p=A(X,Z)+Yw)*(d=H(X,Z))
-      Z=C(p)*d
-      Y=S(p=A(Y,Z)+Pt)*(d=H(Y,Z))
-      Z=C(p)*d
-      if(m){
-        X+=oX
-        Y+=oY
-        Z+=oZ
-      }
-    }
-    Q=()=>[c.width/2+X/Z*900,c.height/2+Y/Z*900]
-    I=(A,B,M,D,E,F,G,H)=>(K=((G-E)*(B-F)-(H-F)*(A-E))/(J=(H-F)*(M-A)-(G-E)*(D-B)))>=0&&K<=1&&(L=((M-A)*(B-F)-(D-B)*(A-E))/J)>=0&&L<=1?[A+K*(M-A),B+K*(D-B)]:0
-    
-    Rn = Math.random
-    
-    geoSphere = (mx, my, mz, iBc, size) => {
-      let collapse=0
-      let B=Array(iBc).fill().map(v=>{
-        X = Rn()-.5
-        Y = Rn()-.5
-        Z = Rn()-.5
-        return  [X,Y,Z]
-      })
-      for(let m=12;m--;){
-        B.map((v,i)=>{
-          X = v[0]
-          Y = v[1]
-          Z = v[2]
-          B.map((q,j)=>{
-            if(j!=i){
-              X2=q[0]
-              Y2=q[1]
-              Z2=q[2]
-              d=1+(Math.hypot(X-X2,Y-Y2,Z-Z2)*(3+iBc/40)*3)**4
-              X+=(X-X2)*99/d
-              Y+=(Y-Y2)*99/d
-              Z+=(Z-Z2)*99/d
-            }
-          })
-          d=Math.hypot(X,Y,Z)
-          v[0]=X/d
-          v[1]=Y/d
-          v[2]=Z/d
-          if(collapse){
-            d=25+Math.hypot(X,Y,Z)
-            v[0]=(X-X/d)/1.1
-            v[1]=(Y-Y/d)/1.1         
-            v[2]=(Z-Z/d)/1.1
-          }
-        })
-      }
-      mind = 6e6
-      B.map((v,i)=>{
-        X1 = v[0]
-        Y1 = v[1]
-        Z1 = v[2]
-        B.map((q,j)=>{
-          X2 = q[0]
-          Y2 = q[1]
-          Z2 = q[2]
-          if(i!=j){
-            d = Math.hypot(a=X1-X2, b=Y1-Y2, e=Z1-Z2)
-            if(d<mind) mind = d
-          }
-        })
-      })
-      a = []
-      B.map((v,i)=>{
-        X1 = v[0]
-        Y1 = v[1]
-        Z1 = v[2]
-        B.map((q,j)=>{
-          X2 = q[0]
-          Y2 = q[1]
-          Z2 = q[2]
-          if(i!=j){
-            d = Math.hypot(X1-X2, Y1-Y2, Z1-Z2)
-            if(d<mind*2){
-              if(!a.filter(q=>q[0]==X2&&q[1]==Y2&&q[2]==Z2&&q[3]==X1&&q[4]==Y1&&q[5]==Z1).length) a = [...a, [X1*size,Y1*size,Z1*size,X2*size,Y2*size,Z2*size]]
-            }
-          }
-        })
-      })
-      B.map(v=>{
-        v[0]*=size
-        v[1]*=size
-        v[2]*=size
-        v[0]+=mx
-        v[1]+=my
-        v[2]+=mz
-      })
-      return [mx, my, mz, size, B, a]
-    }
-
-    Cylinder = (rw,cl,ls1,ls2) => {
-      let a = []
-      for(let i=rw;i--;){
-        let b = []
-        for(let j=cl;j--;){
-          X = S(p=Math.PI*2/cl*j) * ls1
-          Y = (1/rw*i-.5)*ls2
-          Z = C(p) * ls1
-          b = [...b, [X,Y,Z]]
-        }
-        //a = [...a, b]
-        for(let j=cl;j--;){
-          b = []
-          X = S(p=Math.PI*2/cl*j) * ls1
-          Y = (1/rw*i-.5)*ls2
-          Z = C(p) * ls1
-          b = [...b, [X,Y,Z]]
-          X = S(p=Math.PI*2/cl*(j+1)) * ls1
-          Y = (1/rw*i-.5)*ls2
-          Z = C(p) * ls1
-          b = [...b, [X,Y,Z]]
-          X = S(p=Math.PI*2/cl*(j+1)) * ls1
-          Y = (1/rw*(i+1)-.5)*ls2
-          Z = C(p) * ls1
-          b = [...b, [X,Y,Z]]
-          X = S(p=Math.PI*2/cl*j) * ls1
-          Y = (1/rw*(i+1)-.5)*ls2
-          Z = C(p) * ls1
-          b = [...b, [X,Y,Z]]
-          a = [...a, b]
-        }
-      }
-      b = []
-      for(let j=cl;j--;){
-        X = S(p=Math.PI*2/cl*j) * ls1
-        Y = ls2/2
-        Z = C(p) * ls1
-        b = [...b, [X,Y,Z]]
-      }
-      //a = [...a, b]
-      return a
-    }
-
-    Tetrahedron = size => {
-      ret = []
-      a = []
-      let h = size/1.4142/1.25
-      for(i=3;i--;){
-        X = S(p=Math.PI*2/3*i) * size/1.25
-        Y = C(p) * size/1.25
-        Z = h
-        a = [...a, [X,Y,Z]]
-      }
-      ret = [...ret, a]
-      for(j=3;j--;){
-        a = []
-        X = 0
-        Y = 0
-        Z = -h
-        a = [...a, [X,Y,Z]]
-        X = S(p=Math.PI*2/3*j) * size/1.25
-        Y = C(p) * size/1.25
-        Z = h
-        a = [...a, [X,Y,Z]]
-        X = S(p=Math.PI*2/3*(j+1)) * size/1.25
-        Y = C(p) * size/1.25
-        Z = h
-        a = [...a, [X,Y,Z]]
-        ret = [...ret, a]
-      }
-      ax=ay=az=ct=0
-      ret.map(v=>{
-        v.map(q=>{
-          ax+=q[0]
-          ay+=q[1]
-          az+=q[2]
-          ct++
-        })
-      })
-      ax/=ct
-      ay/=ct
-      az/=ct
-      ret.map(v=>{
-        v.map(q=>{
-          q[0]-=ax
-          q[1]-=ay
-          q[2]-=az
-        })
-      })
-      return ret
-    }
-
-    Cube = size => {
-      for(CB=[],j=6;j--;CB=[...CB,b])for(b=[],i=4;i--;)b=[...b,[(a=[S(p=Math.PI*2/4*i+Math.PI/4),C(p),2**.5/2])[j%3]*(l=j<3?size/1.5:-size/1.5),a[(j+1)%3]*l,a[(j+2)%3]*l]]
-      return CB
-    }
-    
-    Octahedron = size => {
-      ret = []
-      let h = size/1.25
-      for(j=8;j--;){
-        a = []
-        X = 0
-        Y = 0
-        Z = h * (j<4?-1:1)
-        a = [...a, [X,Y,Z]]
-        X = S(p=Math.PI*2/4*j) * size/1.25
-        Y = C(p) * size/1.25
-        Z = 0
-        a = [...a, [X,Y,Z]]
-        X = S(p=Math.PI*2/4*(j+1)) * size/1.25
-        Y = C(p) * size/1.25
-        Z = 0
-        a = [...a, [X,Y,Z]]
-        ret = [...ret, a]
-      }
-      return ret      
-    }
-    
-    Dodecahedron = size => {
-      ret = []
-      a = []
-      mind = -6e6
-      for(i=5;i--;){
-        X=S(p=Math.PI*2/5*i + Math.PI/5)
-        Y=C(p)
-        Z=0
-        if(Y>mind) mind=Y
-        a = [...a, [X,Y,Z]]
-      }
-      a.map(v=>{
-        X = v[0]
-        Y = v[1]-=mind
-        Z = v[2]
-        R(0, .553573, 0)
-        v[0] = X
-        v[1] = Y
-        v[2] = Z
-      })
-      b = JSON.parse(JSON.stringify(a))
-      b.map(v=>{
-        v[1] *= -1
-      })
-      ret = [...ret, a, b]
-      mind = -6e6
-      ret.map(v=>{
-        v.map(q=>{
-          X = q[0]
-          Y = q[1]
-          Z = q[2]
-          if(Z>mind)mind = Z
-        })
-      })
-      d1=Math.hypot(ret[0][0][0]-ret[0][1][0],ret[0][0][1]-ret[0][1][1],ret[0][0][2]-ret[0][1][2])
-      ret.map(v=>{
-        v.map(q=>{
-          q[2]-=mind+d1/2
-        })
-      })
-      b = JSON.parse(JSON.stringify(ret))
-      b.map(v=>{
-        v.map(q=>{
-          q[2]*=-1
-        })
-      })
-      ret = [...ret, ...b]
-      b = JSON.parse(JSON.stringify(ret))
-      b.map(v=>{
-        v.map(q=>{
-          X = q[0]
-          Y = q[1]
-          Z = q[2]
-          R(0,0,Math.PI/2)
-          R(0,Math.PI/2,0)
-          q[0] = X
-          q[1] = Y
-          q[2] = Z
-        })
-      })
-      e = JSON.parse(JSON.stringify(ret))
-      e.map(v=>{
-        v.map(q=>{
-          X = q[0]
-          Y = q[1]
-          Z = q[2]
-          R(0,0,Math.PI/2)
-          R(Math.PI/2,0,0)
-          q[0] = X
-          q[1] = Y
-          q[2] = Z
-        })
-      })
-      ret = [...ret, ...b, ...e]
-      ret.map(v=>{
-        v.map(q=>{
-          q[0] *= size/2
-          q[1] *= size/2
-          q[2] *= size/2
-        })
-      })
-      return ret
-    }
-    
-    Icosahedron = size => {
-      ret = []
-      B = [
-        [[0,3],[1,0],[2,2]],
-        [[0,3],[1,0],[1,3]],
-        [[0,3],[2,3],[1,3]],
-        [[0,2],[2,1],[1,0]],
-        [[0,2],[1,3],[1,0]],
-        [[0,2],[1,3],[2,0]],
-        [[0,3],[2,2],[0,0]],
-        [[1,0],[2,2],[2,1]],
-        [[1,1],[2,2],[2,1]],
-        [[1,1],[2,2],[0,0]],
-        [[1,1],[2,1],[0,1]],
-        [[0,2],[2,1],[0,1]],
-        [[2,0],[1,2],[2,3]],
-        [[0,0],[0,3],[2,3]],
-        [[1,3],[2,0],[2,3]],
-        [[2,3],[0,0],[1,2]],
-        [[1,2],[2,0],[0,1]],
-        [[0,0],[1,2],[1,1]],
-        [[0,1],[1,2],[1,1]],
-        [[0,2],[2,0],[0,1]],
-      ]
-      for(p=[1,1],i=38;i--;)p=[...p,p[l=p.length-1]+p[l-1]]
-      phi = p[l]/p[l-1]
-      a = [
-        [-phi,-1,0],
-        [phi,-1,0],
-        [phi,1,0],
-        [-phi,1,0],
-      ]
-      for(j=3;j--;ret=[...ret, b])for(b=[],i=4;i--;) b = [...b, [a[i][j],a[i][(j+1)%3],a[i][(j+2)%3]]]
-      ret.map(v=>{
-        v.map(q=>{
-          q[0]*=size/2.25
-          q[1]*=size/2.25
-          q[2]*=size/2.25
-        })
-      })
-      cp = JSON.parse(JSON.stringify(ret))
-      out=[]
-      a = []
-      B.map(v=>{
-        idx1a = v[0][0]
-        idx2a = v[1][0]
-        idx3a = v[2][0]
-        idx1b = v[0][1]
-        idx2b = v[1][1]
-        idx3b = v[2][1]
-        a = [...a, [cp[idx1a][idx1b],cp[idx2a][idx2b],cp[idx3a][idx3b]]]
-      })
-      out = [...out, ...a]
-      return out
-    }
-    
-    stroke = (scol, fcol, lwo=1, od=true) => {
-      if(scol){
-        //x.closePath()
-        if(od) x.globalAlpha = .2
-        x.strokeStyle = scol
-        x.lineWidth = Math.min(100,200*lwo/Z)
-        if(od) x.stroke()
-        x.lineWidth /= 4
-        x.globalAlpha = 1
-        x.stroke()
-      }
-      if(fcol){
-        x.fillStyle = fcol
-        x.fill()
-      }
-    }
-
-    subDividedIcosahedron = (subs, size, sphereize = 0) => {
-      let subIcos = Icosahedron(size)
-      for(let m=subs; m--;){
-        base = JSON.parse(JSON.stringify(subIcos))
-        subIcos = []
-        base.map(v=>{
-          l = 0
-          X1 = v[l][0]
-          Y1 = v[l][1]
-          Z1 = v[l][2]
-          l = 1
-          X2 = v[l][0]
-          Y2 = v[l][1]
-          Z2 = v[l][2]
-          l = 2
-          X3 = v[l][0]
-          Y3 = v[l][1]
-          Z3 = v[l][2]
-          mx1 = (X1+X2)/2
-          my1 = (Y1+Y2)/2
-          mz1 = (Z1+Z2)/2
-          mx2 = (X2+X3)/2
-          my2 = (Y2+Y3)/2
-          mz2 = (Z2+Z3)/2
-          mx3 = (X3+X1)/2
-          my3 = (Y3+Y1)/2
-          mz3 = (Z3+Z1)/2
-          a = []
-          X = X1, Y = Y1, Z = Z1, a = [...a, [X,Y,Z]]
-          X = mx1, Y = my1, Z = mz1, a = [...a, [X,Y,Z]]
-          X = mx3, Y = my3, Z = mz3, a = [...a, [X,Y,Z]]
-          subIcos = [...subIcos, a]
-          a = []
-          X = mx1, Y = my1, Z = mz1, a = [...a, [X,Y,Z]]
-          X = X2, Y = Y2, Z = Z2, a = [...a, [X,Y,Z]]
-          X = mx2, Y = my2, Z = mz2, a = [...a, [X,Y,Z]]
-          subIcos = [...subIcos, a]
-          a = []
-          X = mx3, Y = my3, Z = mz3, a = [...a, [X,Y,Z]]
-          X = mx2, Y = my2, Z = mz2, a = [...a, [X,Y,Z]]
-          X = X3, Y = Y3, Z = Z3, a = [...a, [X,Y,Z]]
-          subIcos = [...subIcos, a]
-          a = []
-          X = mx1, Y = my1, Z = mz1, a = [...a, [X,Y,Z]]
-          X = mx2, Y = my2, Z = mz2, a = [...a, [X,Y,Z]]
-          X = mx3, Y = my3, Z = mz3, a = [...a, [X,Y,Z]]
-          subIcos = [...subIcos, a]
-        })
-      }
-      if(sphereize){
-        ip1 = sphereize
-        ip2 = 1-sphereize
-        subIcos = subIcos.map(v=>{
-          v = v.map(q=>{
-            X = q[0]
-            Y = q[1]
-            Z = q[2]
-            d = Math.hypot(X,Y,Z)
-            X /= d
-            Y /= d
-            Z /= d
-            X *= size*.75*ip1 + d*ip2
-            Y *= size*.75*ip1 + d*ip2
-            Z *= size*.75*ip1 + d*ip2
-            return [X,Y,Z]
-          })
-          return v
-        })
-      }
-      return subIcos
-    }
-
-    
-    Rn = Math.random
-    
-    LsystemRecurse = (size, splits, p1, p2, stem, theta, LsystemReduction, twistFactor) => {
-      if(size < 1.3) return
-      let X1 = stem[0]
-      let Y1 = stem[1]
-      let Z1 = stem[2]
-      let X2 = stem[3]
-      let Y2 = stem[4]
-      let Z2 = stem[5]
-      let p1a = Math.atan2(X2-X1,Z2-Z1)
-      let p2a = -Math.acos((Y2-Y1)/(Math.hypot(X2-X1,Y2-Y1,Z2-Z1)+.0001))+Math.PI
-      size/=LsystemReduction
-      for(let i=splits;i--;){
-        X = 0
-        Y = -size
-        Z = 0
-        R(0, theta, 0)
-        R(0, 0, Math.PI*2/splits*i+twistFactor)
-        R(0, p2a, 0)
-        R(0, 0, p1a+twistFactor)
-        X+=X2
-        Y+=Y2
-        Z+=Z2
-        let newStem = [X2, Y2, Z2, X, Y, Z]
-        Lshp = [...Lshp, newStem]
-        LsystemRecurse(size, splits, p1+Math.PI*2/splits*i+twistFactor, p2+theta, newStem, theta, LsystemReduction, twistFactor)
-      }
-    }
-    DrawLsystem = shp => {
-      shp.map(v=>{
-        x.beginPath()
-        X = v[0]
-        Y = v[1]
-        Z = v[2]
-        R(Rl,Pt,Yw,1)
-        if(Z>0)x.lineTo(...Q())
-        X = v[3]
-        Y = v[4]
-        Z = v[5]
-        R(Rl,Pt,Yw,1)
-        if(Z>0)x.lineTo(...Q())
-        lwo = Math.hypot(v[0]-v[3],v[1]-v[4],v[2]-v[5])
-        stroke('#0f82','',lwo)
-      })
-      
-    }
-    Lsystem = (size, splits, theta, LsystemReduction, twistFactor) => {
-      Lshp = []
-      stem = [0,0,0,0,-size,0]
-      Lshp = [...Lshp, stem]
-      LsystemRecurse(size, splits, 0, 0, stem, theta, LsystemReduction, twistFactor)
-      Lshp.map(v=>{
-        v[1]+=size*1.5
-        v[4]+=size*1.5
-      })
-      return Lshp
-    }
-    
-    Sphere = (ls, rw, cl) => {
-      a = []
-      ls/=1.25
-      for(j = rw; j--;){
-        for(i = cl; i--;){
-          b = []
-          X = S(p = Math.PI*2/cl*i) * S(q = Math.PI/rw*j) * ls
-          Y = C(q) * ls
-          Z = C(p) * S(q) * ls
-          b = [...b, [X,Y,Z]]
-          X = S(p = Math.PI*2/cl*(i+1)) * S(q = Math.PI/rw*j) * ls
-          Y = C(q) * ls
-          Z = C(p) * S(q) * ls
-          b = [...b, [X,Y,Z]]
-          X = S(p = Math.PI*2/cl*(i+1)) * S(q = Math.PI/rw*(j+1)) * ls
-          Y = C(q) * ls
-          Z = C(p) * S(q) * ls
-          b = [...b, [X,Y,Z]]
-          X = S(p = Math.PI*2/cl*i) * S(q = Math.PI/rw*(j+1)) * ls
-          Y = C(q) * ls
-          Z = C(p) * S(q) * ls
-          b = [...b, [X,Y,Z]]
-          a = [...a, b]
-        }
-      }
-      return a
-    }
-    
-    Torus = (rw,cl,ls1,ls2) => {
-      let ret = []
-      for(j=rw;j--;)for(let i = cl;i--;){
-        a = []
-        X = S(p=Math.PI*2/cl*i) * ls1 + ls2
-        Y = C(p) * ls1 + ls2
-        Z = 0
-        R(0, 0, Math.PI*2/rw*j)
-        a = [...a, [X,Y,Z]]
-        X = S(p=Math.PI*2/cl*(i+1)) * ls1 + ls2
-        Y = C(p) * ls1 + ls2
-        Z = 0
-        R(0, 0, Math.PI*2/rw*j)
-        a = [...a, [X,Y,Z]]
-        X = S(p=Math.PI*2/cl*(i+1)) * ls1 + ls2
-        Y = C(p) * ls1 + ls2
-        Z = 0
-        R(0, 0, Math.PI*2/rw*(j+1))
-        a = [...a, [X,Y,Z]]
-        X = S(p=Math.PI*2/cl*i) * ls1 + ls2
-        Y = C(p) * ls1 + ls2
-        Z = 0
-        R(0, 0, Math.PI*2/rw*(j+1))
-        a = [...a, [X,Y,Z]]
-        ret = [...ret, a]
-      }
-      return ret
-    }
-
-    ils=5
-    ols=10
-    shps = Array(2).fill().map((v,i)=>{
-      ls = i?ols:ils
-      return Cube(ls*2.125)
+    bgimg = new Image()
+    bgimg.addEventListener('load',()=>{
+      go=true
     })
+    bgimg.src = '27JSZB.jpg'
+    sd=6
+    cl=25,rw=25
+    oX=0,oY=0,oZ=0
+    G=2,colLayers=16
+    PX=0
+    PY=-.5
+    PZ=0
+    PRl=PPt=PYw=0
+    P=[]
     
-    base_geo = geoSphere(0,0,0, 500, .001)[5]
-    
-    P = []
-    iPv=.3, pfreq = 240
-    spawnP = () =>{
-      for(let m=4; m--;){
-        switch(Rn()*3|0){
-          case 0:
-            tx = (ils+(ols-ils)/2)*(Rn()<.5?-1:1)
-            ty = (ils+(ols-ils)*Rn())*(Rn()<.5?-1:1)
-            tz = (ils+(ols-ils)*Rn())*(Rn()<.5?-1:1)
-          break
-          case 1:
-            ty = (ils+(ols-ils)/2)*(Rn()<.5?-1:1)
-            tz = (ils+(ols-ils)*Rn())*(Rn()<.5?-1:1)
-            tx = (ils+(ols-ils)*Rn())*(Rn()<.5?-1:1)
-          break
-          case 2:
-            tz = (ils+(ols-ils)/2)*(Rn()<.5?-1:1)
-            tx = (ils+(ols-ils)*Rn())*(Rn()<.5?-1:1)
-            ty = (ils+(ols-ils)*Rn())*(Rn()<.5?-1:1)
-          break
+    for(i=cl*rw;i--;){
+      l=Rn()<.025?colLayers:2
+      a=[]
+      for(k=l;k--;){
+        tx=(i%cl)-cl/2+.5
+        ty=G/2-(l==2?G:G/(l-1))*k
+        tz=(i/cl|0)-rw/2+.5
+        for(j=sd;j--;){
+          X=S(p=Math.PI*2/sd*j+Math.PI/sd+(l!=2?Math.PI/(l-1)*k:0))*(d=(2**.5)/3.5-(l!=2?((S(Math.PI/l*k))**2)/4:0))
+          Y=0
+          Z=C(p)*d
+          a=[...a,[X,Y,Z,l!=2&&k<l-1,tx,ty,tz]]
         }
-        a = []
-        base_geo.map(v=>{
-          X1 = tx+v[0]
-          Y1 = ty+v[1]
-          Z1 = tz+v[2]
-          d1 = Math.hypot(v[0],v[1],v[2])
-          vx1 = v[0]/d1*iPv
-          vy1 = v[1]/d1*iPv
-          vz1 = v[2]/d1*iPv
-          X2 = tx+v[3]
-          Y2 = ty+v[4]
-          Z2 = tz+v[5]
-          d2 = Math.hypot(v[3],v[4],v[5])
-          vx2 = v[3]/d2*iPv
-          vy2 = v[4]/d2*iPv
-          vz2 = v[5]/d2*iPv
-          a = [...a, [X1,Y1,Z1,vx1,vy1,vz1,X2,Y2,Z2,vx2,vy2,vz2,1,m,true,true,true,true]]
-        })
-        P = [...P, [tx,ty,tz,a]]
       }
+      P=[...P,a]
     }
-    iSTc = 3e3, iSTG = 3e4
-    ST = Array(iSTc).fill().map(v=>{
-      X = (Rn()-.5) * iSTG
-      Y = (Rn()-.5) * iSTG
-      Z = (Rn()-.5) * iSTG
-      return [X, Y, Z]
-    })  
   }
 
-  oX=0, oY=0, oZ=30//Math.max(4,Math.min(30,(.3+C(t))*150))
-  Rl=t/6, Pt=-t, Yw=C(t/2)*4
+  if(go){
+    x.lineJoin=x.lineCap='round'
+    x.globalAlpha = .4
+    x.drawImage(bgimg,0,0,c.width,c.height)
+    x.globalAlpha = 1
+    x.fillStyle = '#0003'
+    x.fillRect(0,0,c.width,c.height)
+    iPv=.1
+    X=0
+    Y=0
+    Z=iPv
+    PRl=-C(t/2)/2,PPt=S(t*2)/7,PYw=S(t/2)*2
+    R(PRl,PPt,PYw)
+    PX+=X*1.5
+    PY+=Y
+    PZ+=Z*1.5
 
-  x.fillStyle='#0008'
-  x.fillRect(0,0,c.width,c.height)
-  x.lineJoin = x.lineCap = 'roud'
-  
-  if(!((t*60|0)%pfreq))spawnP()
-
-  ST.map(v=>{
-    X = v[0]
-    Y = v[1]
-    Z = v[2]
-    R(Rl,Pt,Yw,1)
-    if(Z>0){
-      if((x.globalAlpha = Math.min(1,(Z/3000)**2))>.1){
-        s = Math.min(1e3, 400000/Z)
-        x.fillStyle = '#ffffff03'
-        l = Q()
-        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-        s/=16
-        x.fillStyle = '#fff'
-        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      }
-    }
-  })  
-  
-  P = P.filter(v=>v[3].length)
-  
-  P.map((v,i)=>{
-    tx = v[0]
-    ty = v[1]
-    tz = v[2]
-    v[3] = v[3].filter(q=>q[12]>.1)
-    v[3].map(q=>{
-      x.beginPath()
-      X1 = q[0] + q[3]
-      Y1 = q[1] + q[4]
-      Z1 = q[2] + q[5]
-      X = X1
-      Y = Y1
-      Z = Z1
-      R(Rl,Pt,Yw,1)
-      if(Z>0) x.lineTo(...Q())
-      X2 = q[6] + q[9]
-      Y2 = q[7] + q[10]
-      Z2 = q[8] + q[11]
-      X = X2
-      Y = Y2
-      Z = Z2
-      R(Rl,Pt,Yw,1)
-      if(Z>0) x.lineTo(...Q())
-      if((q[14]||q[15]||q[16]||q[17]) &&
-        (X1<ils && X1>-ils &&
-        Y1<ils && Y1>-ils &&
-        Z1<ils && Z1>-ils) ||
-        (
-          (X1>ols || X1<-ols) ||
-          (Y1>ols || Y1<-ols) ||
-          (Z1>ols || Z1<-ols)
-         )
-      ){
-        q[14] = false
-        //q[3]=q[4]=q[5]=0
-      }
-      if(
-        (X2<ils && X2>-ils &&
-        Y2<ils && Y2>-ils &&
-        Z2<ils && Z2>-ils) ||
-        (
-          (X2>ols || X2<-ols) ||
-          (Y2>ols || Y2<-ols) ||
-          (Z2>ols || Z2<-ols)
-         )
-      ){
-        q[15] = false
-        //q[3]=q[4]=q[5]=0
-      }
-      d1=Math.hypot(tx-X1,ty-Y1,tz-Z1)
-      d2=Math.hypot(tx-X2,ty-Y2,tz-Z2)
-      if(!q[16]&&!q[17] || (q[14]&&q[15]&&q[16]&&q[17])){
-        col1 = `hsla(${d1**2*2-t*500},99%,${q[16]&&q[17]?100:50}%,${q[12]*.2})`
-        stroke(col1,'', 2, false)
-      }
-      if(q[14]||q[15]||q[16]||q[17])P.map((n,m)=>{
-        if(m!=i){
-          X_=n[0]
-          Y_=n[1]
-          Z_=n[2]
-          d3=Math.hypot(X_-X1,Y_-Y1,Z_-Z1)
-          if(d1>d3){
-            q[16] = false
-            //v[3]=v[4]=v[5]=0
-          }
-          d3=Math.hypot(X_-X2,Y_-Y2,Z_-Z2)
-          if(d2>d3){
-            q[17] = false
-            //v[9]=v[10]=v[11]=0
+    s=cl/2
+    P.map((v,j)=>{
+      (q=v).map((v,i)=>{
+        if(!(i%sd))minz=6e6,x.beginPath()
+        tx=v[4]-PX
+        ty=v[5]-PY
+        tz=v[6]-PZ
+        while(tx<-s)tx+=s*2
+        while(tx>s)tx-=s*2
+        while(tz<-s)tz+=s*2
+        while(tz>s)tz-=s*2
+        X=tx+v[0]
+        Y=ty+v[1]
+        Z=tz+v[2]
+        R(0,0,-PYw)
+        R(0,-PPt,0)
+        R(-PRl,0,0)
+        R(Rl,Pt,Yw)
+        X+=oX,Y+=oY,Z+=oZ
+        if(Z<minz)minz=Z
+        x.lineTo(...Q())
+        if(i%sd==sd-1&&minz>0){
+          x.closePath()
+          x.lineWidth=1+Math.min(30,300/Z/Z)
+          alpha=Math.hypot(tx,ty,tz)
+          x.globalAlpha=1/(1+(alpha**6)/200000)*Math.min(1,Z**2.5/30)
+          x.fillStyle=x.strokeStyle=`hsla(${t*1800+i*3},99%,${300+S(t)*250}%,.3`
+          x.stroke()
+          x.lineWidth/=5
+          x.strokeStyle='#fff'
+          x.stroke()
+          x.globalAlpha/=2
+          x.fill()
+        }
+      })
+      v.map((q,i)=>{
+        if(q[3]){
+          x.beginPath()
+          tx=q[4]-PX
+          ty=q[5]-PY
+          tz=q[6]-PZ
+          while(tx<-s)tx+=s*2
+          while(tx>s)tx-=s*2
+          while(tz<-s)tz+=s*2
+          while(tz>s)tz-=s*2
+          X=tx+q[0]
+          Y=ty+q[1]
+          Z=tz+q[2]
+          R(0,0,-PYw)
+          R(0,-PPt,0)
+          R(-PRl,0,0)
+          R(Rl,Pt,Yw)
+          X+=oX,Y+=oY,Z+=oZ
+          if(Z>0)x.lineTo(...Q())
+          tx=P[j][i-sd][4]-PX
+          ty=P[j][i-sd][5]-PY
+          tz=P[j][i-sd][6]-PZ
+          while(tx<-s)tx+=s*2
+          while(tx>s)tx-=s*2
+          while(tz<-s)tz+=s*2
+          while(tz>s)tz-=s*2
+          X=tx+P[j][i-sd][0]
+          Y=ty+P[j][i-sd][1]
+          Z=tz+P[j][i-sd][2]
+          R(0,0,-PYw)
+          R(0,-PPt,0)
+          R(-PRl,0,0)
+          R(Rl,Pt,Yw)
+          X+=oX,Y+=oY,Z+=oZ
+          if(Z>0)x.lineTo(...Q())
+          x.closePath()
+          if(Z>0){
+            x.lineWidth=1+Math.min(30,300/Z/Z)
+            alpha=Math.hypot(tx,ty,tz)
+            x.globalAlpha=1/(1+(alpha**6)/200000)*Math.min(1,Z**2.5/30)
+            x.fillStyle=x.strokeStyle=`hsla(${t*1800+i*3},99%,${300+S(t)*250}%,.3`
+            x.stroke()
+            x.lineWidth/=5
+            x.strokeStyle='#fff'
+            x.stroke()
+            x.globalAlpha/=2
+            x.fill()
           }
         }
       })
-      if(q[14]&&q[16]){
-        q[0]+=q[3]
-        q[1]+=q[4]
-        q[2]+=q[5]
-      }
-      if(q[15]&&q[17]){
-        q[6]+=q[9]
-        q[7]+=q[10]
-        q[8]+=q[11]
-      }
-      q[12]-=.005
     })
-  })
-  
-  shps.map(shp=>{
-    shp.map(v=>{
-      x.beginPath()
-      v.map(q=>{
-        X=q[0]
-        Y=q[1]
-        Z=q[2]
-        R(Rl,Pt,Yw,1)
-        if(Z>0)x.lineTo(...Q())
-      })
-      stroke(`#ffffff10`,``,4)
-    })
-  })
-  
+  }
+ 
 	      
 	      
 	      
