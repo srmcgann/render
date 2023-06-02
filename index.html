@@ -137,13 +137,13 @@
 
 
   
-        if(!t){
+        if(0&&!t){
           go=playing=false
           mp3 = new Audio()
           mp3.loop=true
           mp3.onplaying=()=>{playing=true}
           mp3.oncanplay=()=>{go=true;if(!playing)mp3.play()}
-          mp3.src='d5bca9c2b570366d930d52cd4a44b566.MP3'
+          //mp3.src='d5bca9c2b570366d930d52cd4a44b566.MP3'
           Rn=Math.random
         }
   w=c.width,h=800
@@ -157,7 +157,7 @@
     bgimg.addEventListener('load',()=>{
       go=true
     })
-    bgimg.src = '27JSZB.jpg'
+    bgimg.src = './proxy.php?url=https://jsbot.cantelope.org/27JSZB.jpg'
     sd=6
     cl=25,rw=25
     oX=0,oY=0,oZ=0
@@ -186,7 +186,7 @@
     }
   }
 
-  if(go){
+  if(1){
     x.lineJoin=x.lineCap='round'
     x.globalAlpha = .4
     x.drawImage(bgimg,0,0,c.width,c.height)
