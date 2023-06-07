@@ -1005,7 +1005,7 @@
         ay /= n.length
         az /= n.length
         if((d = Math.hypot(a=X1-ax,b=Y1-ay,e=Z1-az)) <= Math.max(.2,Math.min(8,d2*2))){
-          if(!passthru && (l = lineFaceI(X1,Y1,Z1,X2,Y2,Z2,n,true,true))){
+          if(!passthru && (l = lineFaceI(X1,Y1,Z1,X2,Y2,Z2,n,true,false))){
             v[3]/=1.00025
             v[4]/=1.00025
             v[5]/=1.00025
