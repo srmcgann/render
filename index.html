@@ -146,19 +146,84 @@
       Z=C(p)*d
       Y=S(p=A(Y,Z)+Pt)*(d=H(Y,Z))
       Z=C(p)*d
+      X=S(p=A(X,Y)+Rl)*(d=H(X,Y))
+      Y=C(p)*d
       if(m){
         X+=oX
         Y+=oY
         Z+=oZ
       }
-      X=S(p=A(X,Y)+Rl)*(d=H(X,Y))
-      Y=C(p)*d
     }
     Q=()=>[c.width/2+X/Z*900,c.height/2+Y/Z*900]
     I=(A,B,M,D,E,F,G,H)=>(K=((G-E)*(B-F)-(H-F)*(A-E))/(J=(H-F)*(M-A)-(G-E)*(D-B)))>=0&&K<=1&&(L=((M-A)*(B-F)-(D-B)*(A-E))/J)>=0&&L<=1?[A+K*(M-A),B+K*(D-B)]:0
     
     Rn = Math.random
     
+    async function loadOBJ(url, scale, tx, ty, tz, rl, pt, yw) {
+      let res
+      await fetch(url, res => res).then(data=>data.text()).then(data=>{
+        a=[]
+        data.split("\nv ").map(v=>{
+          a=[...a, v.split("\n")[0]]
+        })
+        a=a.filter((v,i)=>i).map(v=>[...v.split(' ').map(n=>(+n.replace("\n", '')))])
+        ax=ay=az=0
+        a.map(v=>{
+          v[1]*=-1
+          ax+=v[0]
+          ay+=v[1]
+          az+=v[2]
+        })
+        ax/=a.length
+        ay/=a.length
+        az/=a.length
+        a.map(v=>{
+          X=(v[0]-ax)*scale
+          Y=(v[1]-ay)*scale
+          Z=(v[2]-az)*scale
+          R2(rl,pt,yw,0)
+          v[0]=X
+          v[1]=Y
+          v[2]=Z
+        })
+        maxY=-6e6
+        a.map(v=>{
+          if(v[1]>maxY)maxY=v[1]
+        })
+        a.map(v=>{
+          v[1]-=maxY-oY
+          v[0]+=tx
+          v[1]+=ty
+          v[2]+=tz
+        })
+
+        b=[]
+        data.split("\nf ").map(v=>{
+          b=[...b, v.split("\n")[0]]
+        })
+        b.shift()
+        b=b.map(v=>v.split(' '))
+        b=b.map(v=>{
+          v=v.map(q=>{
+            return +q.split('/')[0]
+          })
+          v=v.filter(q=>q)
+          return v
+        })
+        
+        res=[]
+        b.map(v=>{
+          e=[]
+          v.map(q=>{
+            e=[...e, a[q-1]]
+          })
+          e = e.filter(q=>q)
+          res=[...res, e]
+        })
+      })
+      return res
+    }
+
     geoSphere = (mx, my, mz, iBc, size) => {
       let collapse=0
       let B=Array(iBc).fill().map(v=>{
@@ -167,7 +232,7 @@
         Z = Rn()-.5
         return  [X,Y,Z]
       })
-      for(let m=12;m--;){
+      for(let m=150;m--;){
         B.map((v,i)=>{
           X = v[0]
           Y = v[1]
@@ -178,9 +243,9 @@
               Y2=q[1]
               Z2=q[2]
               d=1+(Math.hypot(X-X2,Y-Y2,Z-Z2)*(3+iBc/40)*3)**4
-              X+=(X-X2)*99/d
-              Y+=(Y-Y2)*99/d
-              Z+=(Z-Z2)*99/d
+              X+=(X-X2)*1e3/d
+              Y+=(Y-Y2)*1e3/d
+              Z+=(Z-Z2)*1e3/d
             }
           })
           d=Math.hypot(X,Y,Z)
@@ -238,6 +303,112 @@
       return [mx, my, mz, size, B, a]
     }
 
+    lineFaceI = (X1, Y1, Z1, X2, Y2, Z2, facet, autoFlipNormals=false, showNormals=false) => {
+      let I_=(A,B,M,D,E,F,G,H)=>(K=((G-E)*(B-F)-(H-F)*(A-E))/(J=(H-F)*(M-A)-(G-E)*(D-B)))>=0&&K<=1&&(L=((M-A)*(B-F)-(D-B)*(A-E))/J)>=0&&L<=1?[A+K*(M-A),B+K*(D-B)]:0
+      let R_ = (Rl,Pt,Yw)=>{
+        let M=Math, A=M.atan2, H=M.hypot
+        X=S(p=A(X,Y)+Rl)*(d=H(X,Y)),Y=C(p)*d,X=S(p=A(X,Z)+Yw)*(d=H(X,Z)),Z=C(p)*d,Y=S(p=A(Y,Z)+Pt)*(d=H(Y,Z)),Z=C(p)*d
+      }
+      let rotSwitch = m =>{
+        switch(m){
+          case 0: R_(0,0,Math.PI/2); break
+          case 1: R_(0,Math.PI/2,0); break
+          case 2: R_(Math.PI/2,0,Math.PI/2); break
+        }        
+      }
+      let ax = 0, ay = 0, az = 0
+      facet.map(q_=>{ ax += q_[0], ay += q_[1], az += q_[2] })
+      ax /= facet.length, ay /= facet.length, az /= facet.length
+      let b1 = facet[2][0]-facet[1][0], b2 = facet[2][1]-facet[1][1], b3 = facet[2][2]-facet[1][2]
+      let c1 = facet[1][0]-facet[0][0], c2 = facet[1][1]-facet[0][1], c3 = facet[1][2]-facet[0][2]
+      let crs = [b2*c3-b3*c2,b3*c1-b1*c3,b1*c2-b2*c1]
+      let d = Math.hypot(...crs)+.001
+      let nls = 1 //normal line length
+      crs = crs.map(q=>q/d*nls)
+      let X1_ = ax, Y1_ = ay, Z1_ = az
+      let flip = 1
+      if(autoFlipNormals){
+        let d1_ = Math.hypot(X1_-X1,Y1_-Y1,Z1_-Z1)
+        let d2_ = Math.hypot(X1-(ax + crs[0]/99),Y1-(ay + crs[1]/99),Z1-(az + crs[2]/99))
+        flip = d2_>d1_?-1:1
+      }
+      let X2_ = ax + (crs[0]*=flip), Y2_ = ay + (crs[1]*=flip), Z2_ = az + (crs[2]*=flip)
+
+      if(showNormals){
+        x.beginPath()
+        X = X1_, Y = Y1_, Z = Z1_
+        R(Rl,Pt,Yw,1)
+        if(Z>0) x.lineTo(...Q())
+        X = X2_, Y = Y2_, Z = Z2_
+        R(Rl,Pt,Yw,1)
+        if(Z>0) x.lineTo(...Q())
+        stroke('#f00','',.5,true)
+      }
+      
+      let p1_ = Math.atan2(X2_-X1_,Z2_-Z1_)
+      let p2_ = -(Math.acos((Y2_-Y1_)/(Math.hypot(X2_-X1_,Y2_-Y1_,Z2_-Z1_)+.001))+Math.PI/2)
+      let isc = false, iscs = [false,false,false]
+      X = X1, Y = Y1, Z = Z1
+      R_(0,-p2_,-p1_)
+      let rx_ = X, ry_ = Y, rz_ = Z
+      for(let m=3;m--;){
+        if(isc === false){
+          X = rx_, Y = ry_, Z = rz_
+          rotSwitch(m)
+          X1_ = X, Y1_ = Y, Z1_ = Z = 5, X = X2, Y = Y2, Z = Z2
+          R_(0,-p2_,-p1_)
+          rotSwitch(m)
+          X2_ = X, Y2_ = Y, Z2_ = Z
+          facet.map((q_,j_)=>{
+            if(isc === false){
+              let l = j_
+              X = facet[l][0], Y = facet[l][1], Z = facet[l][2]
+              R_(0,-p2_,-p1_)
+              rotSwitch(m)
+              let X3_=X, Y3_=Y, Z3_=Z
+              l = (j_+1)%facet.length
+              X = facet[l][0], Y = facet[l][1], Z = facet[l][2]
+              R_(0,-p2_,-p1_)
+              rotSwitch(m)
+              let X4_ = X, Y4_ = Y, Z4_ = Z
+              if(l_=I_(X1_,Y1_,X2_,Y2_,X3_,Y3_,X4_,Y4_)) iscs[m] = l_
+            }
+          })
+        }
+      }
+      if(iscs.filter(v=>v!==false).length==3){
+        let iscx = iscs[1][0], iscy = iscs[0][1], iscz = iscs[0][0]
+        let pointInPoly = true
+        ax=0, ay=0, az=0
+        facet.map((q_, j_)=>{ ax+=q_[0], ay+=q_[1], az+=q_[2] })
+        ax/=facet.length, ay/=facet.length, az/=facet.length
+        X = ax, Y = ay, Z = az
+        R_(0,-p2_,-p1_)
+        X1_ = X, Y1_ = Y, Z1_ = Z
+        X2_ = iscx, Y2_ = iscy, Z2_ = iscz
+        facet.map((q_,j_)=>{
+          if(pointInPoly){
+            let l = j_
+            X = facet[l][0], Y = facet[l][1], Z = facet[l][2]
+            R_(0,-p2_,-p1_)
+            let X3_ = X, Y3_ = Y, Z3_ = Z
+            l = (j_+1)%facet.length
+            X = facet[l][0], Y = facet[l][1], Z = facet[l][2]
+            R_(0,-p2_,-p1_)
+            let X4_ = X, Y4_ = Y, Z4_ = Z
+            if(I_(X1_,Y1_,X2_,Y2_,X3_,Y3_,X4_,Y4_)) pointInPoly = false
+          }
+        })
+        if(pointInPoly){
+          X = iscx, Y = iscy, Z = iscz
+          R_(0,p2_,0)
+          R_(0,0,p1_)
+          isc = [[X,Y,Z], [crs[0],crs[1],crs[2]]]
+        }
+      }
+      return isc
+    }    
+    
     Cylinder = (rw,cl,ls1,ls2) => {
       let a = []
       for(let i=rw;i--;){
@@ -499,10 +670,10 @@
     
     stroke = (scol, fcol, lwo=1, od=true) => {
       if(scol){
-        //x.closePath()
+        x.closePath()
         if(od) x.globalAlpha = .2
         x.strokeStyle = scol
-        x.lineWidth = Math.min(100,200*lwo/Z)
+        x.lineWidth = Math.min(100,300*lwo/Z)
         if(od) x.stroke()
         x.lineWidth /= 4
         x.globalAlpha = 1
@@ -590,7 +761,7 @@
     Rn = Math.random
     
     LsystemRecurse = (size, splits, p1, p2, stem, theta, LsystemReduction, twistFactor) => {
-      if(size < .36) return
+      if(size < .5) return
       let X1 = stem[0]
       let Y1 = stem[1]
       let Z1 = stem[2]
@@ -630,23 +801,7 @@
         R(Rl,Pt,Yw,1)
         if(Z>0)x.lineTo(...Q())
         lwo = Math.hypot(v[0]-v[3],v[1]-v[4],v[2]-v[5])
-        x.globalAlpha = .2
-        x.lineWidth = Math.min(100,300*lwo/Z)
-        x.strokeStyle=`hsla(${t*150},99%,${50}%,1)`
-        x.stroke()
-        x.lineWidth /= 2
-        x.strokeStyle=`hsla(${t*150+20},99%,${50}%,1)`
-        x.stroke()
-        x.lineWidth /= 2
-        x.strokeStyle=`hsla(${t*150+40},99%,${50}%,1)`
-        x.stroke()
-        x.lineWidth /= 2
-        x.strokeStyle=`hsla(${t*150+60},99%,${50}%,1)`
-        x.stroke()
-        x.lineWidth /= 2
-        x.strokeStyle=`hsla(${t*50+80},99%,${50}%,1)`
-        x.stroke()
-        x.globalAlpha = 1
+        stroke('#0f82','',lwo)
       })
       
     }
@@ -695,22 +850,22 @@
       for(j=rw;j--;)for(let i = cl;i--;){
         a = []
         X = S(p=Math.PI*2/cl*i) * ls1 + ls2
-        Y = C(p) * ls1 + ls2
+        Y = C(p) * ls1 
         Z = 0
         R(0, 0, Math.PI*2/rw*j)
         a = [...a, [X,Y,Z]]
         X = S(p=Math.PI*2/cl*(i+1)) * ls1 + ls2
-        Y = C(p) * ls1 + ls2
+        Y = C(p) * ls1
         Z = 0
         R(0, 0, Math.PI*2/rw*j)
         a = [...a, [X,Y,Z]]
         X = S(p=Math.PI*2/cl*(i+1)) * ls1 + ls2
-        Y = C(p) * ls1 + ls2
+        Y = C(p) * ls1
         Z = 0
         R(0, 0, Math.PI*2/rw*(j+1))
         a = [...a, [X,Y,Z]]
         X = S(p=Math.PI*2/cl*i) * ls1 + ls2
-        Y = C(p) * ls1 + ls2
+        Y = C(p) * ls1
         Z = 0
         R(0, 0, Math.PI*2/rw*(j+1))
         a = [...a, [X,Y,Z]]
@@ -719,34 +874,81 @@
       return ret
     }
     
+
+    shps = [
+      Torus(20,6,6,18).map(v=>{
+      v.map(q=>{
+        X = q[0]
+        Y = q[1]
+        Z = q[2]
+        R(.001,0,Math.PI/2)
+        q[0] = X
+        q[1] = Y
+        q[2] = Z
+      })
+      return v
+    }),
+      Torus(20,6,3,9).map(v=>{
+      v.map(q=>{
+        X = q[0]
+        Y = q[1]
+        Z = q[2]
+        R(.001,Math.PI/2,.001)
+        q[0] = X
+        q[1] = Y
+        q[2] = Z
+      })
+      return v
+    })]
+    
+    P = [], pfreq = 200, alt = false
+    grav = .03, variation = .5
+    spawnP = () =>{
+      alt=!alt
+      for(m=10;m--;){
+        if(alt){
+          X = 0
+          Y = -9
+          Z = 0
+          vx = 2+(Rn()-.5)*variation
+          vy = (Rn()-.5)*variation
+          vz = (Rn()-.5)*variation
+          P = [...P, [X,Y,Z,vx,vy,vz,1]]
+        }else{
+          X = -16
+          Y = 0
+          Z = 0
+          vx = (Rn()-.5)*variation+1
+          vy = (Rn()-.5)*variation
+          vz = 4+(Rn()-.5)*variation
+          P = [...P, [X,Y,Z,vx,vy,vz,1]]
+        }
+      }
+    }
     iSTc = 3e3, iSTG = 3e4
     ST = Array(iSTc).fill().map(v=>{
       X = (Rn()-.5) * iSTG
       Y = (Rn()-.5) * iSTG
       Z = (Rn()-.5) * iSTG
       return [X, Y, Z]
-    })      
+    })  
   }
 
-  oX=0, oY=-2, oZ=Math.min(14,Math.max(8,5+(2+S(t*9.92))*5))
-  Rl=t, Pt=0, Yw=0
+  oX=0, oY=0, oZ=40
+  Rl=0, Pt=-C(t)/4, Yw=-t/4
 
-  if(!((t*30+24|0)%19)){
-    x.fillStyle=`hsla(${1},99%,50%,.5)`
-  }else{
-    x.fillStyle='#000'
-  }
+  x.fillStyle='#0008'
   x.fillRect(0,0,c.width,c.height)
-  x.lineJoin = x.lineCap = 'round'
-
- ST.map(v=>{
+  x.lineJoin = x.lineCap = 'roud'
+  
+  ST.map(v=>{
     X = v[0]
     Y = v[1]
     Z = v[2]
     R(Rl,Pt,Yw,1)
     if(Z>0){
       if((x.globalAlpha = Math.min(1,(Z/3000)**2))>.1){
-        s = Math.min(1e3, 600000/Z)
+        s = Math.min(1e3, 400000/Z)
         x.fillStyle = '#ffffff03'
         l = Q()
         x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
@@ -756,12 +958,115 @@
       }
     }
   })
-  
-  shp = Lsystem(5, 3, 1.2, 1.6, t)
 
-  DrawLsystem(shp)
-	      
-	      
+  x.globalAlpha = 1
+
+  if(!((t*60|0)%pfreq)) spawnP()
+  
+  min = 2
+  vmax = 5
+  P = P.filter(v=>v[6]>.05)
+  P.map(v=>{
+    X1 = v[0]
+    Y1 = v[1]
+    Z1 = v[2]
+    vd = Math.hypot(v[3],v[4],v[5])
+    vx = v[3]
+    vy = v[4]
+    vz = v[5]
+    vx /= vd
+    vy /= vd
+    vz /= vd
+    d2 = (vmin = Math.max(min, vd*4))
+    vx *= d2
+    vy *= d2
+    vz *= d2
+    X2 = X1 + vx
+    Y2 = Y1 + vy + .15 + grav
+    Z2 = Z1 + vz
+    x.beginPath()
+    X = X1, Y = Y1, Z = Z1
+    R(Rl,Pt,Yw,1)
+    x.lineTo(...Q())
+    X = X2, Y = Y2, Z = Z2
+    R(Rl,Pt,Yw,1)
+    x.lineTo(...Q())
+    //stroke(`#0f68`)
+    passthru = false
+    shps.map(shp=>{
+      shp.map(n=>{
+        ax=ay=az=0
+        n.map(q=>{
+          ax+=q[0]
+          ay+=q[1]
+          az+=q[2]
+        })
+        ax /= n.length
+        ay /= n.length
+        az /= n.length
+        if((d = Math.hypot(a=X1-ax,b=Y1-ay,e=Z1-az)) <= Math.max(.2,Math.min(8,d2*2))){
+          if(!passthru && (l = lineFaceI(X1,Y1,Z1,X2,Y2,Z2,n,true,true))){
+            v[3]/=1.00025
+            v[4]/=1.00025
+            v[5]/=1.00025
+            v[3] += l[1][0]*d2/10
+            v[4] += l[1][1]*d2/10
+            v[5] += l[1][2]*d2/10
+            passthru=true
+          }
+        }
+      })
+    })
+    d=Math.hypot(v[3],v[4],v[5])
+    d2 = Math.min(vmax,d)
+    v[3]/=d
+    v[4]/=d
+    v[5]/=d
+    v[3]*=d2
+    v[4]*=d2
+    v[5]*=d2
+    X = v[0] += v[3]
+    Y = v[1] += v[4]
+    Z = v[2] += v[5]
+    v[4]+=passthru?-grav:grav
+    R(Rl,Pt,Yw,1)
+    if(Z>0){
+      x.globalAlpha = v[6]
+      l = Q()
+      s = Math.min(1e3,4000/Z)
+      x.fillStyle='#00ffaa06'
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      x.fillStyle='#f022'
+      s/=3
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      x.fillStyle='#fff'
+      s/=3
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+    }
+    v[6]-=.0033
+  })
+  x.globalAlpha = 1
+  
+  shps.map((shp, idx)=>{
+    shp.map(v=>{
+      x.beginPath()
+      v.map(q=>{
+        X = q[0]
+        Y = q[1]
+        Z = q[2]
+        if(0&&!idx){
+          R(0,0,-.01)
+          q[0] = X
+          q[1] = Y
+          q[2] = Z
+        }
+        R(Rl,Pt,Yw,1)
+        if(Z>0) x.lineTo(...Q())
+      })
+      stroke('#ffffff03',`#4400ff04`,3,false)
+    })
+  })
+
 	      
         t+=1/60
       }
