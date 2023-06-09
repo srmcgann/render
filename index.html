@@ -135,6 +135,8 @@
         }
       } else { //base animation (pre freq)
 
+
+
   if(!t){
     R=(Rl,Pt,Yw,m)=>{
       M=Math
@@ -152,7 +154,7 @@
         Z+=oZ
       }
     }
-    Q=()=>[c.width/2+X/Z*600,c.height/2+Y/Z*600]
+    Q=()=>[c.width/2+X/Z*700,c.height/2+Y/Z*700]
     I=(A,B,M,D,E,F,G,H)=>(K=((G-E)*(B-F)-(H-F)*(A-E))/(J=(H-F)*(M-A)-(G-E)*(D-B)))>=0&&K<=1&&(L=((M-A)*(B-F)-(D-B)*(A-E))/J)>=0&&L<=1?[A+K*(M-A),B+K*(D-B)]:0
     
     Rn = Math.random
@@ -504,7 +506,7 @@
     }
 
     Cube = size => {
-      for(CB=[],j=6;j--;CB=[...CB,b])for(b=[],i=4;i--;)b=[...b,[(a=[S(p=Math.PI*2/4*i+Math.PI/4),C(p),2**.5/2])[j%3]*(l=j<3?size/2:-size/2),a[(j+1)%3]*l,a[(j+2)%3]*l]]
+      for(CB=[],j=6;j--;CB=[...CB,b])for(b=[],i=4;i--;)b=[...b,[(a=[S(p=Math.PI*2/4*i+Math.PI/4),C(p),2**.5/2])[j%3]*(l=j<3?size/1.5:-size/1.5),a[(j+1)%3]*l,a[(j+2)%3]*l]]
       return CB
     }
     
@@ -675,7 +677,7 @@
         x.closePath()
         if(od) x.globalAlpha = .2
         x.strokeStyle = scol
-        x.lineWidth = Math.min(100,400*lwo/Z)
+        x.lineWidth = Math.min(100,100*lwo/Z)
         if(od) x.stroke()
         x.lineWidth /= 4
         x.globalAlpha = 1
@@ -876,215 +878,273 @@
       return ret
     }
     
-    G = 10
-    tls = G*25
-    bounding = subDividedIcosahedron(1,G,1)
-    container = Cube(tls*2/(2**.5))
+    tgts = [], iTgtv = 2.5, iTfreq = 100
+    grav = .05, iTgtRotspeed = .2+.3*Rn()
+    sp = 16
+    cubels = sp*1.08
+    base_shp = Cube(cubels)
+    spawnTgt = () => {
+      let size = 2+Rn()*3|0
+      p1 = Math.PI*Rn()*2
+      p2 = Math.PI*(Rn()-.5)
+      rotSpeed = (Rn()-.5)*iTgtRotspeed
+      tx = (Rn()-.5)*50
+      ty = -10
+      tz = (Rn()-.5)*50
+      vx = (Rn()-.5)*iTgtv
+      vy = (-Rn())*iTgtv-.3
+      vz = (Rn()-.5)*iTgtv
+      Array(size**3).fill().map((v,i)=>{
+        X = ((i%size)-size/2+.5)*sp
+        Y = (((i/size|0)%size)-size/2+.5)*sp
+        Z = ((i/size/size|0)-size/2+.5)*sp
+        tgts = [...tgts, [tx,ty,tz,vx,vy,vz,p1,p2,0,rotSpeed,[X,Y,Z],1]]
+      })
+    }
     
-    iSTc = 5000
-    ST = Array(iSTc).fill().map(v=>{
-      X = (Rn()-.5)*tls
-      Y = (Rn()-.5)*tls
-      Z = (Rn()-.5)*tls
-      return [X,Y,Z,Rn()<.15?Rn()*360:false]
-    })
-    
-    repos = vert => {
-      let dir
-      if(vert[0]>tls/2) dir = 0
-      if(vert[0]<-tls/2) dir = 1
-      if(vert[1]>tls/2) dir = 2
-      if(vert[1]<-tls/2) dir = 3
-      if(vert[2]>tls/2) dir = 4
-      if(vert[2]<-tls/2) dir = 5
-      switch(dir){
-        case 0:
-          vert[0] = -tls/2
-          vert[1] = (Rn()-.5)*tls
-          vert[2] = (Rn()-.5)*tls
-          break
-        case 1:
-          vert[0] = tls/2
-          vert[1] = (Rn()-.5)*tls
-          vert[2] = (Rn()-.5)*tls
-          break
-        case 2:
-          vert[0] = (Rn()-.5)*tls
-          vert[1] = -tls/2
-          vert[2] = (Rn()-.5)*tls
-          break
-        case 3:
-          vert[0] = (Rn()-.5)*tls
-          vert[1] = tls/2
-          vert[2] = (Rn()-.5)*tls
-          break
-        case 4:
-          vert[0] = (Rn()-.5)*tls
-          vert[1] = (Rn()-.5)*tls
-          vert[2] = -tls/2
-          break
-        case 5:
-          vert[0] = (Rn()-.5)*tls
-          vert[1] = (Rn()-.5)*tls
-          vert[2] = tls/2
-          break
+    sparks = [], iSparksNum=16, iSparksV = 1.5
+    spawnSparks = (tx,ty,tz) => {
+      X = tx
+      Y = ty
+      Z = tz
+      for(let m = iSparksNum; m--;){
+        vx = (Rn()-.5) * iSparksV
+        vy = (Rn()-.5) * iSparksV
+        vz = (Rn()-.5) * iSparksV
+        sparks = [...sparks, [X,Y,Z,vx,vy,vz,1]]
       }
     }
     
-    P1 = P2 = P1v = P2v = 0
-    squirreliness = .01
+    
+    iGunsc = 20, iGunsr = 30
+    guns = Array(iGunsc).fill().map((v,i)=>{
+      X = S(p=Math.PI*2/iGunsc * i) * iGunsr
+      Y = 70
+      Z = C(p) * iGunsr
+      return [X,Y,Z,p]
+    })
+    
+    missileV = 4
+    P = [], pfreq = 0, curGun = 0
+    spawnP = () => {
+      for(m=10;m--;){
+        curGun = (curGun+1)%guns.length
+        tx = guns[curGun][0]
+        ty = guns[curGun][1]
+        tz = guns[curGun][2]
+        p = guns[curGun][3]
+        X = 0
+        Y = -1
+        Z = 1
+        d = Math.hypot(Y,Z)
+        Y/=d
+        Z/=d
+        Y*=missileV
+        Z*=missileV
+        R(0,0,p)
+        vx = X
+        vy = Y
+        vz = Z
+        //let tgt = tgts.length*Rn()|0
+        P = [...P, [tx,ty,tz,vx,vy,vz,1]]
+      }
+    }
+    
+    iSTc = 3e3, iSTG = 3e4
+    ST = Array(iSTc).fill().map(v=>{
+      X = (Rn()-.5) * iSTG
+      Y = (Rn()-.5) * iSTG
+      Z = (Rn()-.5) * iSTG
+      return [X, Y, Z]
+    })  
   }
 
-  oX=0, oY=0, oZ=Math.min(20,Math.max(4,(.3+S(t/2))*40))
-  Rl=0, Pt=S(t/2)/3, Yw=S(t/3)*4
+  oX=0, oY=0, oZ=Math.min(350,Math.max(120,(.3+C(t/2))*300))
+  Rl=0, Pt=C(t)/3, Yw=S(t/4)*4
 
   x.fillStyle='#0008'
   x.fillRect(0,0,c.width,c.height)
-  
-  x.lineJoin = x.lineCap = 'round'
-  
-  P1v += (Rn()-.5)*squirreliness
-  P2v += (Rn()-.5)*squirreliness
-  P1v /= 1.025
-  P2v /= 1.025
-  P1 += P1v
-  P2 += P2v
-  
-  pspd = Math.min(1,Math.max(.05,.5+(.125+C(t/4+Math.PI)/1.5)))
-  X = 0
-  Y = 0
-  Z = pspd*10
-  R(0,P2,P1)
-  pvx = X
-  pvy = Y
-  pvz = Z
-    
-  cull = true
-  compression = true
+  x.lineJoin = x.lineCap = 'roud'
   ST.map(v=>{
     X = v[0]
     Y = v[1]
     Z = v[2]
-    if(compression){
-      R(0,-P2,0)
-      R(0,0,-P1)
-      Z*=1-pspd
-      R(0,P2,P1)
-    }
-    v[0] += pvx
-    v[1] += pvy
-    v[2] += pvz
-    repos(v)
-    skip = false
-    if(cull){
-      d = Math.hypot(X,Y,Z)
-      if(d>G-1){
-        skip = true
-      } else if(d>G-3.5) {
-        bounding.map(q=>{
-          if(!skip && (l=lineFaceI(X,Y,Z,0,0,0,q))){
-            skip = true
-          }
-        })
-      }
-    }
-    if(1 || !skip){
-      R(Rl,Pt,Yw,1)
-      if(Z>0){
-        x.globalAlpha = skip?.15:1
-        l = Q()
-        s = Math.min(1e3,(v[3]===false?1500:2000)*(.66+pspd/2)**2/Z)
-        x.fillStyle = v[3]===false?'#ffffff10':`hsla(${v[3]},99%,50%,.1)`
-        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-        s/=10
-        x.fillStyle = v[3]===false?'#ffffff':`hsla(${v[3]},99%,50%,1)`
-        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      }
-    }
-  })
-  x.globalAlpha = 1  
-  
-  
-  if(0)container.map(v=>{
-    x.beginPath()
-    v.map(q=>{
-      X = q[0]
-      Y = q[1]
-      Z = q[2]
-      R(Rl,Pt,Yw,1)
-      if(Z>0)x.lineTo(...Q())
-    })
-    stroke('#fff1','',.5,false)
-  })
-  
-  bounding.map(v=>{
-    x.beginPath()
-    v.map(q=>{
-      X = q[0]
-      Y = q[1]
-      Z = q[2]
-      if(compression){
-        R(0,-P2,0)
-        R(0,0,-P1)
-        Z*=1-pspd
-        R(0,P2,P1)
-      }
-      R(Rl,Pt,Yw,1)
-      if(Z>0)x.lineTo(...Q())
-    })
-    stroke('#ffffff10','',.25,false)
-  })
-
-  shipls = 2
-
-  ls = shipls/2
-  shipsd = 6
-  for(j=shipsd;j--;){
-    x.beginPath()
-    X = S(p=Math.PI*2/shipsd*j)*ls/1.25
-    Y = C(p)*ls/1.25
-    Z = shipls/4*(1-pspd)
-    R(0,P2,P1)
     R(Rl,Pt,Yw,1)
-    if(Z>0) x.lineTo(...Q())
-    X = S(p=Math.PI*2/shipsd*(j+1))*ls/1.25
-    Y = C(p)*ls/1.25
-    Z = shipls/4*(1-pspd)
-    R(0,P2,P1)
+    if(Z>0){
+      if((x.globalAlpha = Math.min(1,(Z/3000)**2))>.1){
+        s = Math.min(1e3, 400000/Z)
+        x.fillStyle = '#ffffff03'
+        l = Q()
+        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+        s/=16
+        x.fillStyle = '#fff'
+        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      }
+    }
+  })
+
+  x.globalAlpha = 1
+  
+  if(!((t*60|0)%iTfreq)) spawnTgt()
+  if(!((t*60|0)%pfreq)) spawnP()  
+  
+  sparks = sparks.filter(v=>v[6]>.1)
+
+  sparks.map(v=>{
+    X = v[0] += v[3]
+    Y = v[1] += v[4] += grav
+    Z = v[2] += v[5]
+    R(Rl,Pt,Yw,1)
+    if(Z>0){
+      l = Q()
+      s = Math.min(1e3,10000/Z*v[6])
+      x.fillStyle = '#ff880008'
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      s/=10
+      x.fillStyle = '#fff'
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+    }
+    v[6] -= .015
+  })
+
+  homing = 3
+  P = P.filter(v=>v[6]>0)
+  P.map(v=>{
+    X1 = v[0]
+    Y1 = v[1]
+    Z1 = v[2]
+    mind = 6e6
+    tgt = -1
+    tgts.map((q,j)=>{
+      X2 = q[0]
+      Y2 = q[1]
+      Z2 = q[2]
+      if(q[11]>0 && (d=Math.hypot(X2-X1,Y2-Y1,Z2-Z1))<mind){
+        mind = d
+        tgt = j
+      }
+    })
+    if(tgt!=-1){
+      tx = tgts[tgt][0] 
+      ty = tgts[tgt][1] 
+      tz = tgts[tgt][2] 
+      X = tgts[tgt][10][0]
+      Y = tgts[tgt][10][1]
+      Z = tgts[tgt][10][2]
+      p1 = tgts[tgt][6]
+      p2 = tgts[tgt][7]
+      R(tgts[tgt][8],0,0)
+      R(0,p2,p1)
+      tgtx = X + tx
+      tgty = Y + ty
+      tgtz = Z + tz
+      a=tgtx-v[0],b=tgty-v[1],e=tgtz-v[2]
+      d = (1+Math.hypot(a,b,e))**2.5
+      
+      vx = v[3] + a*999/d/homing
+      vy = v[4] + b*999/d/homing
+      vz = v[5] + e*999/d/homing
+      d = Math.hypot(vx,vy,vz)
+      v[3] = vx/d*missileV
+      v[4] = vy/d*missileV
+      v[5] = vz/d*missileV
+    }
+    X = v[0] += v[3]
+    Y = v[1] += v[4]
+    Z = v[2] += v[5]
+    R(Rl,Pt,Yw,1)
+    if(Z>0){
+      l = Q()
+      s = Math.min(1e3,15000/Z*v[6])
+      x.fillStyle = '#4400ff08'
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      s/=16
+      x.fillStyle = '#fff'
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+    }
+    
+    if((d = Math.hypot(v[0]-tgtx,v[1]-tgty,v[2]-tgtz))<cubels/2){
+      v[6] = 0
+      if(tgt != -1) {
+
+        if(tgts[tgt][11]) spawnSparks(tgtx,tgty,tgtz)
+        tgts[tgt][11] = 0 
+      }
+    }
+    v[6]-=.0125
+  })
+  
+  tgts = tgts.filter(v=>v[11]>0)
+  
+  tgts.map(v=>{
+    tx1 = v[0] += v[3]
+    ty1 = v[1] += v[4] += grav
+    tz1 = v[2] += v[5]
+    X = v[10][0]
+    Y = v[10][1]
+    Z = v[10][2]
+    p1 = v[6]
+    p2 = v[7]
+    R(v[8]+=v[9],0,0)
+    R(0,p2,p1)
+    tx2 = X
+    ty2 = Y
+    tz2 = Z
+    base_shp.map(q=>{
+      x.beginPath()
+      q.map(n=>{
+        X = n[0]
+        Y = n[1]
+        Z = n[2]
+        R(v[8],0,0)
+        R(0,p2,p1)
+        X += tx2
+        Y += ty2
+        Z += tz2
+        //n[0] = X
+        //n[1] = Y
+        //n[2] = Z
+        X += tx1
+        Y += ty1
+        Z += tz1
+        R(Rl,Pt,Yw,1)
+        if(Z>0) x.lineTo(...Q())
+      })
+      stroke('#fff4','#00ffaa12',5,false)
+    })
+    v[11]-=.0075
+  })
+  
+  gunLen = 5
+  guns.map(v=>{
+    tx = v[0]
+    ty = v[1]
+    tz = v[2]
+    x.beginPath()
+    X=tx
+    Y=ty
+    Z=tz
     R(Rl,Pt,Yw,1)
     if(Z>0) x.lineTo(...Q())
     X = 0
-    Y = 0
-    Z = (-shipls*2+shipls/4)*(1-pspd)
-    R(0,P2,P1)
+    Y = -gunLen
+    Z = gunLen
+    R(0,0,v[3])
+    X+=tx
+    Y+=ty
+    Z+=tz
     R(Rl,Pt,Yw,1)
     if(Z>0) x.lineTo(...Q())
-    stroke('#0ff3','#0ff1',.25,true)
-  }
-
-  x.font = '40px courier'
-  x.fillStyle = '#fff'
-  x.fillText('relativistic spatial compression visualizer', 100,50)
-  x.fillStyle = '#fff4'
-  x.fillText('notably, space-length decreases to zero in the dimension of travel,', 100,90)
-  x.fillText('BOTH in front of, and behind the observer, upon reaching the speed of light', 100,130)
-  x.font = '64px courier'
-  x.fillStyle = '#fff'
-  x.fillText('speed (% of C) ' + Math.round(pspd*1000)/10, 100,200)
-  x.lineWidth = 4
-  x.strokeStyle = '#fff4'
-  x.strokeRect(100,225,800,25)
-  x.fillStyle = '#0f04'
-  x.fillRect(100,225,800*pspd,25)
-
-
-
-
+    stroke('#f00','',10, true)
+  })
+  
+  t+=1/60
 
 	      
 
-	      
-        t+=1/60
+
+
+
       }
 
       if(stage2 && loaded){
