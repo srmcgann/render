@@ -138,9 +138,7 @@
 
 
   if(!t){
-    oX=0, oY=0, oZ=0
-    Rl=0, Pt=0, Yw=0
-    R=R2=(Rl,Pt,Yw,m)=>{
+    R=(Rl,Pt,Yw,m)=>{
       M=Math
       A=M.atan2
       H=M.hypot
@@ -972,7 +970,28 @@
       }
       return ret
     }
-    base_obj = await loadOBJ('https://raw.githubusercontent.com/srmcgann/objs/master/heart.obj', .075, 0,1.5,0, 0,0,Math.PI/2)
+
+    G = 12, iBc = 20, iBv=.3
+    B = Array(iBc).fill().map(v=>{
+      X1 = (Rn()-.5)*G
+      Y1 = (Rn()-.5)*G
+      Z1 = (Rn()-.5)*G
+      vx1 = (Rn()-.5)*iBv
+      vy1 = (Rn()-.5)*iBv
+      vz1 = (Rn()-.5)*iBv
+      X2 = (Rn()-.5)*G
+      Y2 = (Rn()-.5)*G
+      Z2 = (Rn()-.5)*G
+      vx2 = (Rn()-.5)*iBv
+      vy2 = (Rn()-.5)*iBv
+      vz2 = (Rn()-.5)*iBv
+      return [X1,Y1,Z1,vx1,vy1,vz1,X2,Y2,Z2,vx2,vy2,vz2,[]]
+    })
+    
+    bounding = subDividedCube(4,G*1.1,0).map(v=>{
+      return [v,0,0]
+    })
+
     iSTc = 3e3, iSTG = 3e4
     ST = Array(iSTc).fill().map(v=>{
       X = (Rn()-.5) * iSTG
@@ -982,19 +1001,13 @@
     })  
   }
 
-  oX=0, oY=.125, oZ=8
-  Rl=0, Pt=-C(t)/2, Yw=S(t)/1.5
+  oX=0, oY=0, oZ=15
+  Rl=t/8, Pt=C(t/8)/2, Yw=-t/6
 
-  rw=2
-  cl=3
-  br=2
-  sp = 4
-
-  shp = subbed(0,5,(osc=Math.max(1,Math.min(1,(.3-C(t*4+.25))*10)))*Math.min(.1,Math.max(-.15,(S(t*20-.25)-.3)*.17)),base_obj),
-  
   x.fillStyle='#0008'
   x.fillRect(0,0,c.width,c.height)
   x.lineJoin = x.lineCap = 'roud'
+  
   ST.map(v=>{
     X = v[0]
     Y = v[1]
@@ -1014,23 +1027,177 @@
   })
 
   x.globalAlpha = 1
+
+  len = .75
+  bounding.map((v,i)=>{
+    ping = false
+    ax=ay=az=0
+    v[0].map(q=>{
+      ax+=q[0]
+      ay+=q[1]
+      az+=q[2]
+    })
+    ax/=v[0].length
+    ay/=v[0].length
+    az/=v[0].length
+    B.map(q=>{
+      X1 = q[0]
+      Y1 = q[1]
+      Z1 = q[2]
+      vx = q[3]
+      vy = q[4]
+      vz = q[5]
+      d = Math.hypot(vx,vy,vz)
+      vx/=d
+      vy/=d
+      vz/=d
+      X2 = q[0]+vx*len
+      Y2 = q[1]+vy*len
+      Z2 = q[2]+vz*len
+      if((d=Math.hypot(X2-ax,Y2-ay,Z2-az))<.5){
+        if(lineFaceI(X1,Y1,Z1,X2,Y2,Z2,v[0])){
+          v[1]=1
+          v[2]=0
+        }
+      }
+      X1 = q[6]
+      Y1 = q[7]
+      Z1 = q[8]
+      vx = q[9]
+      vy = q[10]
+      vz = q[11]
+      d = Math.hypot(vx,vy,vz)
+      vx/=d
+      vy/=d
+      vz/=d
+      X2 = q[6]+vx*len
+      Y2 = q[7]+vy*len
+      Z2 = q[8]+vz*len
+      if((d=Math.hypot(X2-ax,Y2-ay,Z2-az))<.5){
+        if(lineFaceI(X1,Y1,Z1,X2,Y2,Z2,v[0])){
+          v[1]=1
+          v[2]=1
+        }
+      }
+    })
+    x.beginPath()
+    v[0].map(q=>{
+      X = q[0]
+      Y = q[1]
+      Z = q[2]
+      R(Rl,Pt,Yw,1)
+      if(Z>0)x.lineTo(...Q())
+    })
+    v[1]/=1.1
+    stroke('',v[1]>.05?`hsla(${v[2]?120:0},99%,${50+v[1]*50}%,${v[1]})`:(i%2?'#ffffff04':''),.5)
+  })
   
-  Array(rw*cl*br).fill().map((q_,idx)=>{
-    tx = ((idx%cl)-cl/2+.5)*sp
-    ty = (((idx/cl|0)%rw)-rw/2+.5)*sp
-    tz = (((idx/cl/rw|0)%br)-br/2+.5)*sp
-    shp.map(v=>{
-      x.beginPath()
-      v.map(q=>{
-        X = q[0]+tx
-        Y = q[1]+ty
-        Z = q[2]+tz
-        R(Rl,Pt,Yw,1)
-        if(Z>0)x.lineTo(...Q())
+  shotfreq = 0
+  homing = 5
+  shotv = .5
+  B.map((v,i)=>{
+    tx = v[0] + v[3]
+    ty = v[1] + v[4]
+    tz = v[2] + v[5]
+    if(tx>G/2 || tx<-G/2) v[3]*=-1
+    if(ty>G/2 || ty<-G/2) v[4]*=-1
+    if(tz>G/2 || tz<-G/2) v[5]*=-1
+    srcx = X = v[0] += v[3]
+    srcy = Y = v[1] += v[4]
+    srcz = Z = v[2] += v[5]
+    R(Rl,Pt,Yw,1)
+    if(Z>0){
+      s = Math.min(1e3,1500/Z)
+      x.fillStyle = '#ff000004'
+      l=Q()
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      x.fillStyle = '#f00'
+      s/=10
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+    }
+    tx = v[6] + v[9]
+    ty = v[7] + v[10]
+    tz = v[8] + v[11]
+    if(tx>G/2 || tx<-G/2) v[9]*=-1
+    if(ty>G/2 || ty<-G/2) v[10]*=-1
+    if(tz>G/2 || tz<-G/2) v[11]*=-1
+    tgtx = X = v[6] += v[9]
+    tgty = Y = v[7] += v[10]
+    tgtz = Z = v[8] += v[11]
+    R(Rl,Pt,Yw,1)
+    if(Z>0){
+      s = Math.min(1e3,1500/Z)
+      x.fillStyle = '#00ff8804'
+      l=Q()
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      x.fillStyle = '#0f8'
+      s/=10
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+    }
+    if(!((t*60|0)%shotfreq)){
+      X = srcx
+      Y = srcy
+      Z = srcz
+      vx = tgtx - srcx
+      vy = tgty - srcy
+      vz = tgtz - srcz
+      d = Math.hypot(vx, vy, vz)
+      vx /= d
+      vy /= d
+      vz /= d
+      vx *= shotv
+      vy *= shotv
+      vz *= shotv
+      v[12] = [...v[12],[X,Y,Z,vx,vy,vz,1]]
+    }
+    v[12] = v[12].filter(q=>q[6]>0)
+    v[12].map((q,j)=>{
+      B.map((n,m)=>{
+        tx1 = n[0]
+        ty1 = n[1]
+        tz1 = n[2]
+        tx2 = n[6]
+        ty2 = n[7]
+        tz2 = n[8]
+        d = (2+(l=Math.hypot(a=q[0]-tx1,b=q[1]-ty1,e=q[2]-tz1)))**4
+        if(i!=m){
+          q[3] += a*99/25/homing/d
+          q[4] += b*99/25/homing/d
+          q[5] += e*99/25/homing/d
+        }        
       })
-      stroke('#f001','#ff000010',.25,true)
+      d = (1+(l=Math.hypot(a=q[0]-tgtx,b=q[1]-tgty,e=q[2]-tgtz)))**4
+      if(l<.5)q[6]=0
+      q[3] -= a*99/homing/d
+      q[4] -= b*99/homing/d
+      q[5] -= e*99/homing/d
+      vx = q[3]
+      vy = q[4]
+      vz = q[5]
+      d = Math.hypot(vx, vy, vz)
+      vx /= d
+      vy /= d
+      vz /= d
+      q[3] = vx *= shotv
+      q[4] = vy *= shotv
+      q[5] = vz *= shotv
+      X = q[0]+=q[3]
+      Y = q[1]+=q[4]
+      Z = q[2]+=q[5]
+      R(Rl,Pt,Yw,1)
+      if(Z>0){
+        s = Math.min(1e3,600/Z)
+        x.fillStyle = '#4400ff04'
+        l=Q()
+        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+        x.fillStyle = '#fff'
+        s/=10
+        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      }
+      q[6]-=.005
     })
   })
+
 
 
 t+=1/60
