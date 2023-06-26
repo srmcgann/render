@@ -142,12 +142,12 @@
       M=Math
       A=M.atan2
       H=M.hypot
-      X=S(p=A(X,Y)+Rl)*(d=H(X,Y))
-      Y=C(p)*d
       X=S(p=A(X,Z)+Yw)*(d=H(X,Z))
       Z=C(p)*d
       Y=S(p=A(Y,Z)+Pt)*(d=H(Y,Z))
       Z=C(p)*d
+      X=S(p=A(X,Y)+Rl)*(d=H(X,Y))
+      Y=C(p)*d
       if(m){
         X+=oX
         Y+=oY
@@ -232,7 +232,7 @@
         Z = Rn()-.5
         return  [X,Y,Z]
       })
-      for(let m=200;m--;){
+      for(let m=150;m--;){
         B.map((v,i)=>{
           X = v[0]
           Y = v[1]
@@ -243,9 +243,9 @@
               Y2=q[1]
               Z2=q[2]
               d=1+(Math.hypot(X-X2,Y-Y2,Z-Z2)*(3+iBc/40)*3)**4
-              X+=(X-X2)*500/d
-              Y+=(Y-Y2)*500/d
-              Z+=(Z-Z2)*500/d
+              X+=(X-X2)*1e3/d
+              Y+=(Y-Y2)*1e3/d
+              Z+=(Z-Z2)*1e3/d
             }
           })
           d=Math.hypot(X,Y,Z)
@@ -1038,114 +1038,98 @@
       return ret
     }
     
-    iEv = 1, iEr = .5, iErv = .2,iEc = 6
-    base_cylinder = Cylinder(1,4,1,h=4).map(v=>{
-      v.map(q=>{
-        q[1]-=h/2+iEr
-      })
-      return v
-    })
-    base_geo = geoSphere(0, 0, 0, iEc, iEr)[4]
-    iEmitterc = 1
-    G = 50
-    emitters = Array(iEmitterc).fill().map(v=>{
-      X = (Rn()-.5)*G
-      Y = (Rn()-.5)*G
-      Z = (Rn()-.5)*G
-      vx = (Rn()-.5)*(.3+(iEv-.3))
-      vy = (Rn()-.5)*(.3+(iEv-.3))
-      vz = (Rn()-.5)*(.3+(iEv-.3))
-      rl = 0//Rn()*Math.PI*2
-      pt = 0//Rn()*Math.PI*2
-      yw = 0//Rn()*Math.PI*2
-      switch(Rn()*3|0){
-        case 0:
-          rlv = 0
-          ptv = 0
-          ywv = (Rn()-.5)*iErv
-          break
-        case 1:
-          rlv = 0
-          ptv = (Rn()-.5)*iErv
-          ywv = 0
-          break
-        case 2:
-          rlv = (Rn()-.5)*iErv
-          ptv = 0
-          ywv = 0
-          break
+    newTorus = (rw, cl, ls1, ls2, parts=1, partSpacing=1,twists=0,iterations=1) => {
+      let ret = []
+      for(m=parts;m--;){
+        ls3 = parts>1||partSpacing!=1?partSpacing:0
+        tx = S(p__=Math.PI*2/parts*m)*ls3
+        ty = C(p__)*ls3
+        tz = 0
+        for(let i=cl*iterations|0;i--;){
+          for(let j=rw;j--;){
+            a = []
+            X = S(p=Math.PI*2/rw*j-Math.PI*2/cl*i*twists+Math.PI/rw) * ls1
+            Y = C(p) * ls1
+            Z = 0
+            X += tx
+            Y += ty
+            Z += tz
+            R(Math.PI*2/cl*i*twists,0,0)
+            tilt=S(Math.PI*2/cl*i*twists+p__)/1
+            R(0,tilt,0)
+            X += ls2
+            R(0,0,Math.PI*2/cl*i)
+            a = [...a, [X,Y,Z]]
+            X = S(p=Math.PI*2/rw*j-Math.PI*2/cl*(i+1)*twists+Math.PI/rw) * ls1
+            Y = C(p) * ls1
+            Z = 0
+            X += tx
+            Y += ty
+            Z += tz
+            R(Math.PI*2/cl*(i+1)*twists,0,0)
+            tilt=S(Math.PI*2/cl*(i+1)*twists+p__)/1
+            R(0,tilt,0)
+            X += ls2
+            Y += 0
+            Z += 0
+            R(0,0,Math.PI*2/cl*(i+1))
+            a = [...a, [X,Y,Z]]
+            X = S(p=Math.PI*2/rw*(j+1)-Math.PI*2/cl*(i+1)*twists+Math.PI/rw) * ls1
+            Y = C(p) * ls1
+            Z = 0
+            X += tx
+            Y += ty
+            Z += tz
+            R(Math.PI*2/cl*(i+1)*twists,0,0)
+            tilt=S(Math.PI*2/cl*(i+1)*twists+p__)/1
+            R(0,tilt,0)
+            X += ls2
+            R(0,0,Math.PI*2/cl*(i+1))
+            a = [...a, [X,Y,Z]]
+            X = S(p=Math.PI*2/rw*(j+1)-Math.PI*2/cl*i*twists+Math.PI/rw) * ls1
+            Y = C(p) * ls1
+            Z = 0
+            X += tx
+            Y += ty
+            Z += tz
+            R(Math.PI*2/cl*i*twists,0,0)
+            tilt=S(Math.PI*2/cl*(i+0)*twists+p__)/1
+            R(0,tilt,0)
+            X += ls2
+            R(0,0,Math.PI*2/cl*i)
+            a = [...a, [X,Y,Z]]
+            ret = [...ret, a]
+          }
+        }
       }
-      return [X, Y, Z, vx, vy, vz, rl, pt, yw, rlv, ptv, ywv, JSON.parse(JSON.stringify(base_geo))]
-    })
-    
-    P = []
-    iPv = 2, pfreq = 60
-    spawnP = () => {
-      emitters.map(emitter=>{
-        tx = emitter[0] + emitter[3]
-        ty = emitter[1] + emitter[4]
-        tz = emitter[2] + emitter[5]
-        rl_ = emitter[6] + emitter[9]
-        pt_ = emitter[7] + emitter[10]
-        yw_ = emitter[8] + emitter[11]
-        emitter[12].map(v=>{
-          X = v[0]*8
-          Y = v[1]*8
-          Z = v[2]*8
-          p1_ = Math.atan2(X,Z)
-          p2_ = Math.acos(Y/(Math.hypot(X,Y,Z)+.001))
-          d = Math.hypot(X,Y,Z)-h/2
-          X = 0
-          Y = -1
-          Z = 0
-          R(0,p2_,0)
-          R(0,0,p1_)
-          R(rl_,pt_,yw_)
-          P = [...P,  [X*(iEr+h)+tx,Y*(iEr+h)+ty,Z*(iEr+h)+tz,X*iPv,Y*iPv,Z*iPv,1]]
-        })
-      })
+      return ret
     }
-    bounding = subDividedCube(5,G*1.125/1.5,5).map(v=>{
-      v.map(q=>{
-        q[3] = q[4] = q[5] = 0
-        q[6] = q[0]
-        q[7] = q[1]
-        q[8] = q[2]
-      })
-      return v
-    })
-    
-    sparks = []
-    iSparkv=.5, iSparkno = 20
-    spawnSparks = (X,Y,Z) => {
-      for(m = iSparkno;m--;){
-        vx = (Rn()-.5) * iSparkv
-        vy = (Rn()-.5) * iSparkv
-        vz = (Rn()-.5) * iSparkv
-        sparks = [...sparks, [X,Y,Z,vx,vy,vz,1]]
-      }
-    }
-    
-    disp = []
-    spawnDisplacement = (X,Y,Z) =>{
-      disp=[...disp, [X,Y,Z,1]]
-    }
-
     iSTc = 3e3, iSTG = 3e4
     ST = Array(iSTc).fill().map(v=>{
       X = (Rn()-.5) * iSTG
       Y = (Rn()-.5) * iSTG
       Z = (Rn()-.5) * iSTG
       return [X, Y, Z]
-    })  
+    })    
   }
-
-  oX=0, oY=0, oZ=Math.max(50,Math.min(150,(.3+C(t/2))*500))
-  Rl=0, Pt=C(t)/4, Yw=S(t/4)*4
-
-  if(!((t*60|0)%pfreq)) spawnP()
   
-  x.fillStyle='#0008'
+  base_torus = newTorus(6,100,1,8,2,3,S(t/3)*10,.75)
+  rw=1
+  cl=3
+  br=3
+  sp = 32
+  shps = Array(rw*br*cl).fill().map((shp, i) => {
+    tx = ((i%cl)-cl/2+.5)*sp
+    ty = (((i/cl|0)%rw)-rw/2+.5)*sp
+    tz = ((i/cl/rw|0)-br/2+.5)*sp
+    return [tx, ty ,tz, base_torus]
+  })
+    
+
+  oX=0, oY=0, oZ=Math.min(20,Math.max(10,(.3-C(t/4)/2)*200))
+  Rl=S(t/1.5)*2, Pt=0, Yw=C(t/3)*8
+
+  x.fillStyle='#000c'
   x.fillRect(0,0,c.width,c.height)
   x.lineJoin = x.lineCap = 'roud'
   
@@ -1169,147 +1153,26 @@
 
   x.globalAlpha = 1
 
-  
-  elasticity = 30
-  bounding.map((v,i)=>{
-    x.beginPath()
-    d_ = 0
-    v.map(q=>{
-      q[3] /= 1.025
-      q[4] /= 1.025
-      q[5] /= 1.025
-      q[3] += (q[6]-q[0])/elasticity
-      q[4] += (q[7]-q[1])/elasticity
-      q[5] += (q[8]-q[2])/elasticity
-      X1 = X = q[0] += q[3]
-      Y1 = Y = q[1] += q[4]
-      Z1 = Z = q[2] += q[5]
-      disp.map(n=>{
-        displacement = 1-((1-n[3])**2 + n[3]**2)
-        X2 = n[0]
-        Y2 = n[1]
-        Z2 = n[2]
-        d = (5+Math.hypot(a=X2-X,b=Y2-Y,e=Z2-Z))**2
-        d2 = Math.hypot(X2,Y2,Z2)
-        vx = X2/d2
-        vy = Y2/d2
-        vz = Z2/d2
-        q[3] += vx*500*displacement/d
-        q[4] += vy*500*displacement/d
-        q[5] += vz*500*displacement/d
-        d_ += Math.hypot(q[6]-q[0],q[7]-q[1],q[8]-q[2])/2
+  shps.map((shp,idx)=>{
+    tx = shp[0]
+    ty = shp[1]
+    tz = shp[2]
+    shp[3].map(v=>{
+      x.beginPath()
+      v.map(q=>{
+        X = q[0]+tx
+        Y = q[1]+ty
+        Z = q[2]+tz
+        R(Rl,Pt,Yw,1)
+        if(Z>0)x.lineTo(...Q())
       })
-      R(Rl,Pt,Yw,1)
-      if(Z>0)x.lineTo(...Q())
+      stroke('#FFFFFF08',`hsla(${360/shps.length*idx+t*100},99%,50%,.05)`,2,true)
     })
-    alph = Math.max(0,(1-1/(1+d_**2/2000))*.2)
-    col2 = alph>.05?`hsla(${d_**1.2+t*200},99%,${50+d_**2/500}%,${alph})`:(i%2?'':'#ffffff06')
-    stroke('',col2,10,false)
   })
   
-  P = P.filter(v=>v[6]>.1)
-  P.map(v=>{
-    X1 = X = v[0] += v[3]
-    Y1 = Y = v[1] += v[4]
-    Z1 = Z = v[2] += v[5]
-    X2 = X1 + v[3] * iPv*3
-    Y2 = Y1 + v[3] * iPv*3
-    Z2 = Z1 + v[3] * iPv*3
-    bounding.map(k=>{
-      ax=ay=az=0
-      k.map(q=>{
-        ax += q[0]
-        ay += q[1]
-        az += q[2]
-      })
-      ax /= k.length
-      ay /= k.length
-      az /= k.length
-      d = Math.hypot((X1+X2)/2-ax,(Y1+Y2)/2-ay,(Z1+Z2)/2-az)
-      if(d<16 && (l=lineFaceI(X1,Y1,Z1,X2,Y2,Z2,k))){
-        spawnDisplacement(...l[0])
-        spawnSparks(...l[0])
-        v[6]=0
-      }
-    })
-    R(Rl,Pt,Yw,1)
-    if(Z>0) {
-      l = Q()
-      s = Math.min(1e3,15000/Z*v[6])
-      x.fillStyle = '#ff000010'
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      s/=3
-      x.fillStyle = '#40f2'
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      s/=3
-      x.fillStyle = '#fffa'
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-    }
-    v[6] -= .01
-  })
 
-  disp = disp.filter(v=>v[3]>0)
-  
-  disp.map(v=>{
-    v[3]-=.1
-  })
 
-  sparks = sparks.filter(v=>v[6]>.1)
-  sparks.map(v=>{
-    X = v[0] += v[3]
-    Y = v[1] += v[4]+=.02
-    Z = v[2] += v[5]
-    R(Rl,Pt,Yw,1)
-    if(Z>0){
-      l = Q()
-      s = Math.min(1e3, 10000*v[6]/Z)
-      x.fillStyle = '#ff000003'
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      s/=4
-      x.fillStyle = '#ff880010'
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      s/=3
-      x.fillStyle = '#fffa'
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-    }
-    v[6] -= .01
-  })
-  
-  emitters.map(emitter=>{
-    tx = emitter[0] += emitter[3]
-    ty = emitter[1] += emitter[4]
-    tz = emitter[2] += emitter[5]
-    if(tx>G/2 || tx<-G/2) emitter[3]*=-1
-    if(ty>G/2 || ty<-G/2) emitter[4]*=-1
-    if(tz>G/2 || tz<-G/2) emitter[5]*=-1
-    rl = emitter[6] += emitter[9]
-    pt = emitter[7] += emitter[10]
-    yw = emitter[8] += emitter[11]
-    emitter[12].map(v=>{
-      tx2 = v[0]
-      ty2 = v[1]
-      tz2 = v[2]
-      p1 = Math.atan2(tx2,tz2)
-      p2 = Math.acos(ty2/(Math.hypot(tx2,ty2,tz2)+.001))
-      base_cylinder.map(q=>{
-        x.beginPath()
-        q.map(n=>{
-          X = n[0]
-          Y = n[1]
-          Z = n[2]
-          R(0,p2,0)
-          R(0,0,p1)
-          R(rl,pt,yw)
-          X += tx
-          Y += ty
-          Z += tz
-          R(Rl,Pt,Yw,1)
-          if(Z>0) x.lineTo(...Q())
-        })
-        stroke('#0f82','#0f82')
-      })
-    })
-  })
+	      
 
 t+=1/60
 
