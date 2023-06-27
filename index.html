@@ -243,9 +243,9 @@
               Y2=q[1]
               Z2=q[2]
               d=1+(Math.hypot(X-X2,Y-Y2,Z-Z2)*(3+iBc/40)*3)**4
-              X+=(X-X2)*1e3/d
-              Y+=(Y-Y2)*1e3/d
-              Z+=(Z-Z2)*1e3/d
+              X+=(X-X2)*300/d
+              Y+=(Y-Y2)*300/d
+              Z+=(Z-Z2)*300/d
             }
           })
           d=Math.hypot(X,Y,Z)
@@ -413,7 +413,7 @@
       return isc
     }
     
-    Cylinder = (rw,cl,ls1,ls2) => {
+    _Cylinder = (rw,cl,ls1,ls2) => {
       let a = []
       for(let i=rw;i--;){
         let b = []
@@ -456,7 +456,7 @@
       return a
     }
 
-    Tetrahedron = size => {
+    _Tetrahedron = size => {
       ret = []
       a = []
       let h = size/1.4142/1.25
@@ -505,12 +505,12 @@
       return ret
     }
 
-    Cube = size => {
+    _Cube = size => {
       for(CB=[],j=6;j--;CB=[...CB,b])for(b=[],i=4;i--;)b=[...b,[(a=[S(p=Math.PI*2/4*i+Math.PI/4),C(p),2**.5/2])[j%3]*(l=j<3?size/1.5:-size/1.5),a[(j+1)%3]*l,a[(j+2)%3]*l]]
       return CB
     }
     
-    Octahedron = size => {
+    _Octahedron = size => {
       ret = []
       let h = size/1.25
       for(j=8;j--;){
@@ -532,7 +532,7 @@
       return ret      
     }
     
-    Dodecahedron = size => {
+    _Dodecahedron = size => {
       ret = []
       a = []
       mind = -6e6
@@ -616,7 +616,7 @@
       return ret
     }
     
-    Icosahedron = size => {
+    _Icosahedron = size => {
       ret = []
       B = [
         [[0,3],[1,0],[2,2]],
@@ -848,73 +848,8 @@
       }
       return shape
     }
-    
-    subDividedIcosahedron  = (subs, size, sphereize = 0) => subbed(subs, size, sphereize, Icosahedron(size))
-    subDividedTetrahedron  = (subs, size, sphereize = 0) => subbed(subs, size, sphereize, Tetrahedron(size))
-    subDividedOctahedron   = (subs, size, sphereize = 0) => subbed(subs, size, sphereize, Octahedron(size))
-    subDividedCube         = (subs, size, sphereize = 0) => subbed(subs, size, sphereize, Cube(size))
-    subDividedDodecahedron = (subs, size, sphereize = 0) => subbed(subs, size, sphereize, Dodecahedron(size))
-    
-    Rn = Math.random
-    
-    LsystemRecurse = (size, splits, p1, p2, stem, theta, LsystemReduction, twistFactor) => {
-      if(size < .5) return
-      let X1 = stem[0]
-      let Y1 = stem[1]
-      let Z1 = stem[2]
-      let X2 = stem[3]
-      let Y2 = stem[4]
-      let Z2 = stem[5]
-      let p1a = Math.atan2(X2-X1,Z2-Z1)
-      let p2a = -Math.acos((Y2-Y1)/(Math.hypot(X2-X1,Y2-Y1,Z2-Z1)+.0001))+Math.PI
-      size/=LsystemReduction
-      for(let i=splits;i--;){
-        X = 0
-        Y = -size
-        Z = 0
-        R(0, theta, 0)
-        R(0, 0, Math.PI*2/splits*i+twistFactor)
-        R(0, p2a, 0)
-        R(0, 0, p1a+twistFactor)
-        X+=X2
-        Y+=Y2
-        Z+=Z2
-        let newStem = [X2, Y2, Z2, X, Y, Z]
-        Lshp = [...Lshp, newStem]
-        LsystemRecurse(size, splits, p1+Math.PI*2/splits*i+twistFactor, p2+theta, newStem, theta, LsystemReduction, twistFactor)
-      }
-    }
-    DrawLsystem = shp => {
-      shp.map(v=>{
-        x.beginPath()
-        X = v[0]
-        Y = v[1]
-        Z = v[2]
-        R(Rl,Pt,Yw,1)
-        if(Z>0)x.lineTo(...Q())
-        X = v[3]
-        Y = v[4]
-        Z = v[5]
-        R(Rl,Pt,Yw,1)
-        if(Z>0)x.lineTo(...Q())
-        lwo = Math.hypot(v[0]-v[3],v[1]-v[4],v[2]-v[5])
-        stroke('#0f82','',lwo)
-      })
-      
-    }
-    Lsystem = (size, splits, theta, LsystemReduction, twistFactor) => {
-      Lshp = []
-      stem = [0,0,0,0,-size,0]
-      Lshp = [...Lshp, stem]
-      LsystemRecurse(size, splits, 0, 0, stem, theta, LsystemReduction, twistFactor)
-      Lshp.map(v=>{
-        v[1]+=size*1.5
-        v[4]+=size*1.5
-      })
-      return Lshp
-    }
-    
-    Sphere = (ls, rw, cl) => {
+
+    _Sphere = (ls, rw, cl) => {
       a = []
       ls/=1.25
       for(j = rw; j--;){
@@ -942,103 +877,7 @@
       return a
     }
     
-    Torus = (rw, cl, ls1, ls2, parts=1, twists=0, part_spacing=1.5) => {
-      let ret = [], tx=0, ty=0, tz=0
-      for(let m=parts;m--;){
-        avgs = Array(rw).fill().map(v=>[0,0,0])
-        for(j=rw;j--;)for(let i = cl;i--;){
-          if(parts>1){
-            ls3 = ls1*part_spacing
-            X = S(p=Math.PI*2/parts*m) * ls3
-            Y = C(p) * ls3
-            Z = 0
-            R(prl1 = Math.PI*2/rw*(j-1)*twists,0,0)
-            tx1 = X
-            ty1 = Y 
-            tz1 = Z
-            R(0, 0, Math.PI*2/rw*(j-1))
-            ax1 = X
-            ay1 = Y
-            az1 = Z
-            X = S(p=Math.PI*2/parts*m) * ls3
-            Y = C(p) * ls3
-            Z = 0
-            R(prl2 = Math.PI*2/rw*(j)*twists,0,0)
-            tx2 = X
-            ty2 = Y
-            tz2 = Z
-            R(0, 0, Math.PI*2/rw*j)
-            ax2 = X
-            ay2 = Y
-            az2 = Z
-            p1a = Math.atan2(ax2-ax1,az2-az1)
-            p2a = Math.PI/2+Math.acos((ay2-ay1)/(Math.hypot(ax2-ax1,ay2-ay1,az2-az1)+.001))
-
-            X = S(p=Math.PI*2/parts*m) * ls3
-            Y = C(p) * ls3
-            Z = 0
-            R(Math.PI*2/rw*(j)*twists,0,0)
-            tx1b = X
-            ty1b = Y
-            tz1b = Z
-            R(0, 0, Math.PI*2/rw*j)
-            ax1b = X
-            ay1b = Y
-            az1b = Z
-            X = S(p=Math.PI*2/parts*m) * ls3
-            Y = C(p) * ls3
-            Z = 0
-            R(Math.PI*2/rw*(j+1)*twists,0,0)
-            tx2b = X
-            ty2b = Y
-            tz2b = Z
-            R(0, 0, Math.PI*2/rw*(j+1))
-            ax2b = X
-            ay2b = Y
-            az2b = Z
-            p1b = Math.atan2(ax2b-ax1b,az2b-az1b)
-            p2b = Math.PI/2+Math.acos((ay2b-ay1b)/(Math.hypot(ax2b-ax1b,ay2b-ay1b,az2b-az1b)+.001))
-          }
-          a = []
-          X = S(p=Math.PI*2/cl*i) * ls1
-          Y = C(p) * ls1
-          Z = 0
-          //R(0,0,-p1a)
-          R(prl1,p2a,0)
-          X += ls2 + tx1, Y += ty1, Z += tz1
-          R(0, 0, Math.PI*2/rw*j)
-          a = [...a, [X,Y,Z]]
-          X = S(p=Math.PI*2/cl*(i+1)) * ls1
-          Y = C(p) * ls1
-          Z = 0
-          //R(0,0,-p1a)
-          R(prl1,p2a,0)
-          X += ls2 + tx1, Y += ty1, Z += tz1
-          R(0, 0, Math.PI*2/rw*j)
-          a = [...a, [X,Y,Z]]
-          X = S(p=Math.PI*2/cl*(i+1)) * ls1
-          Y = C(p) * ls1
-          Z = 0
-          //R(0,0,-p1b)
-          R(prl2,p2b,0)
-          X += ls2 + tx2, Y += ty2, Z += tz2
-          R(0, 0, Math.PI*2/rw*(j+1))
-          a = [...a, [X,Y,Z]]
-          X = S(p=Math.PI*2/cl*i) * ls1
-          Y = C(p) * ls1
-          Z = 0
-          //R(0,0,-p1b)
-          R(prl2,p2b,0)
-          X += ls2 + tx2, Y += ty2, Z += tz2
-          R(0, 0, Math.PI*2/rw*(j+1))
-          a = [...a, [X,Y,Z]]
-          ret = [...ret, a]
-        }
-      }
-      return ret
-    }
-    
-    newTorus = (rw, cl, ls1, ls2, parts=1, partSpacing=1,twists=0,iterations=1) => {
+    _Torus = (rw, cl, ls1, ls2, parts=1, partSpacing=1,twists=0,iterations=1) => {
       let ret = []
       for(m=parts;m--;){
         ls3 = parts>1||partSpacing!=1?partSpacing:0
@@ -1104,30 +943,147 @@
       }
       return ret
     }
+
+    _Sphere = (ls, rw, cl) => {
+      a = []
+      ls/=1.25
+      for(j = rw; j--;){
+        for(i = cl; i--;){
+          b = []
+          X = S(p = Math.PI*2/cl*i) * S(q = Math.PI/rw*j) * ls
+          Y = C(q) * ls
+          Z = C(p) * S(q) * ls
+          b = [...b, [X,Y,Z]]
+          X = S(p = Math.PI*2/cl*(i+1)) * S(q = Math.PI/rw*j) * ls
+          Y = C(q) * ls
+          Z = C(p) * S(q) * ls
+          b = [...b, [X,Y,Z]]
+          X = S(p = Math.PI*2/cl*(i+1)) * S(q = Math.PI/rw*(j+1)) * ls
+          Y = C(q) * ls
+          Z = C(p) * S(q) * ls
+          b = [...b, [X,Y,Z]]
+          X = S(p = Math.PI*2/cl*i) * S(q = Math.PI/rw*(j+1)) * ls
+          Y = C(q) * ls
+          Z = C(p) * S(q) * ls
+          b = [...b, [X,Y,Z]]
+          a = [...a, b]
+        }
+      }
+      return a
+    }
+
+    Icosahedron  = (size, subs, sphereize = 0) => subbed(subs, size, sphereize, _Icosahedron(size))
+    Tetrahedron  = (size, subs, sphereize = 0) => subbed(subs, size, sphereize, _Tetrahedron(size))
+    Octahedron   = (size, subs, sphereize = 0) => subbed(subs, size, sphereize, _Octahedron(size))
+    Cube         = (size, subs, sphereize = 0) => subbed(subs, size, sphereize, _Cube(size))
+    Dodecahedron = (size, subs, sphereize = 0) => subbed(subs, size, sphereize, _Dodecahedron(size))
+    Torus = (rw, cl, ls1, ls2, parts=1, partSpacing=1, twists=0, iterations=1, size=1, subs=0, sphereize = 0) => {
+      return subbed(subs, size, sphereize, _Torus(rw, cl, ls1, ls2, parts, partSpacing, twists, iterations))
+    }
+    Cylinder = (rw, cl, ls1, ls2, size=1, subs=0, sphereize=0) => subbed(subs, size, sphereize, _Cylinder(rw,cl,ls1,ls2))
+    Sphere = (ls, rw, cl, size=1, subs=0, sphereize=0) => subbed(subs, size, sphereize, _Sphere(ls, rw, cl))
+    
+    Rn = Math.random
+    
+    LsystemRecurse = (size, splits, p1, p2, stem, theta, LsystemReduction, twistFactor) => {
+      if(size < .5) return
+      let X1 = stem[0]
+      let Y1 = stem[1]
+      let Z1 = stem[2]
+      let X2 = stem[3]
+      let Y2 = stem[4]
+      let Z2 = stem[5]
+      let p1a = Math.atan2(X2-X1,Z2-Z1)
+      let p2a = -Math.acos((Y2-Y1)/(Math.hypot(X2-X1,Y2-Y1,Z2-Z1)+.0001))+Math.PI
+      size/=LsystemReduction
+      for(let i=splits;i--;){
+        X = 0
+        Y = -size
+        Z = 0
+        R(0, theta, 0)
+        R(0, 0, Math.PI*2/splits*i+twistFactor)
+        R(0, p2a, 0)
+        R(0, 0, p1a+twistFactor)
+        X+=X2
+        Y+=Y2
+        Z+=Z2
+        let newStem = [X2, Y2, Z2, X, Y, Z]
+        Lshp = [...Lshp, newStem]
+        LsystemRecurse(size, splits, p1+Math.PI*2/splits*i+twistFactor, p2+theta, newStem, theta, LsystemReduction, twistFactor)
+      }
+    }
+    DrawLsystem = shp => {
+      shp.map(v=>{
+        x.beginPath()
+        X = v[0]
+        Y = v[1]
+        Z = v[2]
+        R(Rl,Pt,Yw,1)
+        if(Z>0)x.lineTo(...Q())
+        X = v[3]
+        Y = v[4]
+        Z = v[5]
+        R(Rl,Pt,Yw,1)
+        if(Z>0)x.lineTo(...Q())
+        lwo = Math.hypot(v[0]-v[3],v[1]-v[4],v[2]-v[5])
+        stroke('#0f82','',lwo)
+      })
+    }
+    
+    Lsystem = (size, splits, theta, LsystemReduction, twistFactor) => {
+      Lshp = []
+      stem = [0,0,0,0,-size,0]
+      Lshp = [...Lshp, stem]
+      LsystemRecurse(size, splits, 0, 0, stem, theta, LsystemReduction, twistFactor)
+      Lshp.map(v=>{
+        v[1]+=size*1.5
+        v[4]+=size*1.5
+      })
+      return Lshp
+    }
+    
+    G=10
+    shp = Tetrahedron(G, subs=4, sphereize = 8)
+    iBc = 6
+    iBls = 50
+    iSpinnerRv = .05
+    iSpinnerv = .1
+    vx = iSpinnerv/2 + (Rn()-.5) * iSpinnerv
+    vy = iSpinnerv/2 + (Rn()-.5) * iSpinnerv
+    vz = iSpinnerv/2 + (Rn()-.5) * iSpinnerv
+    rl=Rn()*Math.PI*2
+    pt=Rn()*Math.PI*2
+    yw=Rn()*Math.PI*2
+    rlv = ptv = ywv = 0
+    switch(Rn()*3|0){
+      case 0: rlv = iSpinnerRv/2 +(Rn()-.5) * iSpinnerRv/2; break
+      case 1: ptv = iSpinnerRv/2 +(Rn()-.5) * iSpinnerRv/2; break
+      case 2: rlv = iSpinnerRv/2 +(Rn()-.5) * iSpinnerRv/2; break
+    }
+    spinner = [[0, 0, 0, vx, vy, vz, rl, pt, yw, rlv, ptv, ywv, geoSphere(0, 0, 0, iBc, iBls)[4],Tetrahedron(iBls/12,3,6)]]
+    
+    sparks = []
+    iSparkv = .2
+    iSparkNo = 5
+    spawnSparks = (X,Y,Z) => {
+      for(let i=iSparkNo;i--;){
+        vx = (Rn()-.5)*iSparkv
+        vy = (Rn()-.5)*iSparkv
+        vz = (Rn()-.5)*iSparkv
+        sparks = [...sparks, [X,Y,Z,vx,vy,vz,1]]
+      }
+    }
     iSTc = 3e3, iSTG = 3e4
     ST = Array(iSTc).fill().map(v=>{
       X = (Rn()-.5) * iSTG
       Y = (Rn()-.5) * iSTG
       Z = (Rn()-.5) * iSTG
       return [X, Y, Z]
-    })    
+    })  
   }
   
-  base_torus = newTorus(6,100,1,8,2,3,S(t/3)*10,.75)
-  rw=1
-  cl=3
-  br=3
-  sp = 32
-  shps = Array(rw*br*cl).fill().map((shp, i) => {
-    tx = ((i%cl)-cl/2+.5)*sp
-    ty = (((i/cl|0)%rw)-rw/2+.5)*sp
-    tz = ((i/cl/rw|0)-br/2+.5)*sp
-    return [tx, ty ,tz, base_torus]
-  })
-    
-
-  oX=0, oY=0, oZ=Math.min(20,Math.max(10,(.3-C(t/4)/2)*200))
-  Rl=S(t/1.5)*2, Pt=0, Yw=C(t/3)*8
+  oX=0, oY=0, oZ=60
+  Rl=S(t/2)/4, Pt=C(t/4)/3, Yw=S(t/4)*4
 
   x.fillStyle='#000c'
   x.fillRect(0,0,c.width,c.height)
@@ -1153,24 +1109,166 @@
 
   x.globalAlpha = 1
 
-  shps.map((shp,idx)=>{
-    tx = shp[0]
-    ty = shp[1]
-    tz = shp[2]
-    shp[3].map(v=>{
+  spinner.map(q=>{
+    tx = q[0]+=q[3]
+    ty = q[1]+=q[4]
+    tz = q[2]+=q[5]
+    if(tx>G || tx<-G) q[3]*=-1
+    if(ty>G || ty<-G) q[4]*=-1
+    if(tz>G || tz<-G) q[5]*=-1
+    rl = q[6] += q[9]
+    pt = q[7] += q[10]
+    yw = q[8] += q[11]
+    q[12].map(n=>{
+      X = (X1 = n[0])
+      Y = (Y1 = n[1])
+      Z = (Z1 = n[2])
+      R(rl,pt,yw)
+      X += tx
+      Y += ty
+      Z += tz
+      XA = X
+      YA = Y
+      ZA = Z
+      X = (X1/=5)
+      Y = (Y1/=5)
+      Z = (Z1/=5)
+      R(rl,pt,yw)
+      X += tx
+      Y += ty
+      Z += tz
+      XB = X
+      YB = Y
+      ZB = Z
+      for(N=9;N--;){
+        x.beginPath()
+        X = XA+(XB-XA)/9*N
+        Y = YA+(YB-YA)/9*N
+        Z = ZA+(ZB-ZA)/9*N
+        R(Rl,Pt,Yw,1)
+        if(Z>0) x.lineTo(...Q())
+        X = XA+(XB-XA)/9*(N+1)
+        Y = YA+(YB-YA)/9*(N+1)
+        Z = ZA+(ZB-ZA)/9*(N+1)
+        R(Rl,Pt,Yw,1)
+        if(Z>0) x.lineTo(...Q())
+        stroke('#4f84','',20,true)
+      }
+    })
+    q[13].map(v=>{
       x.beginPath()
       v.map(q=>{
-        X = q[0]+tx
-        Y = q[1]+ty
-        Z = q[2]+tz
+        X = q[0]
+        Y = q[1]
+        Z = q[2]
+        R(rl,pt,yw)
+        X+=tx
+        Y+=ty
+        Z+=tz
         R(Rl,Pt,Yw,1)
-        if(Z>0)x.lineTo(...Q())
+        if(Z>0) x.lineTo(...Q())
       })
-      stroke('#FFFFFF08',`hsla(${360/shps.length*idx+t*100},99%,50%,.05)`,2,true)
+      stroke('#4f82', '#40f1', 4, false)
     })
   })
-  
 
+  contacts = []
+  shp.map(v=>{
+    ax=ay=az=0
+    v.map(q=>{
+      ax += X = q[0]
+      ay += Y = q[1]
+      az += Z = q[2]
+      R(Rl,Pt,Yw,1)
+      if(Z>0) x.lineTo(...Q())
+    })
+    ax /= v.length
+    ay /= v.length
+    az /= v.length
+    spinner.map(q=>{
+      tx = q[0]
+      ty = q[1]
+      tz = q[2]
+      rl = q[6]
+      pt = q[7]
+      yw = q[8]
+      q[12].map(n=>{
+        x.beginPath()
+        X = (X1_ = n[0])
+        Y = (Y1_ = n[1])
+        Z = (Z1_ = n[2])
+        R(rl,pt,yw)
+        X1 = tx + X
+        Y1 = ty + Y
+        Z1 = tz + Z
+        X = (X1_/=5)
+        Y = (Y1_/=5)
+        Z = (Z1_/=5)
+        R(rl,pt,yw)
+        X2 = tx + X
+        Y2 = ty + Y
+        Z2 = tz + Z
+        check = false
+        for(N=20;N--;){
+          if((d = Math.hypot(ax-(X2+X1)/20*N,ay-(Y2+Y1)/20*N,az-(Z2+Z1)/20*N))<5) check = true
+        }
+        if(check && (l=lineFaceI(X1,Y1,Z1,X2,Y2,Z2,v))){
+          contacts = [...contacts, l[0]]
+          X = l[0][0]
+          Y = l[0][1]
+          Z = l[0][2]
+          spawnSparks(X,Y,Z)
+        }
+      })
+    })
+  })
+  shp.map(v=>{
+    x.beginPath()
+    ax=ay=az=0
+    v.map(q=>{
+      ax += X = q[0]
+      ay += Y = q[1]
+      az += Z = q[2]
+      R(Rl,Pt,Yw,1)
+      if(Z>0) x.lineTo(...Q())
+    })
+    ax /= v.length
+    ay /= v.length
+    az /= v.length
+    d1 = 0
+    contacts.map(n=>{
+      X2 = n[0]
+      Y2 = n[1]
+      Z2 = n[2]
+      d1 += 2/(1+Math.hypot(X2-ax,Y2-ay,Z2-az))**2
+    })
+    col2 = d1>.0125?`hsla(${0},99%,${50+d1*10**2}%,${Math.min(.5,d1*2)})`:''
+    stroke('#f001',col2,6,false)
+  })
+  
+  sparks = sparks.filter(v=>v[6]>.1)
+
+  sparks.map(v=>{
+    X = v[0] += v[3]
+    Y = v[1] += v[4]+=.01
+    Z = v[2] += v[5]
+    R(Rl,Pt,Yw,1)
+    if(Z>0){
+      l = Q()
+      s = Math.min(1e3, 2000/Z*v[6])
+      x.globalAlpha = v[6]
+      x.fillStyle = '#ff000008'
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      s/=2
+      x.fillStyle = '#ff880008'
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      s/=3
+      x.fillStyle = '#fff'
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+    }
+    v[6]-=.015
+  })
+  x.globalAlpha = 1
 
 	      
 
