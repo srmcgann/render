@@ -1152,7 +1152,7 @@
         Z = ZA+(ZB-ZA)/9*(N+1)
         R(Rl,Pt,Yw,1)
         if(Z>0) x.lineTo(...Q())
-        stroke('#4f84','',20,true)
+        stroke('#4f88','',20,true)
       }
     })
     q[13].map(v=>{
@@ -1210,7 +1210,7 @@
         Z2 = tz + Z
         check = false
         for(N=20;N--;){
-          if((d = Math.hypot(ax-(X2+X1)/20*N,ay-(Y2+Y1)/20*N,az-(Z2+Z1)/20*N))<5) check = true
+          if((d = Math.hypot(ax-(X2+X1)/20*N,ay-(Y2+Y1)/20*N,az-(Z2+Z1)/20*N))<6) check = true
         }
         if(check && (l=lineFaceI(X1,Y1,Z1,X2,Y2,Z2,v))){
           contacts = [...contacts, l[0]]
