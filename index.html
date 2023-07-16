@@ -142,12 +142,12 @@
       M=Math
       A=M.atan2
       H=M.hypot
+      X=S(p=A(X,Y)+Rl)*(d=H(X,Y))
+      Y=C(p)*d
       X=S(p=A(X,Z)+Yw)*(d=H(X,Z))
       Z=C(p)*d
       Y=S(p=A(Y,Z)+Pt)*(d=H(Y,Z))
       Z=C(p)*d
-      X=S(p=A(X,Y)+Rl)*(d=H(X,Y))
-      Y=C(p)*d
       if(m){
         X+=oX
         Y+=oY
@@ -157,45 +157,6 @@
     Q=()=>[c.width/2+X/Z*900,c.height/2+Y/Z*900]
     I=(A,B,M,D,E,F,G,H)=>(K=((G-E)*(B-F)-(H-F)*(A-E))/(J=(H-F)*(M-A)-(G-E)*(D-B)))>=0&&K<=1&&(L=((M-A)*(B-F)-(D-B)*(A-E))/J)>=0&&L<=1?[A+K*(M-A),B+K*(D-B)]:0
     
-    hexToRGBA=q=>{
-      q=q.replace('#', '')
-      let l=q.length
-      if(l!=3 && l!=4 && l!==6 && l!=8) return
-      let red, green, blue, alpha, red_, green_, blue_, alpha_
-      switch(l){
-        case 3:
-          red_     = q[0]+q[0]
-          green_   = q[1]+q[1]
-          blue_    = q[2]+q[2]
-          alpha    = 255
-          break
-        case 4:
-          red_     = q[0]+q[0]
-          green_   = q[1]+q[1]
-          blue_    = q[2]+q[2]
-          alpha_   = q[3]+q[3]
-          alpha    = +("0x"+alpha_)
-          break
-        case 6:
-          red_     = q[0]+q[1]
-          green_   = q[2]+q[3]
-          blue_    = q[4]+q[5]
-          alpha    = 255
-          break
-        case 8:
-          red_     = q[0]+q[1]
-          green_   = q[2]+q[3]
-          blue_    = q[4]+q[5]
-          alpha_   = q[6]+q[7]
-          alpha    = +("0x"+alpha_)
-          break
-      }
-      red    = +("0x"+red_)
-      green  = +("0x"+green_)
-      blue   = +("0x"+blue_)
-      return [red, green, blue, alpha]
-    }
-
     Rn = Math.random
     
     async function loadOBJ(url, scale, tx, ty, tz, rl, pt, yw) {
@@ -271,7 +232,7 @@
         Z = Rn()-.5
         return  [X,Y,Z]
       })
-      for(let m=150;m--;){
+      for(let m=200;m--;){
         B.map((v,i)=>{
           X = v[0]
           Y = v[1]
@@ -282,9 +243,9 @@
               Y2=q[1]
               Z2=q[2]
               d=1+(Math.hypot(X-X2,Y-Y2,Z-Z2)*(3+iBc/40)*3)**4
-              X+=(X-X2)*800/d
-              Y+=(Y-Y2)*800/d
-              Z+=(Z-Z2)*800/d
+              X+=(X-X2)*500/d
+              Y+=(Y-Y2)*500/d
+              Z+=(Z-Z2)*500/d
             }
           })
           d=Math.hypot(X,Y,Z)
@@ -452,7 +413,7 @@
       return isc
     }
     
-    _Cylinder = (rw,cl,ls1,ls2) => {
+    Cylinder = (rw,cl,ls1,ls2) => {
       let a = []
       for(let i=rw;i--;){
         let b = []
@@ -495,7 +456,7 @@
       return a
     }
 
-    _Tetrahedron = size => {
+    Tetrahedron = size => {
       ret = []
       a = []
       let h = size/1.4142/1.25
@@ -544,12 +505,12 @@
       return ret
     }
 
-    _Cube = size => {
+    Cube = size => {
       for(CB=[],j=6;j--;CB=[...CB,b])for(b=[],i=4;i--;)b=[...b,[(a=[S(p=Math.PI*2/4*i+Math.PI/4),C(p),2**.5/2])[j%3]*(l=j<3?size/1.5:-size/1.5),a[(j+1)%3]*l,a[(j+2)%3]*l]]
       return CB
     }
     
-    _Octahedron = size => {
+    Octahedron = size => {
       ret = []
       let h = size/1.25
       for(j=8;j--;){
@@ -571,7 +532,7 @@
       return ret      
     }
     
-    _Dodecahedron = size => {
+    Dodecahedron = size => {
       ret = []
       a = []
       mind = -6e6
@@ -655,7 +616,7 @@
       return ret
     }
     
-    _Icosahedron = size => {
+    Icosahedron = size => {
       ret = []
       B = [
         [[0,3],[1,0],[2,2]],
@@ -711,9 +672,9 @@
       return out
     }
     
-    stroke = (scol, fcol, lwo=1, od=true) => {
+    stroke = (scol, fcol, lwo=1, od=true, closePath=true) => {
       if(scol){
-        x.closePath()
+        if(closePath) x.closePath()
         if(od) x.globalAlpha = .2
         x.strokeStyle = scol
         x.lineWidth = Math.min(100,100*lwo/Z)
@@ -887,140 +848,12 @@
       }
       return shape
     }
-
-    _Sphere = (ls, rw, cl) => {
-      a = []
-      ls/=1.25
-      for(j = rw; j--;){
-        for(i = cl; i--;){
-          b = []
-          X = S(p = Math.PI*2/cl*i) * S(q = Math.PI/rw*j) * ls
-          Y = C(q) * ls
-          Z = C(p) * S(q) * ls
-          b = [...b, [X,Y,Z]]
-          X = S(p = Math.PI*2/cl*(i+1)) * S(q = Math.PI/rw*j) * ls
-          Y = C(q) * ls
-          Z = C(p) * S(q) * ls
-          b = [...b, [X,Y,Z]]
-          X = S(p = Math.PI*2/cl*(i+1)) * S(q = Math.PI/rw*(j+1)) * ls
-          Y = C(q) * ls
-          Z = C(p) * S(q) * ls
-          b = [...b, [X,Y,Z]]
-          X = S(p = Math.PI*2/cl*i) * S(q = Math.PI/rw*(j+1)) * ls
-          Y = C(q) * ls
-          Z = C(p) * S(q) * ls
-          b = [...b, [X,Y,Z]]
-          a = [...a, b]
-        }
-      }
-      return a
-    }
     
-    _Torus = (rw, cl, ls1, ls2, parts=1, partSpacing=1,twists=0,iterations=1) => {
-      let ret = []
-      for(m=parts;m--;){
-        ls3 = parts>1||partSpacing!=1?partSpacing:0
-        tx = S(p__=Math.PI*2/parts*m)*ls3
-        ty = C(p__)*ls3
-        tz = 0
-        for(let i=cl*iterations|0;i--;){
-          for(let j=rw;j--;){
-            a = []
-            X = S(p=Math.PI*2/rw*j-Math.PI*2/cl*i*twists+Math.PI/rw) * ls1
-            Y = C(p) * ls1
-            Z = 0
-            X += tx
-            Y += ty
-            Z += tz
-            R(Math.PI*2/cl*i*twists,0,0)
-            tilt=S(Math.PI*2/cl*i*twists+p__)/1
-            R(0,tilt,0)
-            X += ls2
-            R(0,0,Math.PI*2/cl*i)
-            a = [...a, [X,Y,Z]]
-            X = S(p=Math.PI*2/rw*j-Math.PI*2/cl*(i+1)*twists+Math.PI/rw) * ls1
-            Y = C(p) * ls1
-            Z = 0
-            X += tx
-            Y += ty
-            Z += tz
-            R(Math.PI*2/cl*(i+1)*twists,0,0)
-            tilt=S(Math.PI*2/cl*(i+1)*twists+p__)/1
-            R(0,tilt,0)
-            X += ls2
-            Y += 0
-            Z += 0
-            R(0,0,Math.PI*2/cl*(i+1))
-            a = [...a, [X,Y,Z]]
-            X = S(p=Math.PI*2/rw*(j+1)-Math.PI*2/cl*(i+1)*twists+Math.PI/rw) * ls1
-            Y = C(p) * ls1
-            Z = 0
-            X += tx
-            Y += ty
-            Z += tz
-            R(Math.PI*2/cl*(i+1)*twists,0,0)
-            tilt=S(Math.PI*2/cl*(i+1)*twists+p__)/1
-            R(0,tilt,0)
-            X += ls2
-            R(0,0,Math.PI*2/cl*(i+1))
-            a = [...a, [X,Y,Z]]
-            X = S(p=Math.PI*2/rw*(j+1)-Math.PI*2/cl*i*twists+Math.PI/rw) * ls1
-            Y = C(p) * ls1
-            Z = 0
-            X += tx
-            Y += ty
-            Z += tz
-            R(Math.PI*2/cl*i*twists,0,0)
-            tilt=S(Math.PI*2/cl*(i+0)*twists+p__)/1
-            R(0,tilt,0)
-            X += ls2
-            R(0,0,Math.PI*2/cl*i)
-            a = [...a, [X,Y,Z]]
-            ret = [...ret, a]
-          }
-        }
-      }
-      return ret
-    }
-
-    _Sphere = (ls, rw, cl) => {
-      a = []
-      ls/=1.25
-      for(j = rw; j--;){
-        for(i = cl; i--;){
-          b = []
-          X = S(p = Math.PI*2/cl*i) * S(q = Math.PI/rw*j) * ls
-          Y = C(q) * ls
-          Z = C(p) * S(q) * ls
-          b = [...b, [X,Y,Z]]
-          X = S(p = Math.PI*2/cl*(i+1)) * S(q = Math.PI/rw*j) * ls
-          Y = C(q) * ls
-          Z = C(p) * S(q) * ls
-          b = [...b, [X,Y,Z]]
-          X = S(p = Math.PI*2/cl*(i+1)) * S(q = Math.PI/rw*(j+1)) * ls
-          Y = C(q) * ls
-          Z = C(p) * S(q) * ls
-          b = [...b, [X,Y,Z]]
-          X = S(p = Math.PI*2/cl*i) * S(q = Math.PI/rw*(j+1)) * ls
-          Y = C(q) * ls
-          Z = C(p) * S(q) * ls
-          b = [...b, [X,Y,Z]]
-          a = [...a, b]
-        }
-      }
-      return a
-    }
-
-    Icosahedron  = (size, subs, sphereize = 0) => subbed(subs, size, sphereize, _Icosahedron(size))
-    Tetrahedron  = (size, subs, sphereize = 0) => subbed(subs, size, sphereize, _Tetrahedron(size))
-    Octahedron   = (size, subs, sphereize = 0) => subbed(subs, size, sphereize, _Octahedron(size))
-    Cube         = (size, subs, sphereize = 0) => subbed(subs, size, sphereize, _Cube(size))
-    Dodecahedron = (size, subs, sphereize = 0) => subbed(subs, size, sphereize, _Dodecahedron(size))
-    Torus = (rw, cl, ls1, ls2, parts=1, partSpacing=1, twists=0, iterations=1, size=1, subs=0, sphereize = 0) => {
-      return subbed(subs, size, sphereize, _Torus(rw, cl, ls1, ls2, parts, partSpacing, twists, iterations))
-    }
-    Cylinder = (rw, cl, ls1, ls2, size=1, subs=0, sphereize=0) => subbed(subs, size, sphereize, _Cylinder(rw,cl,ls1,ls2))
-    Sphere = (ls, rw, cl, size=1, subs=0, sphereize=0) => subbed(subs, size, sphereize, _Sphere(ls, rw, cl))
+    subDividedIcosahedron  = (size, subs, sphereize = 0) => subbed(subs, size, sphereize, Icosahedron(size))
+    subDividedTetrahedron  = (size, subs, sphereize = 0) => subbed(subs, size, sphereize, Tetrahedron(size))
+    subDividedOctahedron   = (size, subs, sphereize = 0) => subbed(subs, size, sphereize, Octahedron(size))
+    subDividedCube         = (size, subs, sphereize = 0) => subbed(subs, size, sphereize, Cube(size))
+    subDividedDodecahedron = (size, subs, sphereize = 0) => subbed(subs, size, sphereize, Dodecahedron(size))
     
     Rn = Math.random
     
@@ -1067,8 +900,8 @@
         lwo = Math.hypot(v[0]-v[3],v[1]-v[4],v[2]-v[5])
         stroke('#0f82','',lwo)
       })
+      
     }
-    
     Lsystem = (size, splits, theta, LsystemReduction, twistFactor) => {
       Lshp = []
       stem = [0,0,0,0,-size,0]
@@ -1081,153 +914,237 @@
       return Lshp
     }
     
-
-    rw=5,cl=5,sp=3
-    lines = Array(rw*cl).fill().map((v,i)=>{
-      X1 = -8
-      Y1 = ((i%cl)-cl/2+.5)*sp
-      Z1 = ((i/cl|0)-rw/2+.5)*sp
-      X2 = 8
-      Y2 = ((i%cl)-cl/2+.5)*sp
-      Z2 = ((i/cl|0)-rw/2+.5)*sp
-      return [X1,Y1,Z1,X2,Y2,Z2]
-    })
-
-    P = [], iPv=.05
-    spawnP = l => {
-      vx = (Rn()-.5)*iPv
-      vy = (Rn()-.5)*iPv
-      vz = (Rn()-.5)*iPv
-      P = [...P, [...l, vx, vy, vz, 1]]
+    Sphere = (ls, rw, cl) => {
+      a = []
+      ls/=1.25
+      for(j = rw; j--;){
+        for(i = cl; i--;){
+          b = []
+          X = S(p = Math.PI*2/cl*i) * S(q = Math.PI/rw*j) * ls
+          Y = C(q) * ls
+          Z = C(p) * S(q) * ls
+          b = [...b, [X,Y,Z]]
+          X = S(p = Math.PI*2/cl*(i+1)) * S(q = Math.PI/rw*j) * ls
+          Y = C(q) * ls
+          Z = C(p) * S(q) * ls
+          b = [...b, [X,Y,Z]]
+          X = S(p = Math.PI*2/cl*(i+1)) * S(q = Math.PI/rw*(j+1)) * ls
+          Y = C(q) * ls
+          Z = C(p) * S(q) * ls
+          b = [...b, [X,Y,Z]]
+          X = S(p = Math.PI*2/cl*i) * S(q = Math.PI/rw*(j+1)) * ls
+          Y = C(q) * ls
+          Z = C(p) * S(q) * ls
+          b = [...b, [X,Y,Z]]
+          a = [...a, b]
+        }
+      }
+      return a
     }
-    bg = new Image()
-    bg.src = 'bg3.jpg'
+    
+    Torus = (rw, cl, ls1, ls2, parts=1, twists=0, part_spacing=1.5) => {
+      let ret = [], tx=0, ty=0, tz=0
+      for(let m=parts;m--;){
+        avgs = Array(rw).fill().map(v=>[0,0,0])
+        for(j=rw;j--;)for(let i = cl;i--;){
+          if(parts>1){
+            ls3 = ls1*part_spacing
+            X = S(p=Math.PI*2/parts*m) * ls3
+            Y = C(p) * ls3
+            Z = 0
+            R(prl1 = Math.PI*2/rw*(j-1)*twists,0,0)
+            tx1 = X
+            ty1 = Y 
+            tz1 = Z
+            R(0, 0, Math.PI*2/rw*(j-1))
+            ax1 = X
+            ay1 = Y
+            az1 = Z
+            X = S(p=Math.PI*2/parts*m) * ls3
+            Y = C(p) * ls3
+            Z = 0
+            R(prl2 = Math.PI*2/rw*(j)*twists,0,0)
+            tx2 = X
+            ty2 = Y
+            tz2 = Z
+            R(0, 0, Math.PI*2/rw*j)
+            ax2 = X
+            ay2 = Y
+            az2 = Z
+            p1a = Math.atan2(ax2-ax1,az2-az1)
+            p2a = Math.PI/2+Math.acos((ay2-ay1)/(Math.hypot(ax2-ax1,ay2-ay1,az2-az1)+.001))
+
+            X = S(p=Math.PI*2/parts*m) * ls3
+            Y = C(p) * ls3
+            Z = 0
+            R(Math.PI*2/rw*(j)*twists,0,0)
+            tx1b = X
+            ty1b = Y
+            tz1b = Z
+            R(0, 0, Math.PI*2/rw*j)
+            ax1b = X
+            ay1b = Y
+            az1b = Z
+            X = S(p=Math.PI*2/parts*m) * ls3
+            Y = C(p) * ls3
+            Z = 0
+            R(Math.PI*2/rw*(j+1)*twists,0,0)
+            tx2b = X
+            ty2b = Y
+            tz2b = Z
+            R(0, 0, Math.PI*2/rw*(j+1))
+            ax2b = X
+            ay2b = Y
+            az2b = Z
+            p1b = Math.atan2(ax2b-ax1b,az2b-az1b)
+            p2b = Math.PI/2+Math.acos((ay2b-ay1b)/(Math.hypot(ax2b-ax1b,ay2b-ay1b,az2b-az1b)+.001))
+          }
+          a = []
+          X = S(p=Math.PI*2/cl*i) * ls1
+          Y = C(p) * ls1
+          Z = 0
+          //R(0,0,-p1a)
+          R(prl1,p2a,0)
+          X += ls2 + tx1, Y += ty1, Z += tz1
+          R(0, 0, Math.PI*2/rw*j)
+          a = [...a, [X,Y,Z]]
+          X = S(p=Math.PI*2/cl*(i+1)) * ls1
+          Y = C(p) * ls1
+          Z = 0
+          //R(0,0,-p1a)
+          R(prl1,p2a,0)
+          X += ls2 + tx1, Y += ty1, Z += tz1
+          R(0, 0, Math.PI*2/rw*j)
+          a = [...a, [X,Y,Z]]
+          X = S(p=Math.PI*2/cl*(i+1)) * ls1
+          Y = C(p) * ls1
+          Z = 0
+          //R(0,0,-p1b)
+          R(prl2,p2b,0)
+          X += ls2 + tx2, Y += ty2, Z += tz2
+          R(0, 0, Math.PI*2/rw*(j+1))
+          a = [...a, [X,Y,Z]]
+          X = S(p=Math.PI*2/cl*i) * ls1
+          Y = C(p) * ls1
+          Z = 0
+          //R(0,0,-p1b)
+          R(prl2,p2b,0)
+          X += ls2 + tx2, Y += ty2, Z += tz2
+          R(0, 0, Math.PI*2/rw*(j+1))
+          a = [...a, [X,Y,Z]]
+          ret = [...ret, a]
+        }
+      }
+      return ret
+    }
+
+    base_shape = Cube(cubeLs =.6)
+    grid = []
+    rw = 10
+    cl = 25
+    br = 25
+    sp = cubeLs
+    sp2=10
+    for(i=0;i<rw*cl*br;++i){
+      tx = ((i%cl)-cl/2+.5)*sp/1.05
+      ty = (((i/cl|0)%rw)-rw/2+.5)*sp/1.05
+      tz = ((i/rw/cl|0)-br/2+.5)*sp/1.05
+      grid = [...grid, JSON.parse(JSON.stringify(base_shape)).map(v=>{
+        v.map(q=>{
+          q[0]+=tx
+          q[1]+=ty
+          q[2]+=tz
+        })
+        return v
+      })]
+    }
+    
+    Floor = (X,Z) => {
+      return -C(Math.PI*4/((rw-1)*sp)*X/40)*C(Math.PI*4/((rw-1)*sp)*Z/40+t*4)*S(t/2)*2-1
+    }
+    iSTc = 3e3
+    G = 1e5
+    ST = Array(iSTc).fill().map(v=>{
+      X = (Rn()-.5)*G
+      Y = (Rn()-.5)*G
+      Z = (Rn()-.5)*G
+      return [X, Y, Z]
+    })
   }
 
-  shps = [,
-    [0, 0, 0, Cube(4,2,(1.5+S(t)*2)*2)]
-  ]
-
-
-  oX=0, oY=0, oZ=16+Math.min(1,Math.max(-12,((.3+C(t/2))*2)*50))
-  rl=S(t/2)/50, pt=C(t/4)/60, yw=S(t)/40
-  Rl=S(t/2)/4, Pt=-C(t/2)/4, Yw=C(t/2)*3
-
-  x.globalAlpha = .4
-  x.drawImage(bg,0,-250,c.width*1.03,c.height+450)
-  x.globalAlpha = 1
-  x.fillStyle='#0006'
+  oX=0, oY=0, oZ=8
+  Rl=0, Pt=Math.PI+S(t/2)/3-.33, Yw=t/4
+  x.fillStyle='#0008'
   x.fillRect(0,0,c.width,c.height)
-  x.lineJoin = x.lineCap = 'round'
+  x.lineJoin = x.lineCap = 'roud'
 
-  segs=8
-
-  if(1)shps.map(v=>{
-    tx = v[0]
-    ty = v[1]
-    tz = v[2]
-    v[3].map(q=>{
-      x.beginPath()
-      q.map(n=>{
-        X = n[0]
-        Y = n[1]
-        Z = n[2]
-        //R(rl,pt,yw)
-        X+=tx
-        Y+=ty
-        Z+=tz
-        R(Rl,Pt,Yw,1)
-        if(Z>0) x.lineTo(...Q())
-      })
-      stroke('#ffffff16','#0f41',4,true)
-     })
-  })
-
-  lines.map((v,i)=>{
+  ST.map(v=>{
     X = v[0]
     Y = v[1]
     Z = v[2]
-    R(rl,pt,yw)
-    v[0] = X
-    v[1] = Y
-    v[2] = Z
-    X = v[3]
-    Y = v[4]
-    Z = v[5]
-    R(rl,pt,yw)
-    v[3] = X
-    v[4] = Y
-    v[5] = Z
-    
-    X1 = v[0]
-    Y1 = v[1]
-    Z1 = v[2]
-    X2 = v[3]
-    Y2 = v[4]
-    Z2 = v[5]
-    for(j=0;j<segs;++j){
-      x.beginPath()
-      XA = X = X1+(X2-X1)/segs * j
-      YA = Y = Y1+(Y2-Y1)/segs * j
-      ZA = Z = Z1+(Z2-Z1)/segs * j
-      R(Rl,Pt,Yw,1)
-      if(Z>0) x.lineTo(...Q())
-      XB = X = X1+(X2-X1)/segs * (j+1)
-      YB = Y = Y1+(Y2-Y1)/segs * (j+1)
-      ZB = Z = Z1+(Z2-Z1)/segs * (j+1)
-      let ax = (XA+XB)/2
-      let ay = (YA+YB)/2
-      let az = (ZA+ZB)/2
-      R(Rl,Pt,Yw,1)
-      if(Z>0) x.lineTo(...Q())
-      stroke('#40f8','',4,true)
-      shps.map(v=>{
-        tx = v[0]
-        ty = v[1]
-        tz = v[2]
-        v[3].map(q=>{
-          ax2 = ay2 = az2 = 0
-          q.map(n=>{
-            X = n[0]
-            Y = n[1]
-            Z = n[2]
-            //R(rl,pt,yw)
-            ax2 += X+=tx
-            ay2 += Y+=ty
-            az2 += Z+=tz
-          })
-          ax2/=q.length
-          ay2/=q.length
-          az2/=q.length
-          d = Math.hypot(ax-ax2,ay-ay2,az-az2)
-          if(d<2 && (l=lineFaceI(XA,YA,ZA,XB,YB,ZB,q))) for(m=3;m--;)spawnP(l[0])
-        })
-      })
+    R(Rl,Pt,Yw,1)
+    if(Z>0){
+      alpha = Math.min(1,(Z**3/1000000000000))
+      if(alpha > .1){
+        s = Math.min(1e3, 6e5/Z)
+        x.fillStyle = '#ffffff05'
+        x.globalAlpha = alpha
+        l = Q()
+        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+        s/=6
+        x.fillStyle = '#fff'
+        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      }
     }
   })
 
-  P = P.filter(v=>v[6]>0)
+  x.globalAlpha = 1
 
-  P.map(v=>{
-    X = v[0] += v[3]
-    Y = v[1] += v[4]+=.0025
-    Z = v[2] += v[5]
+  rw=2
+  if(1)for(i=4e3;i--;){
+    X = ((((i+50)**3.1)%(rw-1))-rw/2+.5)*sp2*1.5
+    Z = (((i**2.1/99)%(rw-1))-rw/2+.5)*sp2*1.5
+    Y = Floor(X,Z)
     R(Rl,Pt,Yw,1)
     if(Z>0){
       l = Q()
-      x.fillStyle = '#ff000002'
-      s = Math.min(1e3,2500/Z*v[6])
+      s = Math.min(1e3, 200/Z)
+      x.fillStyle = '#f001'
       x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      x.fillStyle = '#ff880009'
       s/=4
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      x.fillStyle = '#fff'
-      s/=5
+      x.fillStyle = '#fff7'
       x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
     }
-    v[6]-=.066
-  })
+  }
 
+  minSubLs = .5
+
+  grid.map((v,i)=>{
+    v.map(q=>{
+      miny = 6e6
+      q.map(n=>{
+        if(n[1]<miny){
+          mx   = n[0]
+          miny = n[1]
+          mz   = n[2]
+        }
+      })
+      if(miny < Floor(mx,mz)){
+        x.beginPath()
+        q.map(n=>{
+          X = n[0]
+          Y = n[1]
+          Z = n[2]
+          if(Y>(l=Floor(X,Z))){
+            Y=l
+          }
+          R(Rl,Pt,Yw,1)
+          if(Z>0) x.lineTo(...Q())
+        })
+        stroke('','#ff000004',.3,false)
+       }
+    })
+  })
 
 	      
 	      
