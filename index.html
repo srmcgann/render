@@ -529,7 +529,7 @@
         a = [...a, [X,Y,Z]]
         ret = [...ret, a]
       }
-      return ret      
+      return ret
     }
     
     Dodecahedron = size => {
@@ -672,9 +672,9 @@
       return out
     }
     
-    stroke = (scol, fcol, lwo=1, od=true, closePath=true) => {
+    stroke = (scol, fcol, lwo=1, od=true) => {
       if(scol){
-        if(closePath) x.closePath()
+        x.closePath()
         if(od) x.globalAlpha = .2
         x.strokeStyle = scol
         x.lineWidth = Math.min(100,100*lwo/Z)
@@ -849,11 +849,11 @@
       return shape
     }
     
-    subDividedIcosahedron  = (size, subs, sphereize = 0) => subbed(subs, size, sphereize, Icosahedron(size))
-    subDividedTetrahedron  = (size, subs, sphereize = 0) => subbed(subs, size, sphereize, Tetrahedron(size))
-    subDividedOctahedron   = (size, subs, sphereize = 0) => subbed(subs, size, sphereize, Octahedron(size))
-    subDividedCube         = (size, subs, sphereize = 0) => subbed(subs, size, sphereize, Cube(size))
-    subDividedDodecahedron = (size, subs, sphereize = 0) => subbed(subs, size, sphereize, Dodecahedron(size))
+    subDividedIcosahedron  = (subs, size, sphereize = 0) => subbed(subs, size, sphereize, Icosahedron(size))
+    subDividedTetrahedron  = (subs, size, sphereize = 0) => subbed(subs, size, sphereize, Tetrahedron(size))
+    subDividedOctahedron   = (subs, size, sphereize = 0) => subbed(subs, size, sphereize, Octahedron(size))
+    subDividedCube         = (subs, size, sphereize = 0) => subbed(subs, size, sphereize, Cube(size))
+    subDividedDodecahedron = (subs, size, sphereize = 0) => subbed(subs, size, sphereize, Dodecahedron(size))
     
     Rn = Math.random
     
@@ -1037,61 +1037,35 @@
       }
       return ret
     }
-
-    base_shape = Cube(cubeLs =.6)
-    grid = []
-    rw = 10
-    cl = 25
-    br = 25
-    sp = cubeLs
-    sp2=10
-    for(i=0;i<rw*cl*br;++i){
-      tx = ((i%cl)-cl/2+.5)*sp/1.05
-      ty = (((i/cl|0)%rw)-rw/2+.5)*sp/1.05
-      tz = ((i/rw/cl|0)-br/2+.5)*sp/1.05
-      grid = [...grid, JSON.parse(JSON.stringify(base_shape)).map(v=>{
-        v.map(q=>{
-          q[0]+=tx
-          q[1]+=ty
-          q[2]+=tz
-        })
-        return v
-      })]
-    }
-    
-    Floor = (X,Z) => {
-      return -C(Math.PI*4/((rw-1)*sp)*X/40)*C(Math.PI*4/((rw-1)*sp)*Z/40+t*4)*S(t/2)*2-1
-    }
-    iSTc = 3e3
-    G = 1e5
+    iSTc = 3e3, iSTG = 3e4
     ST = Array(iSTc).fill().map(v=>{
-      X = (Rn()-.5)*G
-      Y = (Rn()-.5)*G
-      Z = (Rn()-.5)*G
+      X = (Rn()-.5) * iSTG
+      Y = (Rn()-.5) * iSTG
+      Z = (Rn()-.5) * iSTG
       return [X, Y, Z]
-    })
+    })  
   }
 
-  oX=0, oY=0, oZ=8
-  Rl=0, Pt=Math.PI+S(t/2)/3-.33, Yw=t/4
-  x.fillStyle='#0008'
+  oX=0, oY=0, oZ=Math.min(60,Math.max(30,-(.3-S(t))*200))
+  Rl=S(t)/2, Pt=-t/2, Yw=-t
+
+  
+  x.fillStyle='#000'
   x.fillRect(0,0,c.width,c.height)
   x.lineJoin = x.lineCap = 'roud'
-
+  
   ST.map(v=>{
     X = v[0]
     Y = v[1]
     Z = v[2]
     R(Rl,Pt,Yw,1)
     if(Z>0){
-      alpha = Math.min(1,(Z**3/1000000000000))
-      if(alpha > .1){
-        s = Math.min(1e3, 6e5/Z)
-        x.fillStyle = '#ffffff05'
-        x.globalAlpha = alpha
+      if((x.globalAlpha = Math.min(1,(Z/3000)**2))>.1){
+        s = Math.min(1e3, 1000000/Z)
+        x.fillStyle = '#ffffff03'
         l = Q()
         x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-        s/=6
+        s/=16
         x.fillStyle = '#fff'
         x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
       }
@@ -1099,52 +1073,44 @@
   })
 
   x.globalAlpha = 1
+  rw = 120
+  cl = rw/3.125|0
+  sp = 1
+  sp2=.75**.5
 
-  rw=2
-  if(1)for(i=4e3;i--;){
-    X = ((((i+50)**3.1)%(rw-1))-rw/2+.5)*sp2*1.5
-    Z = (((i**2.1/99)%(rw-1))-rw/2+.5)*sp2*1.5
-    Y = Floor(X,Z)
-    R(Rl,Pt,Yw,1)
-    if(Z>0){
-      l = Q()
-      s = Math.min(1e3, 200/Z)
-      x.fillStyle = '#f001'
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      s/=4
-      x.fillStyle = '#fff7'
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+  B=[]
+  Array(rw*cl).fill().map((v,i) => {
+    tx = ((i%cl)-cl/2+.5)*sp*1*(.75**.5)*sp*sp2*4+((i/cl|0)%2?1.5:0)
+    ty = ((i/cl|0)-rw/2+.5)*sp2
+    tz = 0
+    a = []
+    for(j=6;j--;){
+      X = S(p=Math.PI*2/6*j+Math.PI/6) + tx
+      Y = C(p) + ty
+      d = 14+Math.hypot(X,Y)
+      Z = Math.min(25,Math.max(-25,Math.min(1.5,Math.max(-1.5,(C(d**2/100-S(t*2)*20)*50000/(d**4)*20)))+tz-1000/((1+d)**1.5)*S(S(t/2)*15)*4+S(S(t/2)*15)*25))
+      R(C(d**2/300+t*2)*200/d**2,0,0)
+      a = [...a, [X, Z, Y]]
     }
-  }
-
-  minSubLs = .5
-
-  grid.map((v,i)=>{
-    v.map(q=>{
-      miny = 6e6
-      q.map(n=>{
-        if(n[1]<miny){
-          mx   = n[0]
-          miny = n[1]
-          mz   = n[2]
-        }
-      })
-      if(miny < Floor(mx,mz)){
-        x.beginPath()
-        q.map(n=>{
-          X = n[0]
-          Y = n[1]
-          Z = n[2]
-          if(Y>(l=Floor(X,Z))){
-            Y=l
-          }
-          R(Rl,Pt,Yw,1)
-          if(Z>0) x.lineTo(...Q())
-        })
-        stroke('','#ff000004',.3,false)
-       }
-    })
+    if(Math.hypot(tx,ty)<=rw/2.487562189054726) B = [...B, a]
   })
+
+  B.map((v,i)=>{
+    x.beginPath()
+    ax=ay=az=0
+    v.map(q=>{
+      ax += X = q[0]
+      ay += Y = q[1]
+      az += Z = q[2]
+      R(Rl,Pt,Yw,1)
+      if(Z>0) x.lineTo(...Q())
+    })
+    ax/=v.length
+    ay/=v.length
+    az/=v.length
+    stroke(`hsla(${ay**4/5+t*100},99%,${Math.max(50,ay**2/2)}%,.3)`,`hsla(${ay**4/5+t*100},99%,${Math.max(50,ay**2/2)}%,.3)`,5,1)
+  })
+
 
 	      
 	      
