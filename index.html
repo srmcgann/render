@@ -137,7 +137,7 @@
 
 
 
-  if(!t){
+     if(!t){
     R=(Rl,Pt,Yw,m)=>{
       M=Math
       A=M.atan2
@@ -423,7 +423,7 @@
           Z = C(p) * ls1
           b = [...b, [X,Y,Z]]
         }
-        a = [...a, b]
+        //a = [...a, b]
         for(let j=cl;j--;){
           b = []
           X = S(p=Math.PI*2/cl*j) * ls1
@@ -452,7 +452,7 @@
         Z = C(p) * ls1
         b = [...b, [X,Y,Z]]
       }
-      a = [...a, b]
+      //a = [...a, b]
       return a
     }
 
@@ -674,10 +674,10 @@
     
     stroke = (scol, fcol, lwo=1, od=true) => {
       if(scol){
-        //x.closePath()
+        x.closePath()
         if(od) x.globalAlpha = .2
         x.strokeStyle = scol
-        x.lineWidth = Math.min(1000,100*lwo/Z)
+        x.lineWidth = Math.min(100,100*lwo/Z)
         if(od) x.stroke()
         x.lineWidth /= 4
         x.globalAlpha = 1
@@ -849,11 +849,11 @@
       return shape
     }
     
-    subDividedIcosahedron  = (subs, size, sphereize = 0) => subbed(subs, size, sphereize, Icosahedron(size))
-    subDividedTetrahedron  = (subs, size, sphereize = 0) => subbed(subs, size, sphereize, Tetrahedron(size))
-    subDividedOctahedron   = (subs, size, sphereize = 0) => subbed(subs, size, sphereize, Octahedron(size))
-    subDividedCube         = (subs, size, sphereize = 0) => subbed(subs, size, sphereize, Cube(size))
-    subDividedDodecahedron = (subs, size, sphereize = 0) => subbed(subs, size, sphereize, Dodecahedron(size))
+    subDividedIcosahedron  = (size, subs, sphereize = 0) => subbed(subs, size, sphereize, Icosahedron(size))
+    subDividedTetrahedron  = (size, subs, sphereize = 0) => subbed(subs, size, sphereize, Tetrahedron(size))
+    subDividedOctahedron   = (size, subs, sphereize = 0) => subbed(subs, size, sphereize, Octahedron(size))
+    subDividedCube         = (size, subs, sphereize = 0) => subbed(subs, size, sphereize, Cube(size))
+    subDividedDodecahedron = (size, subs, sphereize = 0) => subbed(subs, size, sphereize, Dodecahedron(size))
     
     Rn = Math.random
     
@@ -1038,259 +1038,201 @@
       return ret
     }
 
-    base_shape = Tetrahedron(4)
-    sections = []
-    rw = 20
-    cl = 20
-    br =1
-    sp = 8
-    iSectionv = 2
-    spawnFreq = 200
-    spawnSection = () => {
-      for(let i=br*rw*cl;i--;){
-        X = ((i%cl)-cl/2 + .5)*sp
-        Y = (((i/cl|0)%rw)-rw/2 + .5)*sp
-        Z = 40*sp
-        if(Math.hypot(X,Y)<Math.hypot(rw**2/10)*2)sections = [...sections, [X,Y,Z,1]]
-      }
-    }
-
-    sparks = []
-    iSparksv = 2.5
-    iSparksNo = 25
-    spawnSparks = (X,Y,Z) => {
-      for(let i = iSparksNo; i--; ){
-        vx = (Rn()-.5)*iSparksv
-        vy = (Rn()-.5)*iSparksv
-        vz = (Rn()-.5)*iSparksv
-        sparks = [...sparks, [X, Y, Z, vx, vy, vz, 1]]
-      }
-    }
-
-    iCannonsc = 3
-    iCannonsr = 100
-    base_cannon = Cylinder (1,6,10,10)
-    cannons = Array(iCannonsc).fill().map((v,i) => {
-      tx = S(p=Math.PI*2/iCannonsc*i)*iCannonsr
-      ty = C(p)*iCannonsr
-      tz = 0
-      shp = JSON.parse(JSON.stringify(base_cannon)).map(v=>{
-        pt = 0
-        rl = Math.PI*2/iCannonsc*i
-        yw = 0
-        v.map(q=>{
-          X = q[0]
-          Y = q[1]
-          Z = q[2]
-          R(0,pt,0)
-          R(rl,0,0)
-          q[0] = X
-          q[1] = Y
-          q[2] = Z
+    G = 12
+    base_shp = subDividedCube(16|0,4,.5)
+    mind = 6e6
+    base_shp.map((v,i)=>{
+      v.map((q,j)=>{
+        X1 = q[0]
+        Y1 = q[1]
+        Z1 = q[2]
+        base_shp.map((k,l)=>{
+          if(l!=i){
+            k.map((n,N) => {
+              X2 = n[0]
+              Y2 = n[1]
+              Z2 = n[2]
+              if((d = Math.hypot(X2-X1,Y2-Y1,Z2-Z1))<mind && d>.1) mind=d
+            })
+          }
         })
-        return v
       })
-      return [tx,ty,tz,shp,rl,pt,yw]
+    })
+    shp = base_shp.map((v,i)=>{
+      return v.map((q,j)=>{
+        a = []
+        X1 = q[0]
+        Y1 = q[1]
+        Z1 = q[2]
+        base_shp.map((k,l)=>{
+          if(l!=i){
+            k.map((n,N) => {
+              X2 = n[0]
+              Y2 = n[1]
+              Z2 = n[2]
+              if((d=Math.hypot(X2-X1,Y2-Y1,Z2-Z1))<mind*1.6) a=[...a, [l,N,d]]
+            })
+          }
+        })
+        return [...q, 0, 0, 0, a, ...q]
+      })
     })
 
-    P = Array(iCannonsc).fill().map(v=>[])
-    pfreq = 0, iPv = 4
-    spawnP = () => {
-      cannons.map((v, i)=>{
-        tx = v[0]
-        ty = v[1]
-        tz = v[2]
-        rl = v[4]
-        pt = v[5]
-        yw = v[6]
-        X = 0
-        Y = -iPv
-        Z = 0
-        R(0,pt,0)
-        R(rl,0,0)
-        vx = X
-        vy = Y
-        vz = Z
-        P[i] = [...P[i], [tx,ty,tz,vx,vy,vz,1]]
-      })
+    P = []
+    pfreq = 4, iPv = 1
+    G = 2
+    spawnP = () =>{
+      for(m=1;m--;){
+        p1 = Math.PI*2*Rn()
+        p2 = Math.PI/2*Rn()**.5+(Rn()<.5?0:Math.PI/2)
+        ls = G
+        X = S(p1)*S(p2)*ls
+        Y = C(p2)*ls
+        Z = C(p1)*S(p2)*ls
+        p1+=(Rn()-.5)/9
+        p2+=(Rn()-.5)/18
+        vx = S(p1)*S(p2)*iPv
+        vy = C(p2)*iPv
+        vz = C(p1)*S(p2)*iPv
+        P = [...P, [X,Y,Z,vx,vy,vz,1]]
+      }
     }
-    G = 100000, iSTc = 5e3
-    ST = Array(iSTc).fill().map(v=>{
-      X = (Rn()-.5)*G
-      Y = (Rn()-.5)*G
-      Z = (Rn()-.5)*G
-      return [X,Y,Z]
-    })
+    bg = new Image()
+    go = false
+    bg.onload = () =>{
+      go = true
+    }
+    bg.src = 'fH9IY.jpg'
   }
 
-  oX=0, oY=0, oZ=Math.min(300,Math.max(150,(.3+C(t/2))*1000))
-  Rl=C(t/3)*2, Pt=-t/8, Yw=S(t/4)*2+Math.PI/4
-  x.fillStyle='#0008'
+  oX=0, oY=0, oZ=Math.min(24,Math.max(8,(.3+S(t/2))*60))
+  Rl=t/8, Pt=-t/2, Yw=S(t/4)*8
+  //Rl=0, Pt=0, Yw=t
+
+  if(go){
+  x.globalAlpha = .2
+  x.drawImage(bg,0,-200,c.width,c.height+200)
+  x.globalAlpha = 1
+  x.fillStyle='#0003'
   x.fillRect(0,0,c.width,c.height)
   x.lineJoin = x.lineCap = 'round'
-  
+
   if(!((t*60|0)%pfreq)) spawnP()
-  if(!((t*60|0)%spawnFreq))spawnSection()
 
-  ST.map(v=>{
-    X = v[0]
-    Y = v[1]
-    Z = v[2]
-    R(Rl,Pt,Yw,1)
-    if(Z>0){
-      if((x.globalAlpha = Math.min(1,(Z/3000)**2))>.1){
-        s = Math.min(1e3, 2000000/Z)
-        x.fillStyle = '#ffffff03'
-        l = Q()
-        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-        s/=16
-        x.fillStyle = '#fff'
-        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      }
-    }
-  })
-
-  x.globalAlpha = 1
-
-  cannons.map(v=>{
-    X = v[0]
-    Y = v[1]
-    Z = v[2]
-    v[4]+=t1=Math.min(.1,Math.max(-.1,-C(t/4)))+.09
-    R(t1,0,0)
-    tx = v[0] = X
-    ty = v[1] = Y
-    tz = v[2] = Z
-    v[3].map(q=>{
-      x.beginPath()
-      q.map(n=>{
-        X = n[0]
-        Y = n[1]
-        Z = n[2]
-        R(t1,0,0)
-        n[0]=X
-        n[1]=Y
-        n[2]=Z
-        X = tx + n[0]
-        Y = ty + n[1]
-        Z = tz + n[2]
-        R(Rl,Pt,Yw,1)
-        if(Z>0) x.lineTo(...Q())
-      })
-      stroke('#0f8','#0f82',15,true)
-    })
-  })
-
-  sections = sections.filter(v=>v[2]>-200 && v[3]>0)
-
-  sections.map(v=>{
-    tx = v[0]
-    ty = v[1]
-    tz = v[2]-=iSectionv
-    base_shape.map(q=>{
-      x.beginPath()
-      q.map(n=>{
-        X = tx + n[0]
-        Y = ty + n[1]
-        Z_ = Z = tz + n[2]*3
-        R(Rl,Pt,Yw,1)
-        if(Z>0) x.lineTo(...Q())
-      })
-      stroke('', `hsla(${260},99%,50%,${1/(1+Math.abs(Z_)**6/9999999999999)}`, 4, false)
-    })
-  })
-  x.globalAlpha = 1
-
-  P = P.map(P=>{
-    return P.filter(v=>v[6]>.05)
-  })
-
-  P.map(P => {
-    P.map((v,i)=>{
-      X1 = v[0]
-      Y1 = v[1]
-      Z1 = v[2]
-      sections.map(q=>{
-        if(q[3]){
-          X2 = q[0]
-          Y2 = q[1]
-          Z2 = q[2]
-          d_=Math.hypot(a=X2-X1,b=Y2-Y1,e=Z2-Z1)
-          d = (1+d_)**4.25
-          v[3] += a*2e4/d
-          v[4] += b*2e4/d
-          v[5] += e*2e4/d
-          if(d_<sp*2){
-            spawnSparks(X2,Y2,Z2)
-            q[3] = 0
-            v[6] = 0
-          }
-        }
-      })
-      d = Math.hypot(v[3],v[4],v[5])
-      v[3] /= d
-      v[4] /= d
-      v[5] /= d
-      v[3] *= iPv
-      v[4] *= iPv
-      v[5] *= iPv
-      X = v[0] += v[3]
-      Y = v[1] += v[4]
-      Z = v[2] += v[5]
-      v[6] -= .025
-      X1=X,Y1=Y,Z1=Z
-      R(Rl,Pt,Yw,1)
-      if(Z>0){
-        l = Q()
-        if(i && Math.hypot(X1-olx,Y1-oly,Z1-olz)<iPv*16){
-          x.beginPath()
-          x.lineTo(...l)
-          X = olx
-          Y = oly
-          Z = olz
-          R(Rl,Pt,Yw,1)
-          if(Z>0) x.lineTo(...Q())
-          stroke('#0f85','',15000/Z*v[6]**.5,true)
-        }
-        s = Math.min(1e3, 2e4/Z*(.1+v[6]**2))
-        x.fillStyle = '#4400ff03'
-        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-        s/=3
-        x.fillStyle = '#00ff8820'
-        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-        s/=3
-        x.fillStyle = '#88ffffaa'
-        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-        olx=X1
-        oly=Y1
-        olz=Z1
-      }
-    })
-  })
-
-  sparks = sparks.filter(v=>v[6]>.15)
-
-  sparks.map(v=>{
+  P = P.filter(v=>v[6]>.1)
+  vecLen = iPv*5
+  P.map(v=>{
+    v[3] -= v[0]/1000
+    v[4] -= v[1]/1000
+    v[5] -= v[2]/1000
     X = v[0] += v[3]
     Y = v[1] += v[4]
     Z = v[2] += v[5]
-    v[6]-=.05
+    v[6] -= .05
     R(Rl,Pt,Yw,1)
     if(Z>0){
       l = Q()
-      s = Math.min(1e3, 4e4/Z*v[6])
-      x.fillStyle = '#FF000001'
+      s = Math.min(1e3, 10000/Z*v[6])
+      x.fillStyle = '#ff000003'
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      s/=3
+      x.fillStyle = '#ff880010'
       x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
       s/=4
-      x.fillStyle = '#FFff0008'
+      x.fillStyle = '#ffffffff'
       x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      s/=4
-      x.fillStyle = '#ffffffaa'
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      if(1){
+        x.beginPath()
+        x.lineTo(...l)
+        X = v[0] + v[3]*vecLen*v[6]
+        Y = v[1] + v[4]*vecLen*v[6]
+        Z = v[2] + v[5]*vecLen*v[6]
+        R(Rl,Pt,Yw,1)
+        if(Z>0){
+          x.lineTo(...Q())
+          stroke('#0f84','',15*v[6])
+        }
+      }
     }
   })
 
-
+  elasticity = .9
+  homing = 200
+  lim = 1
+  shp.map(v=>{
+    fs = '#fff1'
+    ax=ay=az=0
+    v.map(q=>{
+      ax += q[0]
+      ay += q[1]
+      az += q[2]
+    })
+    ax /= v.length
+    ay /= v.length
+    az /= v.length
+    P.map((n,N_)=>{
+      if(Math.hypot(n[0]-ax,n[1]-ay,n[2]-az)<1){
+        X1 = n[0]
+        Y1 = n[1]
+        Z1 = n[2]
+        X2 = X1 + n[3]*vecLen*n[6]
+        Y2 = Y1 + n[4]*vecLen*n[6]
+        Z2 = Z1 + n[5]*vecLen*n[6]
+        if(l=lineFaceI(X1,Y1,Z1,X2,Y2,Z2,v)){
+          fs = '#0ffa'
+          v.map(q=>{
+            vx = n[3]
+            vy = n[4]
+            vz = n[5]
+            q[3]+=vx*10
+            q[4]+=vy*10
+            q[5]+=vz*10
+          })
+        }
+      }
+    })
+    x.beginPath()
+    v.map(q=>{
+      X1 = q[0]
+      Y1 = q[1]
+      Z1 = q[2]
+      vx = vy = vz = 0
+      q[6].map(k=>{
+        idx1 = k[0]
+        idx2 = k[1]
+        tgtd = k[2]
+        X2 = shp[idx1][idx2][0]
+        Y2 = shp[idx1][idx2][1]
+        Z2 = shp[idx1][idx2][2]
+        d = (1+Math.hypot(X2-X1,Y2-Y1,Z2-Z1))
+        vx += (X2-X1)*(d-tgtd)/(l=1+(3+d)**3/3.5)
+        vy += (Y2-Y1)*(d-tgtd)/l
+        vz += (Z2-Z1)*(d-tgtd)/l
+      })
+      q[3] += vx/elasticity
+      q[4] += vy/elasticity
+      q[5] += vz/elasticity
+      d = (2+(d1=Math.hypot(q[7] - q[0], q[8] - q[1], q[9] - q[2])))**2/4
+      q[3] += (q[7] - q[0]) * d / homing
+      q[4] += (q[8] - q[1]) * d / homing
+      q[5] += (q[9] - q[2]) * d / homing
+      q[3] /= 1.45
+      q[4] /= 1.45
+      q[5] /= 1.45
+      d1 = Math.hypot(q[3],q[4],q[5])
+      d2 = Math.min(lim, d1)
+      vx = q[3]/d1*d2
+      vy = q[4]/d1*d2
+      vz = q[5]/d1*d2
+      X = q[0] += vx
+      Y = q[1] += vy
+      Z = q[2] += vz
+      R(Rl,Pt,Yw,1)
+      if(Z>0) x.lineTo(...Q())
+    })
+    stroke('',`hsla(${(d1*400)**2/70+t*50},99%,${Math.min(100,Math.max(50,50+d1**2*400))}%,${Math.min(.5,.01+d1**2*25)})`,2,false)
+  })
+  }
 	      
 	      
 t+=1/60
@@ -2502,4 +2444,4 @@ t+=1/60
   </script>
 </html>
 
-
+	
