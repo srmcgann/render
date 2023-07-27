@@ -1086,7 +1086,7 @@
   oX=0, oY=0, oZ=5.8
   Rl=S(t)/4, Pt=-S(t/2)/6, Yw=-C(t)/3
   
-  shp = subDividedCube(2.75-(.2+S(t*6)/2)*.75,1,(.33+S(t*6)/2)*2.2).map(v=>{
+  shp = subDividedCube(2.75-(.2+S(t*6)/2)*.75,2,(.33+S(t*6)/2)*2.2).map(v=>{
     v.map(q=>{
       X = q[0]
       Y = q[1]
@@ -1171,7 +1171,7 @@
           ax /= n.length
           ay /= n.length
           az /= n.length
-          if(Math.hypot(ax-X1/2,ay-Y1/2,az-Z1/2) < .85 && (l=lineFaceI(X1,Y1,Z1,X2,Y2,Z2,n))){
+          if(Math.hypot(ax-X1/2,ay-Y1/2,az-Z1/2) < .66 && (l=lineFaceI(X1,Y1,Z1,X2,Y2,Z2,n))){
             X = l[0][0]
             Y = l[0][1]
             Z = l[0][2]
@@ -1214,7 +1214,6 @@
       })
     })
   })
-
 	      
 t+=1/60
 
