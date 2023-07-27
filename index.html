@@ -674,7 +674,7 @@
     
     stroke = (scol, fcol, lwo=1, od=true, oga=1) => {
       if(scol){
-        //x.closePath()
+        x.closePath()
         if(od) x.globalAlpha = .2*oga
         x.strokeStyle = scol
         x.lineWidth = Math.min(1000,100*lwo/Z)
@@ -1038,6 +1038,42 @@
       }
       return ret
     }
+    
+    buffer = document.createElement('canvas')
+    bctx = buffer.getContext('2d')
+    fontSize = buffer.width = buffer.height = 16
+    bctx.font = fontSize + 'px courier'
+    bctx.textAlign = 'center'
+    curGlyph = 0
+    glyphFreq = 60
+    
+    
+    gridCl = buffer.width
+    gridSp = buffer.height/gridCl
+    charSp = 10
+    glyphs = Array(94).fill().map((v, i)=>{
+      code = i + 32
+      let char = String.fromCharCode(code)
+      bctx.fillStyle = '#000'
+      bctx.fillRect(0,0,buffer.width,buffer.height)
+      bctx.fillStyle = '#fff'
+      bctx.fillText(char, buffer.width/2, fontSize*.7)
+      texture = bctx.getImageData(0,0,buffer.width,buffer.height)
+      a = []
+      Array(gridCl**2).fill().map((q, j)=>{
+        X      = (j%gridCl)*gridSp
+        Y      = (j/gridCl|0)*gridSp
+        idx    = ((Y * gridCl + X) |0) * 4
+        red    = texture.data[idx + 0]
+        green  = texture.data[idx + 1]
+        blue   = texture.data[idx + 2]
+        alpha  = texture.data[idx + 3]
+        lum    = (red + green + blue) / 3
+        if(lum>128) a = [...a, [X/buffer.width*charSp-charSp/2,Y/buffer.height*charSp-charSp/2,0]]
+      })
+      return [char, texture, a]
+    })
+    
     G_ = 100000, iSTc = 5e3
     ST = Array(iSTc).fill().map(v=>{
       X = (Rn()-.5)*G_
@@ -1046,13 +1082,29 @@
       return [X,Y,Z]
     })
   }
-
-  oX=0, oY=-2, oZ=Math.max(25,Math.min(40,(.3+C(t/1.5))*200))
-  Rl=C(t)/3, Pt=C(t*2)/2.5-.9, Yw=C(t/3)*7
-  x.fillStyle='#000c'
+  
+  oX=0, oY=0, oZ=5.8
+  Rl=S(t)/4, Pt=-S(t/2)/6, Yw=-C(t)/3
+  
+  shp = subDividedCube(2.75-(.2+S(t*6)/2)*.75,1,(.33+S(t*6)/2)*2.2).map(v=>{
+    v.map(q=>{
+      X = q[0]
+      Y = q[1]
+      Z = q[2]
+      R(t/2,-t,t*4)
+      q[0] = X
+      q[1] = Y
+      q[2] = Z
+    })
+    return v
+  })
+  if(!((t*60|0)%glyphFreq)) curGlyph = (curGlyph+1)%glyphs.length
+  
+  x.globalAlpha = 1
+  x.fillStyle='#000C'
   x.fillRect(0,0,c.width,c.height)
   x.lineJoin = x.lineCap = 'roud'
-  
+
   ST.map(v=>{
     X = v[0]
     Y = v[1]
@@ -1072,142 +1124,96 @@
   })
 
   x.globalAlpha = 1
-  B = []
-  ls = 2
-  sd = 50
-  vy_ = vy = 0
-  for(j=sd;j--;){
-    a = []
-    vy = 0
-    for(i=sd; i--;){
-      vy_ /= 2
-      vy /= 2
-      vy += S(S(t*4)/11+(vy_+=((((i+99)**3.1/150)%1)-.5)/10)) * 20
-      X = -sd/2 + i/sd*sd
-      Z = j-sd/2
-      Y = -Math.min(2,Math.max(0,(vy + C(vy_) + S((j+200)**2.5/20000+t*10) * 2 + S(X/5)*C(Z/5+S(t)*10)*2) / (10+Math.hypot(X,Z)/2)*10))*4
-      a = [...a, [X,Y,Z]]
-    }
-    B = [...B, a]
-  }
-  
-  B_ = []
-  JSON.parse(JSON.stringify(B)).map((v,i) => {
-    v.map((q,j) => {
-      ax=ay=az=0
-      if(i&&j){
-        l2 = i
-        l = j
-        ax += B[l2][l][0]
-        ay += B[l2][l][1]
-        az += B[l2][l][2]
-
-        l2 = i
-        l = j-1
-        ax += B[l2][l][0]
-        ay += B[l2][l][1]
-        az += B[l2][l][2]
-
-        l2 = i-1
-        l = j-1
-        ax += B[l2][l][0]
-        ay += B[l2][l][1]
-        az += B[l2][l][2]
-
-        l2 = i-1
-        l = j
-        ax += B[l2][l][0]
-        ay += B[l2][l][1]
-        az += B[l2][l][2]
-      }
-      X = ax / 4
-      Y = ay / 4
-      Z = az / 4
+  sp = .66
+  lines = [
+    'democracy',
+    'has',
+    'spoken'
+  ]
+  if(1)shp.map(v=>{
+    x.beginPath()
+    v.map(q=>{
+      X = q[0]
+      Y = q[1]
+      Z = q[2]
       R(Rl,Pt,Yw,1)
-      B_ = [...B_, [Z,i,j]]
+      if(Z>0) x.lineTo(...Q())
     })
+    stroke('#ff000010','#ff000006',1,true)
   })
-  
-  B_.sort((a, b)=>b[0]-a[0])
-  
-  
-  ct = 0
-  B.map((v,i_) => {
-    v.map((q,j_)=>{
-      i = B_[ct][1]
-      j = B_[ct][2]
-      if(i && j){
-        x.beginPath()
-        l2 = i
-        l = j
-        X = B[l2][l][0]
-        Y = B[l2][l][1]
-        Z = B[l2][l][2]
-        R(Rl,Pt,Yw,1)
-        if(Z>0) x.lineTo(...Q())
-        l2 = i
-        l = j-1
-        X = B[l2][l][0]
-        Y1 = Y = B[l2][l][1]
-        Z = B[l2][l][2]
-        R(Rl,Pt,Yw,1)
-        if(Z>0) x.lineTo(...Q())
 
-        l2 = i
-        l = j-1
-        X = B[l2][l][0]
-        Y = B[l2][l][1]
-        Z = B[l2][l][2]
+  lines.map((text,idx)=>{
+    cl = text.length
+    text.split('').map((v,i)=>{
+      tx   = ((i%cl)-cl/2+.5)*sp
+      ty   = (idx-lines.length/2+.5)*sp*1.5
+      tz   = -3.1
+      char = v[0]
+      glyphs.filter(q=>q[0]==char)[0][2].map(q=>{
+        X = tx + q[0]/5.5*sp
+        Y = ty + q[1]/5.5*sp
+        Z = tz
+        d = Math.hypot(X,Y,Z)
+        X/=d
+        Y/=d
+        Z/=d
+        X1 = X*=-tz
+        Y1 = Y*=-tz
+        Z1 = Z*=-tz
+        X2 = Y2 = Z2 = 0
+        shp.map(n=>{
+          ax=ay=az=0
+          n.map(q=>{
+            ax+=q[0]
+            ay+=q[1]
+            az+=q[2]
+          })
+          ax /= n.length
+          ay /= n.length
+          az /= n.length
+          if(Math.hypot(ax-X1/2,ay-Y1/2,az-Z1/2) < .85 && (l=lineFaceI(X1,Y1,Z1,X2,Y2,Z2,n))){
+            X = l[0][0]
+            Y = l[0][1]
+            Z = l[0][2]
+            R(Rl,Pt,Yw,1)
+            if(Z>0){
+              l = Q()
+              s = Math.min(1e3, 150/Z)
+              x.fillStyle = '#4400ff05'
+              x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+              s/=3.5
+              x.fillStyle = '#0f83'
+              x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+              s/=3
+              x.fillStyle = '#fff'
+              x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+              x.beginPath()
+              x.lineTo(...l)
+              X = X1
+              Y = Y1
+              Z = Z1
+              R(Rl,Pt,Yw,1)
+              if(Z>0)x.lineTo(...Q())
+              stroke('#4400ff04','',2,false)
+            }
+          }
+        })
+        X = X1
+        Y = Y1
+        Z = Z1
         R(Rl,Pt,Yw,1)
-        if(Z>0) x.lineTo(...Q())
-        l2 = i-1
-        l = j-1
-        X = B[l2][l][0]
-        Y1 = Y = B[l2][l][1]
-        Z = B[l2][l][2]
-        R(Rl,Pt,Yw,1)
-        if(Z>0) x.lineTo(...Q())
-
-        l2 = i-1
-        l = j-1
-        X = B[l2][l][0]
-        Y = B[l2][l][1]
-        Z = B[l2][l][2]
-        R(Rl,Pt,Yw,1)
-        if(Z>0) x.lineTo(...Q())
-        l2 = i-1
-        l = j
-        X = B[l2][l][0]
-        Y1 = Y = B[l2][l][1]
-        Z = B[l2][l][2]
-        R(Rl,Pt,Yw,1)
-        if(Z>0) x.lineTo(...Q())
-
-        l2 = i-1
-        l = j
-        X = B[l2][l][0]
-        Y = B[l2][l][1]
-        Z = B[l2][l][2]
-        R(Rl,Pt,Yw,1)
-        if(Z>0) x.lineTo(...Q())
-        l2 = i
-        l = j
-        X1 = X = B[l2][l][0]
-        Y1 = -(Y = B[l2][l][1])
-        Z1 = Z = B[l2][l][2]
-        R(Rl,Pt,Yw,1)
-        if(Z>0) x.lineTo(...Q())
-
-        if((d1_=Math.hypot(X1,Z1))<24){
-          alpha = Math.min(1,Math.max(0,((.3+C(t))/2)*2))
-          ga = 4/(4+d1_**12/1e14)
-          stroke(alpha>.5?'':`hsla(${-(Y1**1)*10-S(t)*300},99%,${30+Y1*8}%,${(1-alpha)**2})`,alpha<=.3?'':`hsla(${-(Y1**1)*10-S(t)*300},99%,${30+Y1*8}%,${alpha**2})`,3,alpha<=.5?0:0,ga)
+        if(1)if(Z>0){
+          l = Q()
+          s = Math.min(1e3, 100/Z)
+          x.fillStyle = '#00ff4404'
+          x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+          s/=4
+          x.fillStyle = '#fff2'
+          x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
         }
-      }
-      ct++
+      })
     })
   })
-  x.globalAlpha = 1
 
 	      
 t+=1/60
