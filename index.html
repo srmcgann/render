@@ -138,8 +138,8 @@
   
 
 
-	        if(!t){
-    oX=oY=oZ=0
+  oX=oY=oZ=0
+  if(!t){
     R=R2=(Rl,Pt,Yw,m)=>{
       M=Math
       A=M.atan2
@@ -160,7 +160,6 @@
     I=(A,B,M,D,E,F,G,H)=>(K=((G-E)*(B-F)-(H-F)*(A-E))/(J=(H-F)*(M-A)-(G-E)*(D-B)))>=0&&K<=1&&(L=((M-A)*(B-F)-(D-B)*(A-E))/J)>=0&&L<=1?[A+K*(M-A),B+K*(D-B)]:0
     
     Rn = Math.random
-    
     async function loadOBJ(url, scale, tx, ty, tz, rl, pt, yw) {
       let res
       await fetch(url, res => res).then(data=>data.text()).then(data=>{
@@ -676,7 +675,7 @@
     
     stroke = (scol, fcol, lwo=1, od=true, oga=1) => {
       if(scol){
-        x.closePath()
+        //x.closePath()
         if(od) x.globalAlpha = .2*oga
         x.strokeStyle = scol
         x.lineWidth = Math.min(1000,100*lwo/Z)
@@ -861,7 +860,7 @@
     Rn = Math.random
     
     LsystemRecurse = (size, splits, p1, p2, stem, theta, LsystemReduction, twistFactor) => {
-      if(size < .5) return
+      if(size < .25) return
       let X1 = stem[0]
       let Y1 = stem[1]
       let Z1 = stem[2]
@@ -900,7 +899,7 @@
         Z = v[5]
         R(Rl,Pt,Yw,1)
         if(Z>0)x.lineTo(...Q())
-        lwo = Math.hypot(v[0]-v[3],v[1]-v[4],v[2]-v[5])
+        lwo = Math.hypot(v[0]-v[3],v[1]-v[4],v[2]-v[5])*4
         stroke('#0f82','',lwo)
       })
       
@@ -1040,181 +1039,79 @@
       }
       return ret
     }
-    
-    base_shps = []
-    base_shps = [...base_shps, await loadOBJ('https://srmcgann.github.io/objs/goodcar3.obj', 6, 0,4,0,0,0,Math.PI/2)]
-    base_shps = [...base_shps, await loadOBJ('https://srmcgann.github.io/objs/tree3.obj', 3, 0,2,0,0,0,0)]
-    base_shps = [...base_shps, await loadOBJ('https://srmcgann.github.io/objs/axe.obj', 70, 0,10,0,0,0,0)]
-    base_shps = [...base_shps, await loadOBJ('https://srmcgann.github.io/objs/pickaxe.obj', 80, 0,10,0,0,0,0)]
-    base_shps = [...base_shps, await loadOBJ('https://srmcgann.github.io/objs/hand.obj', .5, 0,5,0,0,0,0)]
-    base_shps = [...base_shps, await loadOBJ('https://srmcgann.github.io/objs/tree2.obj', .1, 0,10,0,0,0,Math.PI/2)]
-    base_shps = [...base_shps, await loadOBJ('https://srmcgann.github.io/objs/chair.obj', 30, 0,10,0,0,0,0)]
-    base_shps = [...base_shps, await loadOBJ('https://srmcgann.github.io/objs/rock.obj', 10, 0,8,0,0,0,0)]
-    base_shps = [...base_shps, await loadOBJ('https://srmcgann.github.io/objs/heart.obj', .5, 0,10,0,0,0,0)]
-    base_shps = [...base_shps, await loadOBJ('https://srmcgann.github.io/objs/glasses.obj', .4, 0,3,0,0,0,0)]
-    base_shps = [...base_shps, await loadOBJ('https://srmcgann.github.io/objs/sea_turtle.obj', 3, 0,0,0,0,0,0)]
-    base_shps = [...base_shps, await loadOBJ('https://srmcgann.github.io/objs/fish.obj', 5, 0,3,0,0,0,0)]
-    base_shps = [...base_shps, await loadOBJ('https://srmcgann.github.io/objs/cat.obj', .75, 0,10,0,0,0,0)]
-    base_shps = [...base_shps, await loadOBJ('https://srmcgann.github.io/objs/elephant.obj', 3, 0,15,0,0,0,0)]
-    base_shps = [...base_shps, await loadOBJ('https://srmcgann.github.io/objs/car.obj', 3, 0,4,-3,0,0,0)]
-    base_shps = [...base_shps, await loadOBJ('https://srmcgann.github.io/objs/WoodHouse.obj', 6, 0,5,0,0,0,0)]
-    base_shps = [...base_shps, await loadOBJ('https://srmcgann.github.io/objs/t-rex.obj', .3, 0,10,2,0,0,0)]
-    base_shps = [...base_shps, await loadOBJ('https://srmcgann.github.io/objs/skull_lowpoly.obj', 3, 0,10,0,0,0,0)]
-    base_shps = [...base_shps, await loadOBJ('https://srmcgann.github.io/objs/hat.obj', 6, 0,0,0,0,0,0)]
-    base_shps = [...base_shps, await loadOBJ('https://srmcgann.github.io/objs/M9.obj', 2, 0,0,0,0,0,0)]
-    base_shps = [...base_shps, await loadOBJ('https://srmcgann.github.io/objs/rose.obj', .3, 0,10,0,0,0,0)]
-    base_shps = [...base_shps, await loadOBJ('https://srmcgann.github.io/objs/skull3.obj', 1, 0,10,0,0,0,0)]
-    base_shps = [...base_shps, await loadOBJ('https://srmcgann.github.io/objs/robotic_arm.obj', .6, 0,10,0,0,0,0)]
-    base_shps = [...base_shps, await loadOBJ('https://srmcgann.github.io/objs/wolf.obj', .03, 0,10,0,0,0,0)]
-    base_shps = [...base_shps, await loadOBJ('https://srmcgann.github.io/objs/ladybug.obj', 4500, 0,5,0,0,0,0)]
-    base_shps = [...base_shps, await loadOBJ('https://srmcgann.github.io/objs/tiger.obj', .025, 0,10,0,0,0,0)]
-    
-    grav = .05
-    floor_base = 0
-    shps = []
-    shpFreq = 100
-    iShpv2 = .5
-    iShpRv = .4
-    iShpRv2 = .02
-    shpsel = 0
-    spawnShp = () => {
-      iShpv = (.1 * (.5+Rn()/2))/1.5
-      ipFlex = Rn()<.5 ? 0 : 4-Rn()**3*3
-      ls = 16 / (1 + ipFlex/2)
-      G = 25
-      tx = 0//(Rn()-.5) * G
-      ty = -15
-      tz = 0//(Rn()-.5) * G
-      showlines = false
-      if(Rn()<.1){
-        switch(Rn()*5|0){
-          case 0:
-            ls_ = ls * 1
-            showlines = true
-            newShp = subDividedTetrahedron(ls_,3,ipFlex)
-            break
-          case 1:
-            ls_ = ls * 1
-            showlines = true
-            newShp = subDividedCube(ls_,2,ipFlex)
-            break
-          case 2:
-            ls_ = ls * 1
-            showlines = true
-            newShp = subDividedOctahedron(ls_,2,ipFlex)
-            break
-          case 3:
-            ls_ = ls * 1
-            showlines = true
-            newShp = subDividedDodecahedron(ls_,1,ipFlex)
-            break
-          case 4:
-            ls_ = ls * 1
-            showlines = true
-            newShp = subDividedIcosahedron(ls_,1,ipFlex)
-            break
-        }
-      } else {
-          ls_ = ls * 1
-          shpsel++// = (base_shps.length*Rn())|0
-          if(shpsel>base_shps.length-1) shpsel=0
-          showlinesAr = [1,2,3,7,8,11]
-          if(showlinesAr.indexOf(shpsel)!==-1) showlines = true
-          newShp = JSON.parse(JSON.stringify(base_shps[shpsel]))
-      }
-      vx = S(t*8) * iShpv*5
-      vy = -1.5
-      vz = C(t*8) * iShpv*5
-      
-      rl=pt=yw=0
-      switch(Rn()*3|0){
-        case 0:
-          rl = (Rn()-.5) * iShpRv;
-          pt = (Rn()-.5) * iShpRv;
-          break
-        case 1:
-          pt = (Rn()-.5) * iShpRv;
-          yw = (Rn()-.5) * iShpRv;
-          break
-        case 2:
-          yw = (Rn()-.5) * iShpRv;
-          rl = (Rn()-.5) * iShpRv;
-          break
-      }
-      irl = Rn()*Math.PI*2
-      ipt = Rn()*Math.PI*2
-      iyw = Rn()*Math.PI*2
-      newShp = newShp.map(v=>{
-        vx2 = (Rn()-.5) * iShpv2
-        vy2 = - grav * .5 - Rn() * iShpv2
-        vz2 = (Rn()-.5) * iShpv2
-        rl2=pt2=yw2=0
-        switch(Rn()*3|0){
-          case 0:
-            rl2 = (Rn()-.5) * iShpRv2;
-            pt2 = (Rn()-.5) * iShpRv2;
-            break
-          case 1:
-            pt2 = (Rn()-.5) * iShpRv2;
-            yw2 = (Rn()-.5) * iShpRv2;
-            break
-          case 2:
-            yw2 = (Rn()-.5) * iShpRv2;
-            rl2 = (Rn()-.5) * iShpRv2;
-            break
-        }
-        v = [v, 0, 0, 0, vx2, vy2, vz2, 0, 0, 0, rl2, pt2, yw2, false, 0, 1]
-        return v
-      })
-      shps = [...shps, [tx, ty, tz, newShp, 1, vx, vy, vz, irl, ipt, iyw, rl, pt, yw, showlines]]
-    }
-    
-    rw=100, cl=200, ls = 1, sp=2
-    floor = []
-    Array(rw*cl).fill().map((v,i) => {
-      a = []
-      X = tx = ((i%cl)-cl/2+.5)*sp*1.5 + ((i/cl|0)%2?sp*.75:0)
-      Y = ty = floor_base
-      Z = tz = ((i/cl|0)-rw/2+.5)*sp/2*(.75**.5)-sp/3
-      R(0,0,Math.PI/2)
-      tx = X
-      ty = Y
-      tz = Z
-      d = Math.hypot(tx,tz)
-      if((((((i/cl|0)*.5)+i*2)%2))&&d<23){
-        for(j=6;j--;){
-          X = tx + S(p=Math.PI*2/6*j) * ls
-          Y = ty
-          Z = tz + C(p) * ls
-          //R(0,Math.PI/2,0)
-          a = [...a, [X,Y,Z]]
-        }
-        floor = [...floor, a]
-      }
-    })
-    
-    sparks = []
-    iSparksv = .4
-    spawnSparks = (tx,ty,tz,num) => {
-      for(m=(2*(num+1))|0;m--;){
-        vx = (Rn()-.5)*iSparksv
-        vy = -(Rn())*iSparksv
-        vz = (Rn()-.5)*iSparksv
-        sparks = [...sparks, [tx,ty,tz,vx,vy,vz,1,num]]
-      }
-    }
-    G_ = 150000, iSTc = 8e3
+
+    G_ = 100000, iSTc = 5e3
     ST = Array(iSTc).fill().map(v=>{
       X = (Rn()-.5)*G_
       Y = (Rn()-.5)*G_
       Z = (Rn()-.5)*G_
       return [X,Y,Z]
     })
+    
+    base_shp = subDividedCube(60,3,0).map((v,i)=>{
+      v = v.map((q,j)=>{
+        X = q[0]
+        Y = q[1]
+        Z = q[2]
+        R(-.01,0,.01)
+        q = [X,Y,Z]
+        return q
+      })
+      return v
+    })
+    base_shp = base_shp.map((v,i) =>{
+      v = v.map((q,j)=>{
+        a = []
+        X1 = q[0]
+        Y1 = q[1]
+        Z1 = q[2]
+        base_shp.map((n,N)=>{
+          n.map((k,K)=>{
+            if(K!=j||N!=i){
+              X2 = k[0]
+              Y2 = k[1]
+              Z2 = k[2]
+              d = Math.hypot(X1-X2,Y1-Y2,Z1-Z2)
+              if(d<8){
+                a = [...a, [N,K,d]]
+              }
+            }
+          })
+        })
+        return [...q, ...q, 0, 0, 0, a]
+      })
+      return v
+    })
+    P = []
+    pfreq = 0
+    iPv = 6
+    spawnP = () =>{
+      X = S(p=S(S(t/30)*10)*Math.PI*2)*70
+      Y = 0
+      Z = C(p)*70
+      vx = -S(p)*iPv
+      vy = 0
+      vz = -C(p)*iPv
+      P = [...P, [X,Y,Z,vx,vy,vz,1]]
+    }
+    
+    sparks = []
+    iSparksv = .3
+    spawnSparks = (tx,ty,tz,num=1) => {
+      for(m=(2*(num+1))|0;m--;){
+        vx = (Rn()-.5)*iSparksv
+        vy = (Rn()-.5)*iSparksv
+        vz = (Rn()-.5)*iSparksv
+        sparks = [...sparks, [tx,ty,tz,vx,vy,vz,1,num]]
+      }
+    }
+    grav = .003
   }
   
-  if(!((t*60|0)%shpFreq)) spawnShp()
-  oX=0, oY=3, oZ=Math.min(110, Math.max(60,(.3+S(t/2))*250))
-  Rl=C(t/2)/8, Pt=-.5+C(t/2)/2, Yw=Math.PI/2+S(t/2)
+  oX=0, oY=0, oZ=Math.max(30,Math.min(160,(.3+C(t/2))*500))
+  //Rl=0, Pt=-.2+S(t/3)/8, Yw = C(t/16)/2
+  //Rl=0, Pt=S(t/3)/4, Yw = t/4
+  Rl=0, Pt=Math.PI/2-t/8, Yw=-t/8
   
   x.globalAlpha = 1
   x.fillStyle='#000C'
@@ -1226,9 +1123,9 @@
     Y = v[1]
     Z = v[2]
     R(Rl,Pt,Yw,1)
-    if(Z>10000){
-      if((x.globalAlpha = Math.min(1,(Z/3000)**2))>.1){
-        s = Math.min(1e3, 500000/Z)
+    if(Z>0){
+      if((x.globalAlpha = Math.min(1,(Z/1e4)**2))>.1){
+        s = Math.min(1e3, 400000/Z)
         x.fillStyle = '#ffffff04'
         l = Q()
         x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
@@ -1240,190 +1137,183 @@
   })
 
   x.globalAlpha = 1
+
+  if(!((t*60|0)%pfreq)) spawnP()
+  elasticity  = 40
+  elasticity2 = 13
+  elasticity3 = 1
+  rl = .01
+  pt = -.005
+  yw = -.005
+  lim = 5
+  base_shp.map(v=>{
+    v.map(q=>{
+      X = q[0]
+      Y = q[1]
+      Z = q[2]
+      R(rl,pt,yw)
+      q[0] = X
+      q[1] = Y
+      q[2] = Z
+      X = q[3]
+      Y = q[4]
+      Z = q[5]
+      R(rl,pt,yw)
+      q[3] = X
+      q[4] = Y
+      q[5] = Z
+    })
+    x.beginPath()
+    d1 = 0
+    v.map(q=>{
+      q[9].map(n=>{
+        tx1 = q[0]
+        ty1 = q[1]
+        tz1 = q[2]
+        tx2 = base_shp[n[0]][n[1]][0]
+        ty2 = base_shp[n[0]][n[1]][1]
+        tz2 = base_shp[n[0]][n[1]][2]
+        vx = (tx1-tx2)
+        vy = (ty1-ty2)
+        vz = (tz1-tz2)
+        d  = Math.hypot(vx,vy,vz)
+        if(d){
+          vx /= d
+          vy /= d
+          vz /= d
+          vx *= n[2]
+          vy *= n[2]
+          vz *= n[2]
+        }
+        tgtx = tx2 + vx
+        tgty = ty2 + vy
+        tgtz = tz2 + vz
+        q[6] += (tgtx-q[0]) / elasticity2
+        q[7] += (tgty-q[1]) / elasticity2
+        q[8] += (tgtz-q[2]) / elasticity2
+      })
+      q[6] += (q[3]-q[0]) / elasticity
+      q[7] += (q[4]-q[1]) / elasticity
+      q[8] += (q[5]-q[2]) / elasticity
+      d1 = Math.hypot(q[6],q[7],q[8])+.001
+      d2 = Math.min(lim,d1)
+      q[6] /= d1
+      q[7] /= d1
+      q[8] /= d1
+      q[6] *= d2
+      q[7] *= d2
+      q[8] *= d2
+      X = q[0] += q[6]
+      Y = q[1] += q[7]
+      Z = q[2] += q[8]
+      q[6]/=1.85
+      q[7]/=1.85
+      q[8]/=1.85
+      R(Rl,Pt,Yw,1)
+      if(Z>0) x.lineTo(...Q())
+      d1 += (3+Math.hypot(q[3]-q[0],q[4]-q[1],q[5]-q[2]))**2.5/150
+    })
+    a1 = Math.min(.25,.01+.5*d1/10)
+    a2 = Math.min(.25,.1*d1/5)
+    col1 = `hsla(${d1*10-t*199},99%,${Math.max(50,100-d1*4)}%,${a1})`
+    col2 = `hsla(${d1*10-t*199},99%,${Math.max(50,100-d1*4)}%,${a2})`
+    stroke(a1>.03?col1:'',a2>.03?col2:'',10,true)
+  })
   
+  anticipation = 1
+  P = P.filter(v=>v[6]>0)
+  P.map((v,i)=>{
+    X1 = v[0] + v[3]
+    Y1 = v[1] + v[4]
+    Z1 = v[2] + v[5]
+    X2 = v[0] + v[3] * 2 * anticipation
+    Y2 = v[1] + v[4] * 2 * anticipation
+    Z2 = v[2] + v[5] * 2 * anticipation
+    base_shp.map(n=>{
+      ax=ay=az=0
+      n.map(q=>{
+        ax+=q[0]
+        ay+=q[1]
+        az+=q[2]
+      })
+      ax /= n.length
+      ay /= n.length
+      az /= n.length
+      d = Math.hypot(ax-(X1+X2)/2,ay-(Y1+Y2)/2,az-(Z1+Z2)/2)
+      if(d<8&& (l=lineFaceI(X1,Y1,Z1,X2,Y2,Z2,n))){
+        spawnSparks(...l[0])
+        vx = v[3]
+        vy = v[4]
+        vz = v[5]
+        n.map(q=>{
+          q[6] += vx/elasticity3
+          q[7] += vy/elasticity3
+          q[8] += vz/elasticity3
+        })
+      }
+    })
+    v[0] += v[3]
+    v[1] += v[4]
+    v[2] += v[5]
+    if(i){
+      x.beginPath()
+      l = i-1
+      X = P[l][0]
+      Y = P[l][1]
+      Z = P[l][2]
+      R(Rl,Pt,Yw,1)
+      if(Z>0) x.lineTo(...Q())
+      l = i
+      X = P[l][0]
+      Y = P[l][1]
+      Z = P[l][2]
+      R(Rl,Pt,Yw,1)
+      if(Z>0) x.lineTo(...Q())
+      if(1)stroke('#fff','',30*v[6],true)
+    }
+    if(0&&Z>0){
+      x.globalAlpha = 1
+      l = Q()
+      s = Math.min(1e3, 6000/Z*v[6])
+      x.fillStyle = '#4400ff08'
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      //s/=2
+      //x.fillStyle = '#00ff8810'
+      //x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      s/=6
+      x.fillStyle = '#fffa'
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+    }
+    v[6] -= .035
+  })
+  
+  x.globalAlpha = 1
   
   sparks = sparks.filter(v=>v[6]*v[7]>.1)
-  
+
   sparks.map(v=>{
     X = v[0] += v[3]
     Y = v[1] += v[4] += grav
     Z = v[2] += v[5]
-    //v[3] /= 1.5
-    //v[4] /= 1.5
-    //v[5] /= 1.5
-    d = Math.hypot(X,Z)
-    if(d<G/1.1){
-      if(Y>floor_base){
-        Y = floor_base
-        v[4] *= v[4] > 0 ? -1 : 1
-      }
-    }
     v[6]-=.02
     R(Rl,Pt,Yw,1)
     if(Z>0){
       l = Q()
-      s = Math.min(1e3, 10000/Z*v[6]*v[7])
-      x.fillStyle = '#ff000002'
+      s = Math.min(1e3, 5000/Z*v[6]*v[7])
+      x.fillStyle = '#ff000004'
       x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
       s/=2.5
       x.fillStyle = '#ff880010'
       x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      s/=2.5
+      s/=3
       x.fillStyle = '#ffffffff'
       x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
     }
   })
-  
-  
-  if(1){
-    x.beginPath()
-    for(i=40;i--;){
-      X = S(p=Math.PI*2/40*i) * G/1.05
-      Y = floor_base
-      Z = C(p) * G/1.05
-      R(Rl,Pt,Yw,1)
-      if(Z>0) x.lineTo(...Q())
-    }
-    stroke('#f003','',20,1)
 
-    floor.map(v=>{
-    x.beginPath()
-    v.map(q=>{
-      X = q[0] + .5
-      Y = q[1]
-      Z = q[2]+.25
-      R(Rl,Pt,Yw,1)
-      if(Z>0) x.lineTo(...Q())
-    })
-    stroke('#f002','#3008',5,0)
-  })
-  }
-  shps = shps.filter(v=>v[4]>0 && v[1]<floor_base+500)
-  
-  shps.map(v => {
-    tx  = v[0]  += v[5]
-    ty_ = v[1]  += v[6] += grav
-    tz  = v[2]  += v[7]
-    rl = v[8]  += v[11]
-    pt = v[9]  += v[12]
-    yw = v[10] += v[13]
-    v[4] -= .0075
-    v[3].map(q => {
-      ty = q[13] ? v[6] : ty_
-      ax = ay = az = 0
-      q[0].map(n => {
-        ax += n[0] + q[1]
-        ay += n[1] + q[2]
-        az += n[2] + q[3]
-      })
-      ax /= q[0].length
-      ay /= q[0].length
-      az /= q[0].length
-      if(ay + ty > floor_base) {
-        if(!q[13]){
-          if(d__ < G/1.1){
-            if(Rn()<.2)spawnSparks(ax+tx, ay+ty, az+tz, v[4])
-            q[14] += 50
-            q[4] += v[5]*.75
-            q[5] *= q[5] > 0 ? -.75 : 1
-            q[6] += v[7]*.75
-            v[5] /= 1.05
-            v[7] /= 1.05
-            q[13] = true
-          }
-        }
-      }
-      
-      if(q[13]){
-        q[15] -= .25
-        q[5] += grav
-        if(ay+ty>floor_base){
-          d__ = Math.hypot(ax+tx, az+tz)
-          if(d__<G/1.1 && ay+ty < floor_base+5){
-            if(ay+ty>floor_base+.5) q[2] -= 1
-            q[5] *= q[5] > 0 ? -.5 : 1
-            //spawnSparks(tx + ax,floor_base, tz + az, v[4])
-          }
-        }
-        rl = q[7] += q[10]
-        pt = q[8] += q[11]
-        yw = q[9] += q[12]
-      }
 
-      x.beginPath()
-      maxd = -6e6
-      q[0].map(n=>{
-        olx=oly=olz = 0
-        /*X = ax + tx
-        Y = ay + ty
-        Z = az + tz
-        x.fillStyle = '#0f0'
-        R(Rl,Pt,Yw,1)
-        if(Z>0){
-          s = Math.min(1e3,500/Z)
-          l = Q()
-          x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-        }*/
-        X = n[0]
-        Y = n[1]
-        Z = n[2]
-        if(q[13]){
-          ax__ = ay__ = az__ = 0
-          q[0].map(n_=>{
-            ax__ += n_[0]
-            ay__ += n_[1]
-            az__ += n_[2]
-          })
-          ax__/=q[0].length
-          ay__/=q[0].length
-          az__/=q[0].length
-          X = n[0] - ax__
-          Y = n[1] - ay__
-          Z = n[2] - az__
-          R(q[7],q[8],q[9])
-          X = n[0] = X + ax__
-          Y = n[1] = Y + ay__
-          Z = n[2] = Z + az__
-          q[7] += q[10]
-          q[8] += q[11]
-          q[9] += q[12]
-          q[10] /= 1.2
-          q[11] /= 1.2
-          q[12] /= 1.2
-          q[1] += q[4]
-          q[2] += q[5]
-          q[3] += q[6]
-          if(ay+ty > floor_base){
-            d__ = Math.hypot(ax+tx, az+tz)
-            if(d__ < G/1.1 && ay+ty <floor_base+5){
-              if(Rn()<.015)spawnSparks(tx + ax, floor_base, tz + az, v[4])
-              q[4] *= .99
-              q[6] *= .99
-            }
-          }
-          if(q[15]>0){
-            q[2]=(floor_base-(ty+ay))/2
-          }
-        }else{
-          R(v[11],v[12],v[13])
-          n[0] = X
-          n[1] = Y
-          n[2] = Z
-        }
-        X += tx + q[1]
-        Y += ty + q[2]
-        Z += tz + q[3]
-        d__ = Math.hypot(X,Z)
-        R(Rl,Pt,Yw,1)
-        if(Z>0) x.lineTo(...Q())
-      })
-      flash = q[14] /= 1.1
-      col1 = v[14] ? `hsla(${t*50},99%,${70 + flash**2}%,${v[4]**.5*(2+flash/8)})` : ''
-      col2 = `hsla(${t*50},99%,${50 + flash**2}%,${v[4]**.5*.4*(1+flash/15)})`
-      if(maxd<.03) stroke(col1, col2, 4, false)
-    })
-  })
 
+	      
 		
 t+=1/60
 
