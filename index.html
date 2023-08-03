@@ -138,15 +138,17 @@
   
 
 
-  oX=oY=oZ=0
+
+
+	        oX=oY=oZ=0
   if(!t){
     R=R2=(Rl,Pt,Yw,m)=>{
       M=Math
       A=M.atan2
       H=M.hypot
-      X=S(p=A(X,Z)+Yw)*(d=H(X,Z))
-      Z=C(p)*d
       Y=S(p=A(Y,Z)+Pt)*(d=H(Y,Z))
+      Z=C(p)*d
+      X=S(p=A(X,Z)+Yw)*(d=H(X,Z))
       Z=C(p)*d
       X=S(p=A(X,Y)+Rl)*(d=H(X,Y))
       Y=C(p)*d
@@ -1048,73 +1050,28 @@
       return [X,Y,Z]
     })
     
-    base_shp = subDividedCube(60,3,0).map((v,i)=>{
-      v = v.map((q,j)=>{
-        X = q[0]
-        Y = q[1]
-        Z = q[2]
-        R(-.01,0,.01)
-        q = [X,Y,Z]
-        return q
-      })
-      return v
-    })
-    base_shp = base_shp.map((v,i) =>{
-      v = v.map((q,j)=>{
-        a = []
-        X1 = q[0]
-        Y1 = q[1]
-        Z1 = q[2]
-        base_shp.map((n,N)=>{
-          n.map((k,K)=>{
-            if(K!=j||N!=i){
-              X2 = k[0]
-              Y2 = k[1]
-              Z2 = k[2]
-              d = Math.hypot(X1-X2,Y1-Y2,Z1-Z2)
-              if(d<8){
-                a = [...a, [N,K,d]]
-              }
-            }
-          })
-        })
-        return [...q, ...q, 0, 0, 0, a]
-      })
-      return v
-    })
-    P = []
-    pfreq = 0
-    iPv = 6
-    spawnP = () =>{
-      X = S(p=S(S(t/30)*10)*Math.PI*2)*70
-      Y = 0
-      Z = C(p)*70
-      vx = -S(p)*iPv
-      vy = 0
-      vz = -C(p)*iPv
-      P = [...P, [X,Y,Z,vx,vy,vz,1]]
+    cubels = .035
+    cl = 30
+    rw = 30
+    br = 1
+    sp = cubels*.95
+    base_shp = subDividedTetrahedron(cubels/2)
+    space = Array(cl*rw*br).fill().map(v=>[2,1])
+    for(j=1;j--;)for(i=99;i--;){
+      ls = 5+j
+      tx = (cl/2 + S(p=Math.PI*2/99*i)*ls)|0
+      ty = (rw/2 + C(p)*ls)|0
+      idx = (tx + ty*cl)
+      idx = Math.min(space.length-1,Math.max(0,idx))
+      space[idx|0] = [1,1]
     }
-    
-    sparks = []
-    iSparksv = .3
-    spawnSparks = (tx,ty,tz,num=1) => {
-      for(m=(2*(num+1))|0;m--;){
-        vx = (Rn()-.5)*iSparksv
-        vy = (Rn()-.5)*iSparksv
-        vz = (Rn()-.5)*iSparksv
-        sparks = [...sparks, [tx,ty,tz,vx,vy,vz,1,num]]
-      }
-    }
-    grav = .003
   }
   
-  oX=0, oY=0, oZ=Math.max(30,Math.min(160,(.3+C(t/2))*500))
-  //Rl=0, Pt=-.2+S(t/3)/8, Yw = C(t/16)/2
-  //Rl=0, Pt=S(t/3)/4, Yw = t/4
-  Rl=0, Pt=Math.PI/2-t/8, Yw=-t/8
+  oX=0, oY=0, oZ=Math.min(1.5,Math.max(.3,(.3+S(t))*5))
+  Rl=-S(t/2)/3, Pt=-.2+C(t/3)*2, Yw = S(t/4)*3
   
   x.globalAlpha = 1
-  x.fillStyle='#000C'
+  x.fillStyle='#0008'
   x.fillRect(0,0,c.width,c.height)
   x.lineJoin = x.lineCap = 'roud'
 
@@ -1125,196 +1082,138 @@
     R(Rl,Pt,Yw,1)
     if(Z>0){
       if((x.globalAlpha = Math.min(1,(Z/1e4)**2))>.1){
-        s = Math.min(1e3, 400000/Z)
-        x.fillStyle = '#ffffff04'
+        s = Math.min(1e3, 600000/Z)
+        x.fillStyle = '#ffffff08'
         l = Q()
         x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-        s/=5
+        s/=8
         x.fillStyle = '#fffa'
         x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
       }
     }
-  })
+  });
 
+  if(t>.5){
+
+    //a
+    if(Rn()<.25)for(flow=1;flow--;){
+      ct = 0
+      do{
+        idx = space.length*Rn()|0
+        ct++
+      }while(ct<100&&space[idx][0]);
+      space[idx] = [1,1]
+    }
+
+    //b
+    for(flow=30;flow--;){
+      ct = 0
+      do{
+        idx = space.length*Rn()|0
+        ct++
+      }while(ct<100&&space[idx][0]);
+      if(!space[idx][0]) space[idx] = [2,0]
+    }
+  }
+  
   x.globalAlpha = 1
-
-  if(!((t*60|0)%pfreq)) spawnP()
-  elasticity  = 40
-  elasticity2 = 13
-  elasticity3 = 1
-  rl = .01
-  pt = -.005
-  yw = -.005
-  lim = 5
-  base_shp.map(v=>{
-    v.map(q=>{
-      X = q[0]
-      Y = q[1]
-      Z = q[2]
-      R(rl,pt,yw)
-      q[0] = X
-      q[1] = Y
-      q[2] = Z
-      X = q[3]
-      Y = q[4]
-      Z = q[5]
-      R(rl,pt,yw)
-      q[3] = X
-      q[4] = Y
-      q[5] = Z
-    })
-    x.beginPath()
-    d1 = 0
-    v.map(q=>{
-      q[9].map(n=>{
-        tx1 = q[0]
-        ty1 = q[1]
-        tz1 = q[2]
-        tx2 = base_shp[n[0]][n[1]][0]
-        ty2 = base_shp[n[0]][n[1]][1]
-        tz2 = base_shp[n[0]][n[1]][2]
-        vx = (tx1-tx2)
-        vy = (ty1-ty2)
-        vz = (tz1-tz2)
-        d  = Math.hypot(vx,vy,vz)
-        if(d){
-          vx /= d
-          vy /= d
-          vz /= d
-          vx *= n[2]
-          vy *= n[2]
-          vz *= n[2]
+  killRate = .15
+  
+  threshold = .75
+  for(m=1;m--;)JSON.parse(JSON.stringify(space)).map((v,i)=>{
+    if(v[0]==1 && v[1]>threshold){
+      ax1 = i%cl
+      ay1 = (i/cl|0)%rw
+      az1 = i/rw/cl|0
+      for(j=6;j--;){
+        ax2 = ax1
+        ay2 = ay1
+        az2 = az1
+        switch(j){
+          case 0: ax2 = ax1-1; break
+          case 1: ay2 = ay1-1; break
+          case 2: az2 = az1-1; break
+          case 3: ax2 = ax1+1; break
+          case 4: ay2 = ay1+1; break
+          case 5: az2 = az1+1; break
         }
-        tgtx = tx2 + vx
-        tgty = ty2 + vy
-        tgtz = tz2 + vz
-        q[6] += (tgtx-q[0]) / elasticity2
-        q[7] += (tgty-q[1]) / elasticity2
-        q[8] += (tgtz-q[2]) / elasticity2
-      })
-      q[6] += (q[3]-q[0]) / elasticity
-      q[7] += (q[4]-q[1]) / elasticity
-      q[8] += (q[5]-q[2]) / elasticity
-      d1 = Math.hypot(q[6],q[7],q[8])+.001
-      d2 = Math.min(lim,d1)
-      q[6] /= d1
-      q[7] /= d1
-      q[8] /= d1
-      q[6] *= d2
-      q[7] *= d2
-      q[8] *= d2
-      X = q[0] += q[6]
-      Y = q[1] += q[7]
-      Z = q[2] += q[8]
-      q[6]/=1.85
-      q[7]/=1.85
-      q[8]/=1.85
-      R(Rl,Pt,Yw,1)
-      if(Z>0) x.lineTo(...Q())
-      d1 += (3+Math.hypot(q[3]-q[0],q[4]-q[1],q[5]-q[2]))**2.5/150
-    })
-    a1 = Math.min(.25,.01+.5*d1/10)
-    a2 = Math.min(.25,.1*d1/5)
-    col1 = `hsla(${d1*10-t*199},99%,${Math.max(50,100-d1*4)}%,${a1})`
-    col2 = `hsla(${d1*10-t*199},99%,${Math.max(50,100-d1*4)}%,${a2})`
-    stroke(a1>.03?col1:'',a2>.03?col2:'',10,true)
-  })
-  
-  anticipation = 1
-  P = P.filter(v=>v[6]>0)
-  P.map((v,i)=>{
-    X1 = v[0] + v[3]
-    Y1 = v[1] + v[4]
-    Z1 = v[2] + v[5]
-    X2 = v[0] + v[3] * 2 * anticipation
-    Y2 = v[1] + v[4] * 2 * anticipation
-    Z2 = v[2] + v[5] * 2 * anticipation
-    base_shp.map(n=>{
-      ax=ay=az=0
-      n.map(q=>{
-        ax+=q[0]
-        ay+=q[1]
-        az+=q[2]
-      })
-      ax /= n.length
-      ay /= n.length
-      az /= n.length
-      d = Math.hypot(ax-(X1+X2)/2,ay-(Y1+Y2)/2,az-(Z1+Z2)/2)
-      if(d<8&& (l=lineFaceI(X1,Y1,Z1,X2,Y2,Z2,n))){
-        spawnSparks(...l[0])
-        vx = v[3]
-        vy = v[4]
-        vz = v[5]
-        n.map(q=>{
-          q[6] += vx/elasticity3
-          q[7] += vy/elasticity3
-          q[8] += vz/elasticity3
-        })
+        if(ax2 < 0)   ax2 = cl-1
+        if(ay2 < 0)   ay2 = rw-1
+        if(az2 < 0)   az2 = br-1
+        if(ax2 >= cl) ax2 = 0
+        if(ay2 >= rw) ay2 = 0
+        if(az2 >= br) az2 = 0
+        tidx = ax2+ay2*cl+az2*rw*cl
+        if((id = space[tidx][0]) && id == 2 && space[tidx][1]>threshold){
+          space[tidx][0] = 1
+          space[tidx][1] = 1
+        }
       }
-    })
-    v[0] += v[3]
-    v[1] += v[4]
-    v[2] += v[5]
-    if(i){
-      x.beginPath()
-      l = i-1
-      X = P[l][0]
-      Y = P[l][1]
-      Z = P[l][2]
-      R(Rl,Pt,Yw,1)
-      if(Z>0) x.lineTo(...Q())
-      l = i
-      X = P[l][0]
-      Y = P[l][1]
-      Z = P[l][2]
-      R(Rl,Pt,Yw,1)
-      if(Z>0) x.lineTo(...Q())
-      if(1)stroke('#fff','',30*v[6],true)
-    }
-    if(0&&Z>0){
-      x.globalAlpha = 1
-      l = Q()
-      s = Math.min(1e3, 6000/Z*v[6])
-      x.fillStyle = '#4400ff08'
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      //s/=2
-      //x.fillStyle = '#00ff8810'
-      //x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      s/=6
-      x.fillStyle = '#fffa'
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-    }
-    v[6] -= .035
-  })
-  
-  x.globalAlpha = 1
-  
-  sparks = sparks.filter(v=>v[6]*v[7]>.1)
-
-  sparks.map(v=>{
-    X = v[0] += v[3]
-    Y = v[1] += v[4] += grav
-    Z = v[2] += v[5]
-    v[6]-=.02
-    R(Rl,Pt,Yw,1)
-    if(Z>0){
-      l = Q()
-      s = Math.min(1e3, 5000/Z*v[6]*v[7])
-      x.fillStyle = '#ff000004'
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      s/=2.5
-      x.fillStyle = '#ff880010'
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      s/=3
-      x.fillStyle = '#ffffffff'
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
     }
   })
-
-
+  
+  
+  space.map((v,i) => {
+    if(v[0]){
+      tx = ((i%cl)-cl/2+.5)*sp
+      ty = (((i/cl|0)%rw)-rw/2+.5)*sp
+      tz = ((i/cl/rw|0)-br/2+.5)*sp
+      d = Math.hypot(tx/1.5,ty,tz)
+      if(d<1)base_shp.map(q => {
+        /*x.beginPath()
+        q.map(n => {
+          X = tx + n[0]
+          Y = ty + n[1]
+          Z = tz + n[2]
+          R(Rl,Pt,Yw,1)
+          if(Z>0) x.lineTo(...Q())
+        })
+        col2 = `hsla(${(v[0]==1?180:0)+t*99},99%,50%,${.1*v[1]})`
+        stroke('',col2,1,false)*/
+        for(j=6;j--;){
+          X = tx
+          Y = ty
+          Z = tz
+          sp1 = .5
+          rl=pt=yw=ax=ay=az=0
+          switch(j){
+            case 0: az = -sp1; break
+            case 1: az = sp1; break
+            case 2: yw = Math.PI/2, ax = -sp1; break
+            case 3: yw = Math.PI/2, ax = sp1; break
+            case 4: pt = Math.PI/2, ay = -sp1; break
+            case 5: pt = Math.PI/2, ay = sp1; break
+          }
+          R(rl,pt,yw)
+          X+=ax
+          Y+=ay
+          Z+=az
+          R(Rl,Pt,Yw,1)
+          if(Z>0){
+            s = Math.min(2e3, 70/Z)
+            l = Q()
+            x.globalAlpha = .25*v[1]
+            x.fillStyle = `hsla(${(v[0]==1?0:180)+20*v[1]+t*100+i/5},99%,50%,.028)`
+            x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+            s/=5
+            x.fillStyle = `hsla(${(v[0]==1?0:180)+20*v[1]+t*100+i/5},99%,70%,.1)`
+            x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+            s/=6
+            x.fillStyle = '#fff'
+            x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+          }
+        }
+      })
+      if(v[0]==1) v[1]-=killRate
+      if(v[0]==2) v[1]+=killRate
+      v[1] = Math.max(0,Math.min(1,v[1]))
+      if(v[1]<=0){
+        v[0] = v[1] = 0
+      }
+    }
+  })
 
 	      
-		
 t+=1/60
 
       }
