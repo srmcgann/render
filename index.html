@@ -145,9 +145,9 @@
       M=Math
       A=M.atan2
       H=M.hypot
-      Y=S(p=A(Y,Z)+Pt)*(d=H(Y,Z))
-      Z=C(p)*d
       X=S(p=A(X,Z)+Yw)*(d=H(X,Z))
+      Z=C(p)*d
+      Y=S(p=A(Y,Z)+Pt)*(d=H(Y,Z))
       Z=C(p)*d
       X=S(p=A(X,Y)+Rl)*(d=H(X,Y))
       Y=C(p)*d
@@ -1041,208 +1041,214 @@
       return ret
     }
 
-    G_ = 100000, iSTc = 5e3
-    ST = Array(iSTc).fill().map(v=>{
-      X = (Rn()-.5)*G_
-      Y = (Rn()-.5)*G_
-      Z = (Rn()-.5)*G_
-      return [X,Y,Z]
+    B = Array(c.width*c.height).fill().map(v=>{
+      return [0,0]
     })
     
-    cubels = .032
-    cl = 30
-    rw = 30
-    br = 1
-    sp = cubels*.95
-    base_shp = subDividedTetrahedron(cubels/2)
-    space = Array(cl*rw*br).fill().map(v=>[2,1])
-    for(j=1;j--;)for(i=99;i--;){
-      ls = 5+j
-      tx = (cl/2 + S(p=Math.PI*2/99*i)*ls)|0
-      ty = (rw/2 + C(p)*ls)|0
-      idx = (tx + ty*cl)
-      idx = Math.min(space.length-1,Math.max(0,idx))
-      space[idx|0] = [1,1]
+    buffer = x.createImageData(c.width,c.height)
+    data = buffer.data
+    for(i=0; i<data.length; i+=4){
+      red    = data[i+0]
+      green  = data[i+1]
+      blue   = data[i+2]
+      alpha  = data[i+3]
+
+      red = 32
+      green = 0
+      blue = 64
+      alpha = 255
+      
+      B[i/4|0] = [1, 1]
+      
+      data[i+0] = red
+      data[i+1] = green
+      data[i+2] = blue
+      data[i+3] = alpha
     }
     
-    bounding = Cube(1)
-  }
-  
-  oX=0, oY=0, oZ=Math.min(1.5,Math.max(.3,(.3+S(t))*5))
-  Rl=-S(t/2)/3, Pt=-.2+C(t/3)*2, Yw = S(t/4)*3
-  
-  x.globalAlpha = 1
-  x.fillStyle='#0008'
-  x.fillRect(0,0,c.width,c.height)
-  x.lineJoin = x.lineCap = 'round'
+    sd = 1e4
+    ls = 150//c.height/2
+    for(m=4;m--;){
+      tx = S(p=Math.PI*2/4*m)* c.height/3
+      ty = C(p)* c.height/3
+      for(j=1;j--;)for(i=sd;i--;){
+        ls_ = ls/2+j
+        X = tx + (c.width/2 + S(p = Math.PI*2/sd*i) *ls_) | 0
+        Y = ty + (c.height/2 + C(p) * ls_)|0
+        idx = ((Y*c.width + X)|0)
 
-  ST.map(v=>{
-    X = v[0]
-    Y = v[1]
-    Z = v[2]
-    R(Rl,Pt,Yw,1)
-    if(Z>0){
-      if((x.globalAlpha = Math.min(1,(Z/1e4)**2))>.1){
-        s = Math.min(1e3, 600000/Z)
-        x.fillStyle = '#ffffff08'
-        l = Q()
-        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-        s/=8
-        x.fillStyle = '#fffa'
-        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+        red = 255
+        green = 0
+        blue = 0
+        alpha = 255
+
+        B[idx] = [2, 1]
+
+        data[idx*4+0] = red
+        data[idx*4+1] = green
+        data[idx*4+2] = blue
+        data[idx*4+3] = alpha
       }
     }
-  });
-
-  if(t>.5){
-
-    //a
-    if(Rn()<.25)for(flow=1;flow--;){
-      ct = 0
-      do{
-        idx = space.length*Rn()|0
-        ct++
-      }while(ct<100&&space[idx][0]);
-      space[idx] = [1,1]
+    
+    RGBFromHSV = (H, S, V) => {
+      while(H<0) H+=360;
+      while(H>=360) H-=360;
+      let C = V*S
+      let X = C * (1-Math.abs((H/60)%2-1))
+      let m = V-C
+      let R_, G_, B_
+      if(H>=0 && H < 60)    R_=C, G_=X, B_=0
+      if(H>=60 && H < 120)  R_=X, G_=C, B_=0
+      if(H>=120 && H < 180) R_=0, G_=C, B_=X
+      if(H>=180 && H < 240) R_=0, G_=X, B_=C
+      if(H>=240 && H < 300) R_=X, G_=0, B_=C
+      if(H>=300 && H < 360) R_=C, G_=0, B_=X
+      let R = (R_+m)*256
+      let G = (G_+m)*256
+      let B = (B_+m)*256
+      return [R,G,B]
     }
 
-    //b
-    for(flow=30;flow--;){
-      ct = 0
-      do{
-        idx = space.length*Rn()|0
-        ct++
-      }while(ct<100&&space[idx][0]);
-      if(!space[idx][0]) space[idx] = [2,0]
-    }
-  }
-  
-  x.globalAlpha = 1
-  killRate = .15
-  
-  threshold = .75
-  for(m=1;m--;)JSON.parse(JSON.stringify(space)).map((v,i)=>{
-    if(v[0]==1 && v[1]>threshold){
-      ax1 = i%cl
-      ay1 = (i/cl|0)%rw
-      az1 = i/rw/cl|0
-      for(j=6;j--;){
-        ax2 = ax1
-        ay2 = ay1
-        az2 = az1
-        switch(j){
-          case 0: ax2 = ax1-1; break
-          case 1: ay2 = ay1-1; break
-          case 2: az2 = az1-1; break
-          case 3: ax2 = ax1+1; break
-          case 4: ay2 = ay1+1; break
-          case 5: az2 = az1+1; break
-        }
-        if(ax2 < 0)   ax2 = cl-1
-        if(ay2 < 0)   ay2 = rw-1
-        if(az2 < 0)   az2 = br-1
-        if(ax2 >= cl) ax2 = 0
-        if(ay2 >= rw) ay2 = 0
-        if(az2 >= br) az2 = 0
-        tidx = ax2+ay2*cl+az2*rw*cl
-        if((id = space[tidx][0]) && id == 2 && space[tidx][1]>threshold){
-          space[tidx][0] = 1
-          space[tidx][1] = 1
-        }
+    
+    sparks = []
+    spawnSparks = (X,Y) => {
+      sparks = [...sparks, [X,Y,1]]
+    } 
+    
+
+    killRate = .5
+    fillRate = 2000
+    fadeRate = .01
+    process = () =>{
+      
+      for(i=fillRate;i--;){
+        ct = 0
+        do{
+          idx = Rn()*B.length|0
+          ct++
+        }while(ct<100 && B[idx][0]!=0);
+        B[idx][0] = 1
+        B[idx][1] = 1
       }
-    }
-  })
-  
-  
-  space.map((v,i) => {
-    if(v[0]){
-      tx = ((i%cl)-cl/2+.5)*sp
-      ty = (((i/cl|0)%rw)-rw/2+.5)*sp
-      tz = ((i/cl/rw|0)-br/2+.5)*sp
-      d = Math.hypot(tx/1.5,ty,tz)
-      if(d<1)base_shp.map(q => {
-        /*x.beginPath()
-        q.map(n => {
-          X = tx + n[0]
-          Y = ty + n[1]
-          Z = tz + n[2]
-          R(Rl,Pt,Yw,1)
-          if(Z>0) x.lineTo(...Q())
-        })
-        col2 = `hsla(${(v[0]==1?180:0)+t*99},99%,50%,${.1*v[1]})`
-        stroke('',col2,1,false)*/
-        for(j=6;j--;){
-          X = tx
-          Y = ty
-          Z = tz
-          sp1 = .47
-          rl=pt=yw=ax=ay=az=0
-          switch(j){
-            case 0: az = -sp1; break
-            case 1: az = sp1; break
-            case 2: yw = Math.PI/2, ax = -sp1; break
-            case 3: yw = Math.PI/2, ax = sp1; break
-            case 4: pt = Math.PI/2, ay = -sp1; break
-            case 5: pt = Math.PI/2, ay = sp1; break
+      
+      JSON.parse(JSON.stringify(B)).map((v,i)=>{
+        if(v[0] == 2){
+          X1 = i%c.width
+          Y1 = i/c.width|0
+          for(j=4;j--;){
+            X2 = X1
+            Y2 = Y1
+            switch(j){
+              case 0:
+                X2 = X1 - 1
+                break
+              case 1:
+                X2 = X1 + 1
+                break
+              case 2:
+                Y2 = Y1 - 1
+                break
+              case 3:
+                Y2 = Y1 + 1
+                break
+              case 4:
+                X2 = X1 + 1
+                Y2 = Y1 + 1
+                break
+              case 5:
+                X2 = X1 + 1
+                Y2 = Y1 - 1
+                break
+              case 6:
+                X2 = X1 - 1
+                Y2 = Y1 + 1
+                break
+              case 7:
+                X2 = X1 - 1
+                Y2 = Y1 - 1
+                break
+            }
+            if(X2<0) X2 = c.width  - 1
+            if(Y2<0) Y2 = c.height - 1
+            if(X2 >= c.width)   X2 = 0
+            if(Y2 >= c.height)  Y2 = 0
+            tidx = (X2 + Y2 * c.width)|0
+            if(B[tidx][0] == 1){
+             spawnSparks(X1,Y1)
+              B[tidx][0] = 2
+              B[tidx][1] = 1
+            }
           }
-          R(rl,pt,yw)
-          X+=ax
-          Y+=ay
-          Z+=az
-          R(Rl,Pt,Yw,1)
-          if(Z>0){
-            s = Math.min(2e3, 70/Z)
-            l = Q()
-            x.globalAlpha = .25*v[1]
-            x.fillStyle = `hsla(${(v[0]==1?0:180)+20*v[1]+t*100+i/5},99%,50%,.028)`
-            x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-            s/=5
-            x.fillStyle = `hsla(${(v[0]==1?0:180)+20*v[1]+t*100+i/5},99%,70%,.05)`
-            x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-            s/=3
-            x.fillStyle = '#fff'
-            x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-          }
+          B[i][1] -= killRate
+        }
+        if(B[i][1]<=0){
+          B[i][0] = 0
+          B[i][1] = 0
         }
       })
-      if(v[0]==1) v[1]-=killRate
-      if(v[0]==2) v[1]+=killRate
-      v[1] = Math.max(0,Math.min(1,v[1]))
-      if(v[1]<=0){
-        v[0] = v[1] = 0
+      
+      for(i=0; i<data.length; i+=4){
+        l=i/4|0
+        if(B[l][0] == 1){
+          B[l][1] -= fadeRate/2
+          if(B[l][1]<=0) B[l][0] = 0
+        }
+        if(B[l][0] == 1 && B[l][1]>.5){
+          ret = RGBFromHSV((B[l][1]*2)*360-t*440,1,.5)
+          red = ret[0]
+          green = ret[1]
+          blue = ret[2]
+          alpha = 128
+        } else if(B[l][0]==2){
+          red = 255
+          green = 0
+          blue = 0
+          alpha = 255
+        } else {
+          red = 0 //ret[0]
+          green = 0 // ret[1]
+          blue = 0 //ret[2]
+          alpha = 0
+        }
+
+        data[i+0] = red
+        data[i+1] = green
+        data[i+2] = blue
+        data[i+3] = alpha
       }
     }
-  })
-  
-  bounding.map(v=>{
-    v.map((q,j)=>{
-      l = j
-      X1 = v[l][0]
-      Y1 = v[l][1]
-      Z1 = v[l][2]
-      l = (j+1) % v.length
-      X2 = v[l][0]
-      Y2 = v[l][1]
-      Z2 = v[l][2]
-      for(n=7;n--;){
-        if(n){
-          x.beginPath()
-          X = X1+(X2-X1)/6*n
-          Y = Y1+(Y2-Y1)/6*n
-          Z = Z1+(Z2-Z1)/6*n
-          R(Rl,Pt,Yw,1)
-          if(Z>0) x.lineTo(...Q())
-          X = X1+(X2-X1)/6*(n-1)
-          Y = Y1+(Y2-Y1)/6*(n-1)
-          Z = Z1+(Z2-Z1)/6*(n-1)
-          R(Rl,Pt,Yw,1)
-          if(Z>0) x.lineTo(...Q())
-          stroke('#fff2','',.25,true)
-        }
+    
+    starsLoaded = false, starImgs = [{loaded: false}]
+    starImgs = Array(10).fill().map((v,i) => {
+      let a = {img: new Image(), loaded: false}
+      a.img.onload = () => {
+        a.loaded = true
+        setTimeout(()=>{
+          if(starImgs.filter(v=>v.loaded).length == 10) starsLoaded = true
+        }, 0)
       }
+      a.img.src = `https://srmcgann.github.io/temp/stars/star${i?i:''}.png`
+      return a
     })
-  })
+  }
 
+  for(let m=1;m--;)process()
+  x.putImageData(buffer, 0, 0)
+  
+  sparks = sparks.filter(v=>v[2]>.1)
+  sparks.map(v=>{
+    X = v[0]
+    Y = v[1]
+    s = 10
+    x.fillStyle = '#4400ff08'
+    x.fillRect(X-s/1.5,Y-s/1.5,s,s)
+    s/=10
+    x.fillStyle = '#0f4'
+    x.fillRect(X-s/1.5,Y-s/1.5,s,s)
+    v[2]-=.25
+  })
+	      
 	      
 t+=1/60
 
