@@ -1047,7 +1047,7 @@
       return ret
     }
 
-    G_ = 100000, iSTc = 5e3
+    G_ = 100000, iSTc = 1e4
     ST = Array(iSTc).fill().map(v=>{
       X = (Rn()-.5)*G_
       Y = (Rn()-.5)*G_
@@ -1155,7 +1155,7 @@
   x.globalAlpha = 1
   x.fillStyle='#000C'
   x.fillRect(0,0,c.width,c.height)
-  x.lineJoin = x.lineCap = 'roud'
+  x.lineJoin = x.lineCap = 'round'
   
   if(!((t*60|0)%Bfreq)) spawnB()
 
@@ -1198,7 +1198,7 @@
       })
       alpha = .15-C(t)/2
       //stroke(alpha<.66?`hsla(${160},99%,50%,${(.66-alpha)/1.5*.5})`:'',alpha>=.33?`hsla(${250},99%,50%,${(.66-(1-alpha))/1.5*.5})`:'',4,true)
-      stroke(alpha<.5?`hsla(${160},99%,50%,${(.5-alpha)/1.5*.5})`:'',alpha>=.33?`hsla(${250},99%,50%,${(.5-(1-alpha))/1.5})`:'',3,false)
+      stroke(alpha<.5?`hsla(${160},99%,50%,${(.5-alpha)/1.5*.5})`:'',alpha>=.33?`hsla(${250},99%,50%,${(.5-(1-alpha))/1.5})`:'',3,true)
     }
   })
   
