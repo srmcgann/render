@@ -137,8 +137,6 @@
 
   
 
-
-
   oX=oY=oZ=0
   if(!t){
     R=R2=(Rl,Pt,Yw,m)=>{
@@ -157,7 +155,7 @@
         Z+=oZ
       }
     }
-    Q=()=>[c.width/2+X/Z*700,c.height/2+Y/Z*700]
+    Q=()=>[c.width/2+X/Z*900,c.height/2+Y/Z*900]
     I=(A,B,M,D,E,F,G,H)=>(K=((G-E)*(B-F)-(H-F)*(A-E))/(J=(H-F)*(M-A)-(G-E)*(D-B)))>=0&&K<=1&&(L=((M-A)*(B-F)-(D-B)*(A-E))/J)>=0&&L<=1?[A+K*(M-A),B+K*(D-B)]:0
     
     Rn = Math.random
@@ -676,7 +674,7 @@
     
     stroke = (scol, fcol, lwo=1, od=true, oga=1) => {
       if(scol){
-        //x.closePath()
+        x.closePath()
         if(od) x.globalAlpha = .2*oga
         x.strokeStyle = scol
         x.lineWidth = Math.min(1000,100*lwo/Z)
@@ -832,22 +830,30 @@
       if(sphereize){
         ip1 = sphereize
         ip2 = 1-sphereize
-        shape = shape.map(v=>{
+        let newshape = []
+        shape.map((v,i)=>{
+          a = []
+          cull = false
           v = v.map(q=>{
             X = q[0]
             Y = q[1]
             Z = q[2]
             d = Math.hypot(X,Y,Z)
-            X /= d
-            Y /= d
-            Z /= d
-            X *= size*.75*ip1 + d*ip2
-            Y *= size*.75*ip1 + d*ip2
-            Z *= size*.75*ip1 + d*ip2
-            return [X,Y,Z]
+            if(!cull && d>.7){
+              X /= d
+              Y /= d
+              Z /= d
+              X *= size*.75*ip1 + d*ip2
+              Y *= size*.75*ip1 + d*ip2
+              Z *= size*.75*ip1 + d*ip2
+              a = [...a, [X,Y,Z]]
+            }else{
+              cull=true
+            }
           })
-          return v
+          if(!cull && (subs==1 || v.length>3 || i<shape.length-0)) newshape = [...newshape, a]
         })
+        shape = newshape
       }
       return shape
     }
@@ -1041,184 +1047,94 @@
       return ret
     }
 
-    B = Array(c.width*c.height).fill().map(v=>{
-      return [0,0]
+    G_ = 100000, iSTc = 5e3
+    ST = Array(iSTc).fill().map(v=>{
+      X = (Rn()-.5)*G_
+      Y = (Rn()-.5)*G_
+      Z = (Rn()-.5)*G_
+      return [X,Y,Z]
     })
     
-    buffer = x.createImageData(c.width,c.height)
-    data = buffer.data
-    for(i=0; i<data.length; i+=4){
-      red    = data[i+0]
-      green  = data[i+1]
-      blue   = data[i+2]
-      alpha  = data[i+3]
-
-      red = 32
-      green = 0
-      blue = 64
-      alpha = 255
-      
-      B[i/4|0] = [1, 1]
-      
-      data[i+0] = red
-      data[i+1] = green
-      data[i+2] = blue
-      data[i+3] = alpha
+    a = []
+    sd = 3
+    sd2 = 3
+    ls = 5, sp = 9.5
+    for(j=sd2;j--;){
+      X = S(p=Math.PI*2/sd2*j+Math.PI/sd2/2)*ls
+      Y = C(p)*ls
+      Z = 0
+      a = [...a, [X, Y, Z]]
     }
-    
-    sd = 1e4
-    ls = 100//c.height/2
-    for(m=4;m--;){
-      tx = S(p=Math.PI*2/4*m)* c.height/3
-      ty = C(p)* c.height/3
-      for(j=1;j--;)for(i=sd;i--;){
-        ls_ = ls/2+j
-        X = tx + (c.width/2 + S(p = Math.PI*2/sd*i) *ls_) | 0
-        Y = ty + (c.height/2 + C(p) * ls_)|0
-        idx = ((Y*c.width + X)|0)
-
-        red = 255
-        green = 0
-        blue = 0
-        alpha = 255
-
-        B[idx] = [2, 1]
-
-        data[idx*4+0] = red
-        data[idx*4+1] = green
-        data[idx*4+2] = blue
-        data[idx*4+3] = alpha
-      }
+    b = subbed(4, ls, 2.5, [a])
+    a = []
+    for(i=sd;i--;){
+      tx = S(p=Math.PI*2/sd*i+Math.PI/sd/2) * sp
+      ty = C(p) * sp
+      tz = 0
+      a = [...a, ...JSON.parse(JSON.stringify(b)).map((v,j)=>{
+        v.map(q=>{
+          X = q[0]
+          Y = q[1]
+          Z = q[2]
+          R(Math.PI*2/sd*i,0,0)
+          q[0] = X + tx
+          q[1] = Y + ty
+          q[2] = Z + tz
+        })
+        return v
+      })]
     }
-    
-    RGBFromHSV = (H, S, V) => {
-      while(H<0) H+=360;
-      while(H>=360) H-=360;
-      let C = V*S
-      let X = C * (1-Math.abs((H/60)%2-1))
-      let m = V-C
-      let R_, G_, B_
-      if(H>=0 && H < 60)    R_=C, G_=X, B_=0
-      if(H>=60 && H < 120)  R_=X, G_=C, B_=0
-      if(H>=120 && H < 180) R_=0, G_=C, B_=X
-      if(H>=180 && H < 240) R_=0, G_=X, B_=C
-      if(H>=240 && H < 300) R_=X, G_=0, B_=C
-      if(H>=300 && H < 360) R_=C, G_=0, B_=X
-      let R = (R_+m)*256
-      let G = (G_+m)*256
-      let B = (B_+m)*256
-      return [R,G,B]
-    }
-
-    
-    sparks = []
-    spawnSparks = (X,Y) => {
-      sparks = [...sparks, [X,Y,1]]
-    } 
-    
-
-    killRate = .5
-    fillRate = 2000
-    fadeRate = .01
-    process = () =>{
-      
-      for(i=fillRate;i--;){
-        ct = 0
-        do{
-          idx = Rn()*B.length|0
-          ct++
-        }while(ct<100 && B[idx][0]!=0);
-        B[idx][0] = 1
-        B[idx][1] = 1
-      }
-      
-      JSON.parse(JSON.stringify(B)).map((v,i)=>{
-        if(v[0] == 2){
-          X1 = i%c.width
-          Y1 = i/c.width|0
-          for(j=4;j--;){
-            X2 = X1
-            Y2 = Y1
-            switch(j){
-              case 0:
-                X2 = X1 - 1
-                break
-              case 1:
-                X2 = X1 + 1
-                break
-              case 2:
-                Y2 = Y1 - 1
-                break
-              case 3:
-                Y2 = Y1 + 1
-                break
-              case 4:
-                X2 = X1 + 1
-                Y2 = Y1 + 1
-                break
-              case 5:
-                X2 = X1 + 1
-                Y2 = Y1 - 1
-                break
-              case 6:
-                X2 = X1 - 1
-                Y2 = Y1 + 1
-                break
-              case 7:
-                X2 = X1 - 1
-                Y2 = Y1 - 1
-                break
-            }
-            if(X2<0) X2 = c.width  - 1
-            if(Y2<0) Y2 = c.height - 1
-            if(X2 >= c.width)   X2 = 0
-            if(Y2 >= c.height)  Y2 = 0
-            tidx = (X2 + Y2 * c.width)|0
-            if(B[tidx][0] == 1){
-             spawnSparks(X1,Y1)
-              B[tidx][0] = 2
-              B[tidx][1] = 1
-            }
-          }
-          B[i][1] -= killRate
-        }
-        if(B[i][1]<=0){
-          B[i][0] = 0
-          B[i][1] = 0
-        }
+    base_shp = a.map(v=>{
+      v.map(q=>{
+        X = q[0]
+        Y = q[1]
+        Z = q[2]
+        R(0,Math.PI/2,0)
+        d = Math.hypot(X,Z)**6/3460000
+        q[0] = X
+        q[1] = (8-d)
+        q[2] = Z
       })
-      
-      for(i=0; i<data.length; i+=4){
-        l=i/4|0
-        if(B[l][0] == 1){
-          B[l][1] -= fadeRate/2
-          if(B[l][1]<=0) B[l][0] = 0
-        }
-        if(B[l][0] == 1 && B[l][1]>.5){
-          ret = RGBFromHSV((B[l][1]*2)*360-t*440,1,.5)
-          red = ret[0]
-          green = ret[1]
-          blue = ret[2]
-          alpha = 128
-        } else if(B[l][0]==2){
-          red = 255
-          green = 0
-          blue = 0
-          alpha = 255
-        } else {
-          red = 0 //ret[0]
-          green = 0 // ret[1]
-          blue = 0 //ret[2]
-          alpha = 0
-        }
-
-        data[i+0] = red
-        data[i+1] = green
-        data[i+2] = blue
-        data[i+3] = alpha
-      }
-    }
+      return v
+    })
+    base_shp = [...base_shp, ...JSON.parse(JSON.stringify(base_shp)).map(v=>{
+      v.map(q=>{
+        X = q[0]
+        Y = q[1]
+        Z = q[2]
+        //R(0,0,Math.PI/sd)
+        q[0] = X
+        q[2] = Z
+        q[1] = Y *= -1
+      })
+      return v
+    })]
     
+    B = []
+    iBv = 1
+    Bfreq = 0
+    shockLen = 20
+    dampening = 2
+    squirreliness = 2
+    spawnB = () => {
+      a = []
+      vx = vz = 0
+      vy = Rn()<.5 ? iBv : -iBv
+      X = Y = Z = 0
+      for(m=shockLen;m--;){
+        vx += (Rn()-.5) * squirreliness
+        vy += (Rn()-.5) * squirreliness / 4
+        vz += (Rn()-.5) * squirreliness
+        vx /= dampening
+        vy /= 1+dampening/40
+        vz /= dampening
+        a = [...a, [X, Y, Z, vx, vy, vz]]
+        X += vx
+        Y += vy
+        Z += vz
+      }
+      B = [...B, [a, 1]]
+    }
     starsLoaded = false, starImgs = [{loaded: false}]
     starImgs = Array(10).fill().map((v,i) => {
       let a = {img: new Image(), loaded: false}
@@ -1228,29 +1144,107 @@
           if(starImgs.filter(v=>v.loaded).length == 10) starsLoaded = true
         }, 0)
       }
-      a.img.src = `https://srmcgann.github.io/temp/stars/star${i?i:''}.png`
+      a.img.src = `star${i?i:''}.png`
       return a
     })
   }
-
-  for(let m=1;m--;)process()
-  x.putImageData(buffer, 0, 0)
   
-  sparks = sparks.filter(v=>v[2]>.1)
-  sparks.map(v=>{
+  oX=0, oY=0, oZ=Math.min(35,Math.max(10,(.3+C(t/4))*80))
+  Rl=0, Pt=S(t/3)*Math.PI/2, Yw = -S(t/5)*4
+  
+  x.globalAlpha = 1
+  x.fillStyle='#000C'
+  x.fillRect(0,0,c.width,c.height)
+  x.lineJoin = x.lineCap = 'roud'
+  
+  if(!((t*60|0)%Bfreq)) spawnB()
+
+  if(1)ST.map((v,i)=>{
     X = v[0]
     Y = v[1]
-    s = 10
-    x.fillStyle = '#4400ff08'
-    x.fillRect(X-s/1.5,Y-s/1.5,s,s)
-    s/=10
-    x.fillStyle = '#0f4'
-    x.fillRect(X-s/1.5,Y-s/1.5,s,s)
-    v[2]-=.25
+    Z = v[2]
+    R(Rl,Pt,Yw,1)
+    if(Z>0){
+      if((x.globalAlpha = Math.min(1,(Z/1e4)**2))>.1){
+        s = Math.min(1e3, 400000/Z)
+        x.fillStyle = '#ffffff04'
+        l = Q()
+        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+        s/=5
+        x.fillStyle = '#fffa'
+        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      }
+    }
   })
+  x.globalAlpha = 1
+ 
+  rl = 0
+  pt = 0
+  yw = .01
+  base_shp.map((v,i)=>{
+    if(1){
+      x.beginPath()
+      v.map(q=>{
+        X = q[0]
+        Y = q[1]
+        Z = q[2]
+        R(rl,pt,yw)
+        q[0] = X
+        q[2] = Z
+        q[1] = Y
+        
+        R(Rl,Pt,Yw,1)
+        if(Z>0) x.lineTo(...Q())
+      })
+      alpha = .15-C(t)/2
+      //stroke(alpha<.66?`hsla(${160},99%,50%,${(.66-alpha)/1.5*.5})`:'',alpha>=.33?`hsla(${250},99%,50%,${(.66-(1-alpha))/1.5*.5})`:'',4,true)
+      stroke(alpha<.5?`hsla(${160},99%,50%,${(.5-alpha)/1.5*.5})`:'',alpha>=.33?`hsla(${250},99%,50%,${(.5-(1-alpha))/1.5})`:'',3,false)
+    }
+  })
+  
+  tlineCap = x.lineJoin
+  x.lineCap = x.lineJoin = 'round'
+  B = B.filter(v=>v[1] > 0)
+  B.map((v,i)=>{
+    v[0].map((q, j)=>{
+      if(j){
+        x.beginPath()
+        l = j-1
+        X = v[0][l][0]
+        Y = v[0][l][1]
+        Z = v[0][l][2]
+        R(Rl, Pt, Yw, 1)
+        if(Z>0)x.lineTo(...Q())
+        l = j
+        X = v[0][l][0]
+        Y = v[0][l][1]
+        Z = v[0][l][2]
+        R(Rl, Pt, Yw, 1)
+        if(Z>0)x.lineTo(...Q())
+        alpha = .66*v[1]
+        stroke(`hsla(${j*10+t*20000+360/B.length*i},99%,${100-j*5}%,${alpha})`,'',10/(1+j/4),true)
+      }
+    })
+    v[1] -= .05
+  })
+  x.lineCap = x.lineJoin = tlineCap
+
+  if(!((t*60|0)%3)){
+    X = Y = Z = 0
+    R(Rl,Pt,Yw,1)
+    if(Z>0){
+      l = Q()
+      s = Math.min(1e4,3e4/Z)
+      x.drawImage(starImgs[1].img,l[0]-s/2,l[1]-s/2,s,s)
+      s/=2
+      x.drawImage(starImgs[2+Rn()*7|0].img,l[0]-s/2.05,l[1]-s/2.05,s,s)
+    }
+  }
+  
+
+
 	      
-	      
-t+=1/60
+	      t+=1/60
 
       }
 
