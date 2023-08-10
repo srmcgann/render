@@ -151,18 +151,18 @@
     })
     bg = new Image()
     bg.src = 'clouds.jpg'
-    speed = 0
-    document.body.onload = () =>{
-      speed = spd.value
-      document.querySelector('#spdLabel').innerHTML = `Speed [${Math.round(speed*2)}%]`
-      spd.addEventListener("mousemove",e=>{
-        if(e.buttons==1 && e.button==0){
-          document.querySelector('#spdLabel').innerHTML = `Speed [${Math.round(speed*2)}%]`
-          speed = spd.value
-        }
-      })
+    speed = 30
+    //document.body.onload = () =>{
+    //  speed = spd.value
+    //  document.querySelector('#spdLabel').innerHTML = `Speed [${Math.round(speed*2)}%]`
+    //  spd.addEventListener("mousemove",e=>{
+    //    if(e.buttons==1 && e.button==0){
+    ///      document.querySelector('#spdLabel').innerHTML = `Speed [${Math.round(speed*2)}%]`
+     //     speed = spd.value
+     //   }
+     // })
       //document.querySelector('#picker').jscolor.show()
-    }
+    // }
     wingCol = '#40f'//document.querySelector('#picker').value
     R=R2=(Rl,Pt,Yw,m)=>{
       M=Math
