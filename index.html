@@ -1320,7 +1320,9 @@
   stroke('#0f86','',.7,true,1,0)
   
   vctx.drawImage(c,0,0,c.width,c.height)
-  x.clearRect(0,0,c.width,c.height)
+  x.fillStyle = '#000'
+  x.globalAlpha = 1
+  x.fillRect(0,0,c.width,c.height)
   
   
   // pt2  
