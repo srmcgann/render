@@ -135,7 +135,7 @@
         }
       } else { //base animation (pre freq)
 
-   oX=oY=oZ=0
+  oX=oY=oZ=0
   if(!t){
     R=R2=(Rl,Pt,Yw,m)=>{
       M=Math
@@ -153,7 +153,7 @@
         Z+=oZ
       }
     }
-    Q=()=>[c.width/2+X/Z*1200,c.height/2+Y/Z*1200]
+    Q=()=>[c.width/2+X/Z*700,c.height/2+Y/Z*700]
     I=(A,B,M,D,E,F,G,H)=>(K=((G-E)*(B-F)-(H-F)*(A-E))/(J=(H-F)*(M-A)-(G-E)*(D-B)))>=0&&K<=1&&(L=((M-A)*(B-F)-(D-B)*(A-E))/J)>=0&&L<=1?[A+K*(M-A),B+K*(D-B)]:0
     
     Rn = Math.random
@@ -411,49 +411,6 @@
       return isc
     }
     
-    Cylinder = (rw,cl,ls1,ls2) => {
-      let a = []
-      for(let i=rw;i--;){
-        let b = []
-        for(let j=cl;j--;){
-          X = S(p=Math.PI*2/cl*j) * ls1
-          Y = (1/rw*i-.5)*ls2
-          Z = C(p) * ls1
-          b = [...b, [X,Y,Z]]
-        }
-        //a = [...a, b]
-        for(let j=cl;j--;){
-          b = []
-          X = S(p=Math.PI*2/cl*j) * ls1
-          Y = (1/rw*i-.5)*ls2
-          Z = C(p) * ls1
-          b = [...b, [X,Y,Z]]
-          X = S(p=Math.PI*2/cl*(j+1)) * ls1
-          Y = (1/rw*i-.5)*ls2
-          Z = C(p) * ls1
-          b = [...b, [X,Y,Z]]
-          X = S(p=Math.PI*2/cl*(j+1)) * ls1
-          Y = (1/rw*(i+1)-.5)*ls2
-          Z = C(p) * ls1
-          b = [...b, [X,Y,Z]]
-          X = S(p=Math.PI*2/cl*j) * ls1
-          Y = (1/rw*(i+1)-.5)*ls2
-          Z = C(p) * ls1
-          b = [...b, [X,Y,Z]]
-          a = [...a, b]
-        }
-      }
-      b = []
-      for(let j=cl;j--;){
-        X = S(p=Math.PI*2/cl*j) * ls1
-        Y = ls2/2
-        Z = C(p) * ls1
-        b = [...b, [X,Y,Z]]
-      }
-      //a = [...a, b]
-      return a
-    }
-
     TruncatedOctahedron = ls => {
       let shp = [], a = []
       mind = 6e6
@@ -539,7 +496,49 @@
       })
     }
     
-    
+    Cylinder = (rw,cl,ls1,ls2) => {
+      let a = []
+      for(let i=rw;i--;){
+        let b = []
+        for(let j=cl;j--;){
+          X = S(p=Math.PI*2/cl*j) * ls1
+          Y = (1/rw*i-.5)*ls2
+          Z = C(p) * ls1
+          b = [...b, [X,Y,Z]]
+        }
+        //a = [...a, b]
+        for(let j=cl;j--;){
+          b = []
+          X = S(p=Math.PI*2/cl*j) * ls1
+          Y = (1/rw*i-.5)*ls2
+          Z = C(p) * ls1
+          b = [...b, [X,Y,Z]]
+          X = S(p=Math.PI*2/cl*(j+1)) * ls1
+          Y = (1/rw*i-.5)*ls2
+          Z = C(p) * ls1
+          b = [...b, [X,Y,Z]]
+          X = S(p=Math.PI*2/cl*(j+1)) * ls1
+          Y = (1/rw*(i+1)-.5)*ls2
+          Z = C(p) * ls1
+          b = [...b, [X,Y,Z]]
+          X = S(p=Math.PI*2/cl*j) * ls1
+          Y = (1/rw*(i+1)-.5)*ls2
+          Z = C(p) * ls1
+          b = [...b, [X,Y,Z]]
+          a = [...a, b]
+        }
+      }
+      b = []
+      for(let j=cl;j--;){
+        X = S(p=Math.PI*2/cl*j) * ls1
+        Y = ls2/2
+        Z = C(p) * ls1
+        b = [...b, [X,Y,Z]]
+      }
+      //a = [...a, b]
+      return a
+    }
+
     Tetrahedron = size => {
       ret = []
       a = []
@@ -756,12 +755,12 @@
       return out
     }
     
-    stroke = (scol, fcol, lwo=1, od=true, oga=1, cp=true) => {
+    stroke = (scol, fcol, lwo=1, od=true, oga=1) => {
       if(scol){
-        if(cp) x.closePath()
+        //x.closePath()
         if(od) x.globalAlpha = .2*oga
         x.strokeStyle = scol
-        x.lineWidth = Math.min(1000,100*lwo/Z)
+        x.lineWidth = Math.min(100,100*lwo/Z)
         if(od) x.stroke()
         x.lineWidth /= 4
         x.globalAlpha = 1*oga
@@ -1123,19 +1122,6 @@
       return ret
     }
 
-    starsLoaded = false, starImgs = [{loaded: false}]
-    starImgs = Array(10).fill().map((v,i) => {
-      let a = {img: new Image(), loaded: false}
-      a.img.onload = () => {
-        a.loaded = true
-        setTimeout(()=>{
-          if(starImgs.filter(v=>v.loaded).length == 10) starsLoaded = true
-        }, 0)
-      }
-      a.img.src = `star${i?i:''}.png`
-      return a
-    })
-
     G_ = 100000, iSTc = 5e3
     ST = Array(iSTc).fill().map(v=>{
       X = (Rn()-.5)*G_
@@ -1143,205 +1129,150 @@
       Z = (Rn()-.5)*G_
       return [X,Y,Z]
     })
-    
-    curCell = 0
-    switchCellFreq = 60
-    
-    init = (cl,rw,br) => {
-      sp = 1.33333
-      B = Array(rw*cl*br).fill().map((v,i)=>{
-        X = ((i%cl)-cl/2+.5)*sp - ((i/cl|0)%2?0:sp/2)+sp/4
-        Y = (((i/cl|0)%rw)-rw/2+.5)*sp/(2**.5*2)
-        Z = ((i/cl/rw|0)-br/2+.5)*sp/(2) + sp*2
-        return [X, Y, Z]
-      })
-      
-      a = JSON.parse(JSON.stringify(B)).map(v=>{
-        v[2] *=-1
-        return v
-      })
-      B = [...B, ...a]
-      shp = TruncatedOctahedron(1)
-    }
-    
-    cl = 1*2
-    rw = 3*2
-    br = 3
-    init(cl,rw,br)
-    
-    camx = camy = 0
-    camz = -20
-    pvx=pvy=pvz=prl=ppt=pyw=ywv=ptv=rlv=0
-    Rl=0, Pt=0, Yw=Math.PI/4
-    tracking = .02
-    mtracking = .01
-    sdist = .2
-    
-    view2 = document.createElement('canvas')
-    view2.width = c.width
-    view2.height = c.height
-    vctx = view2.getContext('2d')
-    
-    vx=vy=vz=vx_=vy_=vz_=0
-    
-    iQueuec = 25
-    queue = Array(iQueuec).fill().map(v=>{
-      return Rn()*B.length | 0
-    })
-  }
-  
-  oX=0, oY=0, oZ=0
-  
-  tx = B[curCell][0]
-  ty = B[curCell][1]
-  tz = B[curCell][2]
-  p1_ = -Math.atan2(tx-camx,tz-camz)
-  if(p1_ > Math.PI) p1_ -= Math.PI*2
-  if(p1_ < -Math.PI) p1_ += Math.PI*2
-  p2_ = -Math.PI/2+Math.acos((ty-camy)/Math.hypot(tx-camx,ty-camy,tz-camz))
-  if(Yw > Math.PI) Yw -= Math.PI*2
-  if(Yw < -Math.PI) Yw += Math.PI*2
-  ywv -= (Yw-p1_)*tracking
-  ywv /= 1.25
-  ptv -= (Pt-p2_)*tracking
-  ptv /= 1.25
-  Yw += ywv
-  Pt += ptv
-  d = Math.hypot(a=tx-camx,b=ty-camy,e=tz-camz)
-  vx_ /= 1.1
-  vy_ /= 1.1
-  vz_ /= 1.1
-  if(d <= sdist+.01){
-    q = Math.atan2(a,e)+.002
-    if(q > Math.PI) q -= Math.PI*2
-    if(q < -Math.PI) q += Math.PI*2
-    d2 = Math.hypot(a,e)
-    X = S(q)*d2
-    Y = b
-    Z = C(q)*d2
-    camx = tx-X/d*sdist
-    camy = ty-Y/d*sdist
-    camz = tz-Z/d*sdist
-    //Yw += ywv*10
-    if(Yw > Math.PI) Yw -= Math.PI*2
-    if(Yw < -Math.PI) Yw += Math.PI*2
-    vy = b*10
-    vy *= mtracking
-    camy += vy
-  } else {
-    vx_ += a/2
-    vy_ += b/2
-    vz_ += e/2
-    vx += vx_
-    vy += vy_
-    vz += vz_
-    vx *= mtracking
-    vy *= mtracking
-    vz *= mtracking
-    camx += vx
-    camy += vy
-    camz += vz
-  }
 
-  
-  if(!((t*60|0)%switchCellFreq)){
-    ct = 0
-    do{
-      ct++
-      newCell = B.length*Rn()|0
-    }while(newCell==queue[queue.length-1] && ct<100);
-    queue = [newCell, ...queue]
-    curCell = queue.pop()
-  }
-  
-  x.globalAlpha = 1
-  x.fillStyle='#000'
-  x.fillRect(0,0,c.width,c.height)
-  x.lineJoin = x.lineCap = 'roud'
+    do_base_shp = () =>{
+      base_shp = subDividedCube(1.5*(5-C(t*3)*3.5),2,(3.25+C(t*3)*4.5)*1.25)
+    }
+    
+    do_base_shp()
+    
+    pFreq = 0
+    P = []
+    iPc = 3
+    iPv = .04
+    spawnP = () =>{
+      base_shp.map((v,i)=>{
+        if(Rn()>1) return
+        ax = 0, ay = 0, az = 0
+        v.map(q_=>{ ax += q_[0], ay += q_[1], az += q_[2] })
+        ax /= v.length, ay /= v.length, az /= v.length
+        let b1 = v[2][0]-v[1][0], b2 = v[2][1]-v[1][1], b3 = v[2][2]-v[1][2]
+        let c1 = v[1][0]-v[0][0], c2 = v[1][1]-v[0][1], c3 = v[1][2]-v[0][2]
+        let crs = [b2*c3-b3*c2,b3*c1-b1*c3,b1*c2-b2*c1]
+        d = Math.hypot(...crs)+.00000001
+        let nls = 1 //normal line length
+        crs = crs.map(q=>q/d*nls)
+        let X1_ = ax, Y1_ = ay, Z1_ = az
+        let flip = 1
+        let d1_ = Math.hypot(X1_,Y1_,Z1_)
+        let d2_ = Math.hypot((ax + crs[0]/99),(ay + crs[1]/99),(az + crs[2]/99))
+        flip = d2_>=d1_?1:-1
+        let X2_ = ax + (crs[0]*=flip), Y2_ = ay + (crs[1]*=flip), Z2_ = az + (crs[2]*=flip)
 
-  ST.map(v=>{
-    X = v[0]-camx
-    Y = v[1]-camy
-    Z = v[2]-camz
-    R(Rl,Pt,Yw,1)
-    if(Z>0){
-      if((x.globalAlpha = Math.min(1,(Z/1e4)**2))>.1){
-        s = Math.min(1e3, 400000/Z)
-        x.fillStyle = '#ffffff08'
-        l = Q()
-        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-        s/=5
-        x.fillStyle = '#fffa'
-        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      }
-    }
-  })
-  x.globalAlpha = 1
-  
-  B.map((n,idx) => {
-    X = tx = n[0] - camx
-    Y = ty = n[1] - camy
-    Z = tz = n[2] - camz
-    d1 = Math.hypot(tx,ty,tz)
-    R(Rl,Pt,Yw,1)
-    if(d1<1 && Z>0){
-      l = Q()
-      s = Math.min(3e3,300/Z)
-      x.drawImage(starImgs[1].img,l[0]-s/2,l[1]-s/2,s,s)
-      x.fillStyle = '#fff4'
-      x.font = s/2 + 'px courier'
-      x.fillText(idx,l[0],l[1]+s/6)
-    }
-    shp.map((v,i)=>{
-      x.beginPath()
-      v.map((q,j)=>{
-        X = q[0] + tx
-        Y = q[1] + ty
-        Z = q[2] + tz
-        R(Rl,Pt,Yw,1)
-        if(Z>0) {
-          l = Q()
-          x.lineTo(...l)
+        if(0){
+          x.beginPath()
+          X = X1_
+          Y = Y1_
+          Z = Z1_
+          R(Rl,Pt,Yw,1)
+          x.lineTo(...Q())
+          X = X2_
+          Y = Y2_
+          Z = Z2_
+          R(Rl,Pt,Yw,1)
+          x.lineTo(...Q())
+          x.globalAlpha = 1
+          stroke('#f00','',4,true)
+        }
+        
+        p1 = Math.atan2(X2_-X1_, Z2_-Z1_)
+        p2 = Math.PI/2-Math.acos((Y2_-Y1_) / (Math.hypot(X2_-X1_, Y2_-Y1_, Z2_-Z1_)+.00000001))
+        for(m=iPc; m--;){
+          X1 = 0
+          Y1 = 0
+          Z1 = 0
+          X2 = S(p_=Rn()*Math.PI*2) * 1e3
+          Y2 = C(p_) * 1e3
+          Z2 = 0
+          f = false
+          v.map((q, j) =>  {
+            l = j
+            X =  v[l][0] - ax
+            Y =  v[l][1] - ay
+            Z =  v[l][2] - az
+            R(0,0,-p1)
+            R(0,-p2,0)
+            X3 = X
+            Y3 = Y
+            Z3 = Z
+            l = (j+1)%v.length
+            X =  v[l][0] - ax
+            Y =  v[l][1] - ay
+            Z =  v[l][2] - az
+            R(0,0,-p1)
+            R(0,-p2,0)
+            X4 = X
+            Y4 = Y
+            Z4 = Z
+            if(l=I(X1,Y1,X2,Y2,X3,Y3,X4,Y4)){
+              d = Math.hypot(...l)
+              X = S(p_) * (ls = Rn()**.5*d)
+              Y = C(p_) * ls
+              Z = 0
+              R(0,p2,0)
+              R(0,0,p1)
+              px = X + ax
+              py = Y + ay
+              pz = Z + az
+              f = true
+            }
+          })
+          if(f){
+            mode = Rn()<.5
+            vx = S(p=Rn()*Math.PI*2) * S(q_=mode?Math.PI-Rn()**.5*Math.PI:Rn()**.5*Math.PI) * iPv
+            vy = C(q_) * iPv
+            vz = C(p) * S(q_) * iPv
+            P = [...P, [px+tx_, py+ty_ ,pz+tz_, vx, vy ,vz, 1,i]]
+          }
         }
       })
-      stroke(d1<1?'#f002':'','#ff000008',.5,true,Z=1)
-    })
-  })
+    }
+    rl=pt=yw=rlv=ptv=ywv=0
+    shprv = .075
+    switch(Rn()*3|0){
+      case 0:
+        rlv = (Rn()-.5)*shprv
+        ptv = (Rn()-.5)*shprv
+        break
+      case 1:
+        ptv = (Rn()-.5)*shprv
+        ywv = (Rn()-.5)*shprv
+        break
+      case 2:
+        ywv = (Rn()-.5)*shprv
+        rlv = (Rn()-.5)*shprv
+        break
+    }
+    
+    tx_=ty_=tz_=0
+  }
   
-  x.beginPath()
-  x.lineTo(960-140,540)
-  x.lineTo(960+140,540)
-  Z=5
-  stroke('#0f86','',.7,true,1,0)
-  x.beginPath()
-  x.lineTo(960,540-140)
-  x.lineTo(960,540+140)
-  Z=5
-  stroke('#0f86','',.7,true,1,0)
+  oX=0, oY=0, oZ=Math.min(20,Math.max(5,(.3+C(t/4))*100))
+  Rl=C(t/2), Pt=C(t/2)/2, Yw = C(t/4)*4
   
-  vctx.drawImage(c,0,0,c.width,c.height)
-  x.fillStyle = '#000'
+  if(!((t*60|0)%pFreq)) spawnP()
+  rl+=rlv
+  pt+=ptv
+  yw+=ywv
+  do_base_shp()
+  
   x.globalAlpha = 1
+  x.fillStyle='#000C'
   x.fillRect(0,0,c.width,c.height)
-  
-  
-  // pt2  
-  Rl1 = S(t/8)/3
-  Pt1 = -t/8
-  Yw1 = C(t/6)*2 + Math.PI
-  oX=0, oY=0, oZ=9
+  x.lineJoin = x.lineCap = 'round'
+
   ST.map(v=>{
     X = v[0]
     Y = v[1]
     Z = v[2]
-    R(Rl1,Pt1,Yw1,1)
+    R(Rl,Pt,Yw,1)
     if(Z>0){
       if((x.globalAlpha = Math.min(1,(Z/1e4)**2))>.1){
-        s = Math.min(1e3, 400000/Z)
-        x.fillStyle = '#ffffff08'
+        s = Math.min(1e3, 7e5/Z)
+        x.fillStyle = '#ffffff06'
         l = Q()
         x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-        s/=5
+        s/=6
         x.fillStyle = '#fffa'
         x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
       }
@@ -1349,103 +1280,54 @@
   })
 
   x.globalAlpha = 1
-  x.font = '40px courier'
-  x.textAlign = 'left'
   
-  queue.map((v,i)=>{
-    x.fillStyle = '#40f'
-    x.fillText(`target cell: ${v}`,10,1080-40-queue.length*40+i*40)
+  grav = .0025
+  
+  tx_ += 0//C(t)/10
+  ty_ += 0
+  tz_ += 0
+  base_shp.map((v,i) => {
+    x.beginPath()
+    v.map(q=>{
+      X = q[0]
+      Y = q[1]
+      Z = q[2]
+      R(rl,pt,yw)
+      q[0] = X
+      q[1] = Y
+      q[2] = Z
+      X += tx_
+      Y += ty_
+      Z += tz_
+      R(Rl,Pt,Yw,1)
+      if(Z>0) x.lineTo(...Q())
+    })
+    col2 = `hsla(${360/base_shp.length*i*3+t*50},99%,50%,.05)`
+    col1 = `hsla(${360/base_shp.length*i*3+t*50},99%,85%,.3)`
+    stroke(col1,col2,2,true)
   })
   
-  x.fillStyle = '#fff'
-  x.fillText(`target cell: ${curCell}`,10,1080-40)
-  x.textAlign = 'center'
-  x.beginPath()
-  x.lineTo(420+20,1030+20)
-  x.lineTo(420,1030)
-  Z = 10
-  tJoin = x.lineJoin
-  x.lineJoin = x.lineCap = 'round'
-  stroke('#4f8','',1,true,1,false)
-  x.beginPath()
-  x.lineTo(420+20,1030-20)
-  x.lineTo(420,1030)
-  x.lineTo(500,1030)
-  stroke('#4f8','',1,true,1,false)
-  x.lineJoin = x.lineCap = tJoin
-  
-  B.map((n,idx) => {
-    X = tx = n[0]
-    Y = ty = n[1]
-    Z = tz = n[2]
-    d1 = Math.hypot(camx-X,camy-Y,camz-Z)
-    R(Rl1,Pt1,Yw1,1)
+  P = P.filter(v=>v[6] > .1)
+  P.map(v=>{
+    X = v[0] += v[3]
+    Y = v[1] += v[4] += grav
+    Z = v[2] += v[5]
+    R(Rl,Pt,Yw,1)
     if(Z>0){
       l = Q()
-      x.globalAlpha = .5
-      s = Math.min(3e3,2500/Z)
-      x.drawImage(starImgs[1].img,l[0]-s/2,l[1]-s/2,s,s)
-      x.globalAlpha = 1
-      x.fillStyle = '#000'
-      x.font = (s/10|0) + 'px courier'
-      x.fillText(idx,l[0],l[1]+s/32)
+      s = Math.min(3e3, 500/Z*v[6])
+      x.fillStyle = `hsla(${-25+360/base_shp.length*v[7]*3+t*50},99%,50%,.025)`
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      s/=2
+      x.fillStyle = `hsla(${25+360/base_shp.length*v[7]*3+t*50},99%,50%,.05)`
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      s/=3
+      x.fillStyle = `#fffd`
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
     }
-    x.globalAlpha = 1
-    shp.map((v,i)=>{
-      x.beginPath()
-      v.map((q,j)=>{
-        X = q[0] + tx
-        Y = q[1] + ty
-        Z = q[2] + tz
-        R(Rl1,Pt1,Yw1,1)
-        if(Z>0) {
-          l = Q()
-          x.lineTo(...l)
-        }
-      })
-      flashcol = `hsla(${100},${d1<.75?100:0}%,${d1<.75?50:50+S(t*64)*50}%,${d1<.75?.1:.1})`
-      col1 = idx == curCell ? flashcol : (d1<.75 ? '#ff000008' : '')
-      col2 = idx == curCell ? flashcol : '#ff000008'
-      stroke(col1, col2, 1, false)
-    })
+    v[6] -= .05
   })
-  
-  x.globalAlpha = 1
-  tJoin = x.lineJoin
-  x.lineJoin = x.lineCap = 'round'
-  X1 = X = camx
-  Y1 = Y = camy
-  Z1 = Z = camz
-  p1_ = Math.atan2(vx_,vz_)
-  R(Rl1,Pt1,Yw1,1)
-  if(Z>0){
-    l = Q()
-    s = Math.min(3e3,1e3/Z)
-    x.drawImage(starImgs[5].img,l[0]-s/2.07,l[1]-s/2.07,s,s)
-    x.beginPath()
-    x.lineTo(...l)
-    X = 0
-    Y = -.5
-    Z = 0
-    R(0,Math.PI/2-p2_,0)
-    R(0,0,p1_)
-    X += X1
-    Y += Y1
-    Z += Z1
-    R(Rl1,Pt1,Yw1,1)
-    if(Z>0){
-      x.lineTo(...Q())
-      x.globalAlpha = 1
-      stroke('#4f8','',1,true)
-    }
-  }
-  x.lineJoin = x.lineCap = tJoin
-  
-  x.drawImage(view2,c.width-c.width/4-20,20,c.width/4,c.height/4)
-  x.lineWidth = 3
-  x.strokeStyle = '#40f8'
-  x.strokeRect(c.width-c.width/4-20,20,c.width/4,c.height/4)
-	      
+
 	      
 	      t+=1/60
 
