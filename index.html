@@ -760,7 +760,7 @@
         //x.closePath()
         if(od) x.globalAlpha = .2*oga
         x.strokeStyle = scol
-        x.lineWidth = Math.min(100,100*lwo/Z)
+        x.lineWidth = Math.min(150,100*lwo/Z)
         if(od) x.stroke()
         x.lineWidth /= 4
         x.globalAlpha = 1*oga
@@ -1129,132 +1129,15 @@
       Z = (Rn()-.5)*G_
       return [X,Y,Z]
     })
-
-    do_base_shp = () =>{
-      base_shp = subDividedCube(1.5*(5-C(t*3)*3.5),2,(3.25+C(t*3)*4.5)*1.25)
-    }
-    
-    do_base_shp()
-    
-    pFreq = 0
-    P = []
-    iPc = 3
-    iPv = .04
-    spawnP = () =>{
-      base_shp.map((v,i)=>{
-        if(Rn()>1) return
-        ax = 0, ay = 0, az = 0
-        v.map(q_=>{ ax += q_[0], ay += q_[1], az += q_[2] })
-        ax /= v.length, ay /= v.length, az /= v.length
-        let b1 = v[2][0]-v[1][0], b2 = v[2][1]-v[1][1], b3 = v[2][2]-v[1][2]
-        let c1 = v[1][0]-v[0][0], c2 = v[1][1]-v[0][1], c3 = v[1][2]-v[0][2]
-        let crs = [b2*c3-b3*c2,b3*c1-b1*c3,b1*c2-b2*c1]
-        d = Math.hypot(...crs)+.00000001
-        let nls = 1 //normal line length
-        crs = crs.map(q=>q/d*nls)
-        let X1_ = ax, Y1_ = ay, Z1_ = az
-        let flip = 1
-        let d1_ = Math.hypot(X1_,Y1_,Z1_)
-        let d2_ = Math.hypot((ax + crs[0]/99),(ay + crs[1]/99),(az + crs[2]/99))
-        flip = d2_>=d1_?1:-1
-        let X2_ = ax + (crs[0]*=flip), Y2_ = ay + (crs[1]*=flip), Z2_ = az + (crs[2]*=flip)
-
-        if(0){
-          x.beginPath()
-          X = X1_
-          Y = Y1_
-          Z = Z1_
-          R(Rl,Pt,Yw,1)
-          x.lineTo(...Q())
-          X = X2_
-          Y = Y2_
-          Z = Z2_
-          R(Rl,Pt,Yw,1)
-          x.lineTo(...Q())
-          x.globalAlpha = 1
-          stroke('#f00','',4,true)
-        }
-        
-        p1 = Math.atan2(X2_-X1_, Z2_-Z1_)
-        p2 = Math.PI/2-Math.acos((Y2_-Y1_) / (Math.hypot(X2_-X1_, Y2_-Y1_, Z2_-Z1_)+.00000001))
-        for(m=iPc; m--;){
-          X1 = 0
-          Y1 = 0
-          Z1 = 0
-          X2 = S(p_=Rn()*Math.PI*2) * 1e3
-          Y2 = C(p_) * 1e3
-          Z2 = 0
-          f = false
-          v.map((q, j) =>  {
-            l = j
-            X =  v[l][0] - ax
-            Y =  v[l][1] - ay
-            Z =  v[l][2] - az
-            R(0,0,-p1)
-            R(0,-p2,0)
-            X3 = X
-            Y3 = Y
-            Z3 = Z
-            l = (j+1)%v.length
-            X =  v[l][0] - ax
-            Y =  v[l][1] - ay
-            Z =  v[l][2] - az
-            R(0,0,-p1)
-            R(0,-p2,0)
-            X4 = X
-            Y4 = Y
-            Z4 = Z
-            if(l=I(X1,Y1,X2,Y2,X3,Y3,X4,Y4)){
-              d = Math.hypot(...l)
-              X = S(p_) * (ls = Rn()**.5*d)
-              Y = C(p_) * ls
-              Z = 0
-              R(0,p2,0)
-              R(0,0,p1)
-              px = X + ax
-              py = Y + ay
-              pz = Z + az
-              f = true
-            }
-          })
-          if(f){
-            mode = Rn()<.5
-            vx = S(p=Rn()*Math.PI*2) * S(q_=mode?Math.PI-Rn()**.5*Math.PI:Rn()**.5*Math.PI) * iPv
-            vy = C(q_) * iPv
-            vz = C(p) * S(q_) * iPv
-            P = [...P, [px+tx_, py+ty_ ,pz+tz_, vx, vy ,vz, 1,i]]
-          }
-        }
-      })
-    }
-    rl=pt=yw=rlv=ptv=ywv=0
-    shprv = .075
-    switch(Rn()*3|0){
-      case 0:
-        rlv = (Rn()-.5)*shprv
-        ptv = (Rn()-.5)*shprv
-        break
-      case 1:
-        ptv = (Rn()-.5)*shprv
-        ywv = (Rn()-.5)*shprv
-        break
-      case 2:
-        ywv = (Rn()-.5)*shprv
-        rlv = (Rn()-.5)*shprv
-        break
-    }
-    
-    tx_=ty_=tz_=0
   }
+
+  shps = [
+    [0, 0, 0, subDividedOctahedron(3+S(t*4)*.7,5,11-S(t*4)*3)],
+    [0, 0, 0, subDividedCube(1.25,3,.5+S(t*4)*2)]
+  ]
   
-  oX=0, oY=0, oZ=Math.min(20,Math.max(5,(.3+C(t/4))*100))
-  Rl=C(t/2), Pt=C(t/2)/2, Yw = C(t/4)*4
-  
-  if(!((t*60|0)%pFreq)) spawnP()
-  rl+=rlv
-  pt+=ptv
-  yw+=ywv
-  do_base_shp()
+  oX=0, oY=0, oZ=Math.max(2.5,Math.min(18,(.3+C(t/2+Math.PI))*30))
+  Rl=0, Pt=-C(t/2), Yw = t/4
   
   x.globalAlpha = 1
   x.fillStyle='#000C'
@@ -1268,11 +1151,11 @@
     R(Rl,Pt,Yw,1)
     if(Z>0){
       if((x.globalAlpha = Math.min(1,(Z/1e4)**2))>.1){
-        s = Math.min(1e3, 7e5/Z)
-        x.fillStyle = '#ffffff06'
+        s = Math.min(1e3, 400000/Z)
+        x.fillStyle = '#ffffff04'
         l = Q()
         x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-        s/=6
+        s/=5
         x.fillStyle = '#fffa'
         x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
       }
@@ -1280,55 +1163,27 @@
   })
 
   x.globalAlpha = 1
-  
-  grav = .0025
-  
-  tx_ += 0//C(t)/10
-  ty_ += 0
-  tz_ += 0
-  base_shp.map((v,i) => {
-    x.beginPath()
-    v.map(q=>{
-      X = q[0]
-      Y = q[1]
-      Z = q[2]
-      R(rl,pt,yw)
-      q[0] = X
-      q[1] = Y
-      q[2] = Z
-      X += tx_
-      Y += ty_
-      Z += tz_
-      R(Rl,Pt,Yw,1)
-      if(Z>0) x.lineTo(...Q())
+
+  shps.map((shp,idx)=>{
+    tx = shp[0]
+    ty = shp[1]
+    tz = shp[2]
+    shp[3].map((v,i)=>{
+      x.beginPath()
+      v.map(q=>{
+        X = q[0] + tx
+        Y = q[1] + ty
+        Z = q[2] + tz
+        R(Rl,Pt,Yw,1)
+        if(Z>0)x.lineTo(...Q())
+      })
+      col1 = idx?`hsla(${0},99%,50%,.25)`:'#0f84'
+      col2 = idx?`hsla(${0},99%,50%,.05)`:'#40f1'
+      stroke(col1,col2,.35,true)
     })
-    col2 = `hsla(${360/base_shp.length*i*3+t*50},99%,50%,.05)`
-    col1 = `hsla(${360/base_shp.length*i*3+t*50},99%,85%,.3)`
-    stroke(col1,col2,2,true)
-  })
-  
-  P = P.filter(v=>v[6] > .1)
-  P.map(v=>{
-    X = v[0] += v[3]
-    Y = v[1] += v[4] += grav
-    Z = v[2] += v[5]
-    R(Rl,Pt,Yw,1)
-    if(Z>0){
-      l = Q()
-      s = Math.min(3e3, 500/Z*v[6])
-      x.fillStyle = `hsla(${-25+360/base_shp.length*v[7]*3+t*50},99%,50%,.025)`
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      s/=2
-      x.fillStyle = `hsla(${25+360/base_shp.length*v[7]*3+t*50},99%,50%,.05)`
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      s/=3
-      x.fillStyle = `#fffd`
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-    }
-    v[6] -= .05
   })
 
-	      
+	    
 	      t+=1/60
 
       }
