@@ -241,9 +241,9 @@
               Y2=q[1]
               Z2=q[2]
               d=1+(Math.hypot(X-X2,Y-Y2,Z-Z2)*(3+iBc/40)*3)**4
-              X+=(X-X2)*500/d
-              Y+=(Y-Y2)*500/d
-              Z+=(Z-Z2)*500/d
+              X+=(X-X2)*99/d
+              Y+=(Y-Y2)*99/d
+              Z+=(Z-Z2)*99/d
             }
           })
           d=Math.hypot(X,Y,Z)
@@ -760,7 +760,7 @@
         //x.closePath()
         if(od) x.globalAlpha = .2*oga
         x.strokeStyle = scol
-        x.lineWidth = Math.min(150,100*lwo/Z)
+        x.lineWidth = Math.min(1000,100*lwo/Z)
         if(od) x.stroke()
         x.lineWidth /= 4
         x.globalAlpha = 1*oga
@@ -1129,15 +1129,30 @@
       Z = (Rn()-.5)*G_
       return [X,Y,Z]
     })
+    
+    iSpheresc = 3
+    spheres = Array(iSpheresc).fill().map((v,i)=>{
+      X = 0
+      Y = 0
+      Z = 0
+      ls = (4+i*10)*2
+      CT = 16+i*10|0
+      shp = JSON.parse(JSON.stringify(geoSphere(0, 0, 0, CT, ls)[4])).map(q=>{
+        q[3]=[]
+        return q
+      })
+      return [X, Y, Z, shp]
+    })
+    
+    P = []
+    iPv = 1.75
+    pFreq = 0
+    
+    centris = subDividedCube(5,2,10)
   }
-
-  shps = [
-    [0, 0, 0, subDividedOctahedron(3+S(t*4)*.7,5,11-S(t*4)*3)],
-    [0, 0, 0, subDividedCube(1.25,3,.5+S(t*4)*2)]
-  ]
   
-  oX=0, oY=0, oZ=Math.max(2.5,Math.min(18,(.3+C(t/2+Math.PI))*30))
-  Rl=0, Pt=-C(t/2), Yw = t/4
+  oX=0, oY=0, oZ=Math.min(100,Math.max(30,(.3+S(t/2))*200))
+  Rl=t/8, Pt=-.2+S(t/3)/2, Yw=C(t/4)*4
   
   x.globalAlpha = 1
   x.fillStyle='#000C'
@@ -1163,27 +1178,151 @@
   })
 
   x.globalAlpha = 1
+  
+  irv = .01
+  spheres.map((v,i)=>{
+    tx = v[0]
+    ty = v[1]
+    tz = v[2]
+    v[3].map((q,j)=>{
+      if(1||i){
+        rl=pt=yw=0
+        switch(i){
+          case 0:
+            rl = irv
+            pt = irv
+            break
+          case 1:
+            pt = irv
+            yw = irv
+            break
+          case 2:
+            yw = irv
+            rl = irv
+            break
+        }
+        X = q[0]
+        Y = q[1]
+        Z = q[2]
+        R(rl,pt,yw)
+        X = q[0] = X
+        Y = q[1] = Y
+        Z = q[2] = Z
+      }
+      if(!i){
+        if(!((t*60|0)%pFreq)) {  
+          X = q[0]
+          Y = q[1]
+          Z = q[2]
+          d = Math.hypot(X,Y,Z)
+          vx = X/d*iPv
+          vy = Y/d*iPv
+          vz = Z/d*iPv
+          q[3] = [...q[3], [X, Y, Z, vx, vy, vz, 1]]
+        }
 
-  shps.map((shp,idx)=>{
-    tx = shp[0]
-    ty = shp[1]
-    tz = shp[2]
-    shp[3].map((v,i)=>{
-      x.beginPath()
-      v.map(q=>{
-        X = q[0] + tx
-        Y = q[1] + ty
-        Z = q[2] + tz
-        R(Rl,Pt,Yw,1)
-        if(Z>0)x.lineTo(...Q())
-      })
-      col1 = idx?`hsla(${0},99%,50%,.25)`:'#0f84'
-      col2 = idx?`hsla(${0},99%,50%,.05)`:'#40f1'
-      stroke(col1,col2,.35,true)
+        q[3] = q[3].filter(v=>v[6]>.1)
+        q[3].map((k,g)=>{
+          X1 = k[0]+=k[3]
+          Y1 = k[1]+=k[4]
+          Z1 = k[2]+=k[5]
+          d1 = Math.hypot(X1,Y1,Z1)
+          vx=vy=vz=0
+          spheres.map((n,m)=>{
+            tx = n[0]
+            ty = n[1]
+            tz = n[2]
+            n[3].map((q,j)=>{
+              X2 = q[0] + tx
+              Y2 = q[1] + ty
+              Z2 = q[2] + tz
+              d_=Math.hypot(X2,Y2,Z2)
+              d=Math.hypot(a=X2-X1, b=Y2-Y1, e=Z2-Z1)
+              d2 = (2+d)**4/80
+              vx += a/d2
+              vy += b/d2
+              vz += e/d2
+            })
+          })
+          k[3]+=vx
+          k[4]+=vy
+          k[5]+=vz
+          d = Math.hypot(k[3],k[4],k[5])
+          k[3]/=d
+          k[4]/=d
+          k[5]/=d
+          k[3]*=iPv
+          k[4]*=iPv
+          k[5]*=iPv
+          if(g){
+            x.beginPath()
+            X = ox_
+            Y = oy_
+            Z = oz_
+            if(Z>0) x.lineTo(...Q())
+            X = k[0]
+            Y = k[1]
+            Z = k[2]
+            R(Rl,Pt,Yw,1)
+            if(Z>0) x.lineTo(...Q())
+            stroke(`hsla(${-S(t)*3000+360/q[3].length*g},99%,${50+50/q[3].length*g}%,.5)`,'',k[6]*50)
+          }
+          X = k[0]
+          Y = k[1]
+          Z = k[2]
+          R(Rl,Pt,Yw,1)
+          ox_ = X
+          oy_ = Y
+          oz_ = Z
+          if(0&&Z>0){
+            l = Q()
+            s = Math.min(3e3,3e3/Z*k[6])
+            x.fillStyle = `#00ff0004`
+            x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+            s/=3
+            x.fillStyle = `#00ffff15`
+            x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+            s/=3
+            x.fillStyle = `#ffffffff`
+            x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+          }
+          k[6]-=.03
+        })
+      }
+      
+      X = q[0] + tx
+      Y = q[1] + ty
+      Z = q[2] + tz
+      R(Rl,Pt,Yw,1)
+      if(1&&Z>0){
+        l = Q()
+        s = Math.min(3e3,5e3/Z)
+        x.fillStyle = `hsla(${-t*150+360/2/spheres.length*i},99%,50%,.025)`
+        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+        s/=3
+        x.fillStyle = `hsla(${-t*150+360/2/spheres.length*i},99%,50%,.15)`
+        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+        s/=3
+        x.fillStyle = `#ffffffff`
+        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      }
     })
   })
-
-	    
+  
+  centris.map(v=>{
+    x.beginPath()
+    v.map(q=>{
+      X = q[0]
+      Y = q[1]
+      Z = q[2]
+      R(Rl,Pt,Yw,1)
+      if(Z>0)x.lineTo(...Q())
+    })
+    stroke('#fff4','#f002',10,true)
+  })
+	  
+					      
+	      
 	      t+=1/60
 
       }
