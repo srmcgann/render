@@ -141,9 +141,9 @@
       M=Math
       A=M.atan2
       H=M.hypot
-      Y=S(p=A(Y,Z)+Pt)*(d=H(Y,Z))
-      Z=C(p)*d
       X=S(p=A(X,Z)+Yw)*(d=H(X,Z))
+      Z=C(p)*d
+      Y=S(p=A(Y,Z)+Pt)*(d=H(Y,Z))
       Z=C(p)*d
       X=S(p=A(X,Y)+Rl)*(d=H(X,Y))
       Y=C(p)*d
@@ -757,7 +757,7 @@
     
     stroke = (scol, fcol, lwo=1, od=true, oga=1) => {
       if(scol){
-        //x.closePath()
+        x.closePath()
         if(od) x.globalAlpha = .2*oga
         x.strokeStyle = scol
         x.lineWidth = Math.min(1000,100*lwo/Z)
@@ -1130,53 +1130,85 @@
       return [X,Y,Z]
     })
     
-    
-    cl = 1
-    rw = 80
-    br = 80
-    sp = .25
-    grid = []
-    Array(cl*rw*br).fill().map((v,i)=>{
-      X = ((i%cl)-cl/2+.5)*sp
-      Y = (((i/cl|0)%rw)-rw/2+.5)*sp
-      Z = ((i/cl/rw|0)-br/2+.5)*sp
-      d = Math.hypot(Y,Z)
-      if(d<sp*rw/2) grid = [...grid, [X,Y,Z,1]]
-    })
-
-    P = []
-    pFreq = 0
-    iPv=.6
-    spawnP = () =>{
-      X = 16
-      Y = 0
-      Z = 0
-      vx = -iPv
-      vy = S(S(t/2)*32)/6
-      vz = C(t*2)/6
-      P = [...P, [X,Y,Z,vx,vy,vz,1]]
+    mkP = () => {
+      rw = 30
+      cl = 30
+      iPc = rw*cl
+      wide = 20
+      deep = 20
+      tall = C(t) * 2
+      P = []
+      if(typeof flashes == 'undefined') flashes = Array(iPc).fill().map(v=>[0,0])
+      Array(iPc).fill().map((v,i)=>{
+        a = []
+        for(j=4;j--;){
+          n = (((j+1)/2)|0)%2?i/cl|0:(i/cl|0)+1
+          ls = 2**.5/3
+          tx = ((i%cl)-cl/2+.5) / cl * wide
+          ty = S(-C(t/2)*12+Math.PI*4/cl*(j/2|0%2?i:i+1)) * tall * S(q=Math.PI*4/rw*n)
+          tz = ((i/cl|0)-rw/2+.5) / rw * deep
+          X = tx + S(p=Math.PI*2/4*j+Math.PI/4) * ls
+          Y = ty
+          Z = tz + C(p) * ls
+          a = [...a, [X,Y,Z]]
+        }
+        ax=ay=az=0
+        a.map(q=>{
+          ax+=q[0]
+          az+=q[2]
+          ay+=q[1]
+        })
+        ax/=a.length
+        ay/=a.length
+        az/=a.length
+        if(Math.hypot(ax,az)<8) P = [...P, [a,0]]
+      })
     }
     
-    sparks = []
-    iSparksv = .05
-    spawnSparks = (X,Y,Z) => {
-      for(m=4;m--;){
-        vx = S(p=Math.PI*2*Rn()) * S(q=Rn()<.5?Rn()**.5*Math.PI/2:Math.PI-Rn()**.5*Math.PI/2) * iSparksv
-        vy = C(q) * iSparksv
-        vz = C(p) * S(q) * iSparksv
-        sparks = [...sparks, [X,Y,Z,vx,vy,vz,1]]
+    B = []
+    bFreq = 0
+    spawnB = () => {
+      iBv = .2
+      bFreq = !(t*60|0)%8?0:180
+      for(m=100;m--;){
+        X = (Rn()-.5)*wide/20
+        Y = -15
+        Z = (Rn()-.5)*deep/20
+        vx = (Rn()-.5) * iBv
+        vy = (Rn()-.5) * iBv
+        vz = (Rn()-.5) * iBv
+        B = [...B, [X, Y, Z, vx, vy, vz, 1]]
       }
     }
+    
+    starsLoaded = false, starImgs = [{loaded: false}]
+    starImgs = Array(10).fill().map((v,i) => {
+      let a = {img: new Image(), loaded: false}
+      a.img.onload = () => {
+        a.loaded = true
+        setTimeout(()=>{
+          if(starImgs.filter(v=>v.loaded).length == 10) starsLoaded = true
+        }, 0)
+      }
+      a.img.src = `https://srmcgann.github.io/temp/stars/star${i?i:''}.png`
+      return a
+    })
+    
+    bounding = Cylinder(1,20,10,2)
   }
   
-  oX=0, oY=0, oZ=Math.min(20,Math.max(8,(.3+S(t/2))*80))
-  Rl=t/4, Pt=-S(t/2)*2, Yw = S(t/8)
+  mkP()
+  
+  oX=0, oY=0, oZ=Math.min(16,Math.max(8, (.3+C(t/2))*40))
+  Rl=0, Pt=-.75+C(t/3)/2, Yw = C(t/2)*2
   
   x.globalAlpha = 1
   x.fillStyle='#000C'
   x.fillRect(0,0,c.width,c.height)
   x.lineJoin = x.lineCap = 'roud'
   
+  if(!((t*60|0)%bFreq)) spawnB()
+
   ST.map(v=>{
     X = v[0]
     Y = v[1]
@@ -1196,95 +1228,90 @@
   })
 
   x.globalAlpha = 1
-
-  
-  if(!((t*60|0)%pFreq)) spawnP()
-
-  P = P.filter(v=>v[6]>.1)
-  
-  P.map(v=>{
-    X = v[0] += v[3]
-    Y = v[1] += v[4]
-    Z = v[2] += v[5]
-    grid.map(q=>{
-      if(q[3]>0){
-        X2 = q[0]
-        Y2 = q[1]
-        Z2 = q[2]
-        d = Math.hypot(X2-X,Y2-Y,Z2-Z)
-        if(d<sp*8*v[6]){
-          q[3]=0
-          spawnSparks(X2,Y2,Z2)
+  anticipation = 4
+  bounce = .06
+  grav = .015
+  P.map((v,i)=>{
+    flashes[i][0]/=1.075
+    flashes[i][1]/=1.075
+    x.beginPath()
+    ax=ay=az=0
+    v[0].map(q=>{
+      ax += X = q[0]
+      ay += Y = q[1]
+      az += Z = q[2]
+      R(Rl,Pt,Yw,1)
+      if(Z>0) x.lineTo(...Q())
+    })
+    col1 = `hsla(${360/1/B.length*flashes[i][1]},99%,${100-flashes[i][0]*50}%,${.1+flashes[i][0]*3})`
+    col2 = `hsla(${360/1/B.length*flashes[i][1]},99%,${Math.max(50,100-flashes[i][0]*50)}%,${Math.min(.5,.025+flashes[i][0])})`
+    stroke(col1,col2,1,true)
+    ax /= v[0].length
+    ay /= v[0].length
+    az /= v[0].length
+    
+    B.map(q=>{
+      X1 = q[0]
+      Y1 = q[1]
+      Z1 = q[2]
+      if(Math.hypot(X1-ax,Y1-ay,Z1-az)<ls*2){
+        X2 = X1 + q[3]*anticipation
+        Y2 = Y1 + .4 + q[4]*anticipation
+        Z2 = Z1 + q[5]*anticipation
+        if(l=lineFaceI(X1,Y1,Z1,X2,Y2,Z2,v[0])){
+          n = l[1]
+          d = Math.hypot(...n)
+          n[0] /= d
+          n[1] /= d
+          n[2] /= d
+          n[0] *= bounce
+          n[1] *= bounce
+          n[2] *= bounce
+          q[4] *= q[4] > 0 ? -.033: .75
+          q[3] -= n[0] * 4
+          q[4] -= n[1] + .025
+          q[5] -= n[2] * 4
+          flashes[i][0] = 1
+          flashes[i][1] = i
         }
       }
     })
-    R(Rl,Pt,Yw,1)
-    if(Z>0){
-      l = Q()
-      s = Math.min(3e3,2500/Z*v[6])
-      x.fillStyle = '#00ff0015'
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      x.fillStyle = '#00ffff40'
-      s/= 2
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      x.fillStyle = '#ffffffff'
-      s/= 3
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-    }
-    v[6] -= .02
   })
   
-  grid.map(v=>{
-    X = v[0]
-    Y = v[1]
-    Z = v[2]
-    R(C(t)/50,0,S(t)/50)
-    X = v[0] = X
-    Y = v[1] = Y
-    Z = v[2] = Z
-    if(v[3]>0){
-      X = v[0]
-      Y = v[1]
-      Z = v[2]
-      R(Rl,Pt,Yw,1)
-      if(Z>0){
-        l = Q()
-        s = Math.min(3e3,500/Z)
-        x.fillStyle = '#4400ff08'
-        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-        s/= 8
-        x.fillStyle = '#ffffff88'
-        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      }
-    }else{
-      v[3]-=.005
-      if(v[3]<=-1) v[3] = 1
-    }
-  })
+  B = B.filter(v=>v[6]>.1 && v[1]<30)
   
-  sparks = sparks.filter(v=>v[6]>0.1)
-  
-  sparks.map(v=>{
+  B.map((v,i) => {
     X = v[0] += v[3]
-    Y = v[1] += v[4]
+    Y = v[1] += v[4] += grav
     Z = v[2] += v[5]
+    v[3] /= 1.01
+    v[4] /= 1.01
+    v[5] /= 1.01
     R(Rl,Pt,Yw,1)
     if(Z>0){
+      s = Math.min(3e3,3e3/Z*(.33+v[6]/3))
       l = Q()
-      s = Math.min(3e3, 800/Z*v[6])
-      x.fillStyle = '#ff000005'
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      s/= 3
-      x.fillStyle = '#ff880015'
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
-      s/= 3
-      x.fillStyle = '#ffffffff'
-      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      x.globalAlpha = (v[6]*3)**2
+      x.drawImage(starImgs[1+(i%8)].img,l[0]-s/2.07,l[1]-s/2.07,s,s)
     }
-    v[6] -= .02
+    v[6] -= .005
+  })
+  
+  x.globalAlpha = 1
+
+  bounding.map(v=>{
+    x.beginPath()
+    v.map(q=>{
+      X = q[0]
+      Y = q[1]
+      Z = q[2]
+      R(Rl,Pt,Yw,1)
+      if(Z>0)x.lineTo(...Q())
+    })
+    stroke('#40f2', '#40f1',1,false)
   })
 
-
+	      
 	      
 	      
 	      t+=1/60
