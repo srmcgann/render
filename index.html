@@ -1138,14 +1138,14 @@
       return v
     })
     
-    iFc = 1500
+    iFc = 2000
     iFv = .05
     fP = Rn()*Math.PI*2
     flock = Array(iFc).fill().map((v, i)=>{
       X = (Rn()-.5) * boundingLs
       Y = 0
       Z = (Rn()-.5) * boundingLs
-      return [X,Y,Z,fP,(!i)||Rn()<.05,0]
+      return [X,Y,Z,fP,(!i)||Rn()<.01,0]
     })
   }
   
@@ -1153,7 +1153,7 @@
   Rl=0, Pt=-.2+S(t/3)/2, Yw = C(t/2)/1.5
   
   x.globalAlpha = 1
-  x.fillStyle='#0006'
+  x.fillStyle='#0008'
   x.fillRect(0,0,c.width,c.height)
   x.lineJoin = x.lineCap = 'roud'
 
@@ -1189,9 +1189,9 @@
     stroke('','#4400ff05',1,true)
   })
   
-  lim = .25
-  bLs = .05
-  homingRadius = boundingLs/5
+  lim = .3
+  bLs = .075
+  homingRadius = boundingLs/6
   flock.map((v, i) => {
     tx = v[0] += S(v[3]) * iFv
     ty = v[1]
@@ -1201,8 +1201,8 @@
     if(tz>boundingLs/2) tz = v[2] = -boundingLs/2
     if(tz<-boundingLs/2) tz = v[2] = boundingLs/2
     if(v[4]){
-      v[5] /= 1.05
-      v[5] += (Rn()-.5)/20
+      v[5] /= 1.005
+      v[5] += (Rn()-.5)/40
       v[3] += v[5]
     } else {
       v[5] /= 1.05
@@ -1216,7 +1216,7 @@
         Z2 = q[2]
         d = Math.hypot(X2-tx, Y2-ty, Z2-tz)
         if(d<homingRadius){
-          d_ = .25+(d)**6
+          d_ = .25+(d)**10
           a[0] += S(q[3]) * h_ / d_
           a[1] += C(q[3]) * h_ / d_
         }
@@ -1240,10 +1240,8 @@
       R(Rl,Pt,Yw,1)
       if(Z>0) x.lineTo(...Q())
     }
-    stroke('',v[4]?'#f008':'#0f88', 1, false)
+    stroke('',v[4]?'#f0f6':'#0f86', 1, false)
   })
-	      
-	      
 	      
 	      
 	      t+=1/60
