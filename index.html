@@ -1130,84 +1130,32 @@
       return [X,Y,Z]
     })
     
-    mkP = () => {
-      rw = 30
-      cl = 30
-      iPc = rw*cl
-      wide = 20
-      deep = 20
-      tall = C(t) * 2
-      P = []
-      if(typeof flashes == 'undefined') flashes = Array(iPc).fill().map(v=>[0,0])
-      Array(iPc).fill().map((v,i)=>{
-        a = []
-        for(j=4;j--;){
-          n = (((j+1)/2)|0)%2?i/cl|0:(i/cl|0)+1
-          ls = 2**.5/3
-          tx = ((i%cl)-cl/2+.5) / cl * wide
-          ty = S(-C(t/2)*12+Math.PI*4/cl*(j/2|0%2?i:i+1)) * tall * S(q=Math.PI*4/rw*n)
-          tz = ((i/cl|0)-rw/2+.5) / rw * deep
-          X = tx + S(p=Math.PI*2/4*j+Math.PI/4) * ls
-          Y = ty
-          Z = tz + C(p) * ls
-          a = [...a, [X,Y,Z]]
-        }
-        ax=ay=az=0
-        a.map(q=>{
-          ax+=q[0]
-          az+=q[2]
-          ay+=q[1]
-        })
-        ax/=a.length
-        ay/=a.length
-        az/=a.length
-        if(Math.hypot(ax,az)<8) P = [...P, [a,0]]
+    boundingLs = 10
+    bounding = subDividedCube(boundingLs*1.075,2,0).map(v=>{
+      v.map(q=>{
+        q[2]*=.05
       })
-    }
-    
-    B = []
-    bFreq = 0
-    spawnB = () => {
-      iBv = .2
-      bFreq = !(t*60|0)%8?0:180
-      for(m=100;m--;){
-        X = (Rn()-.5)*wide/20
-        Y = -15
-        Z = (Rn()-.5)*deep/20
-        vx = (Rn()-.5) * iBv
-        vy = (Rn()-.5) * iBv
-        vz = (Rn()-.5) * iBv
-        B = [...B, [X, Y, Z, vx, vy, vz, 1]]
-      }
-    }
-    
-    starsLoaded = false, starImgs = [{loaded: false}]
-    starImgs = Array(10).fill().map((v,i) => {
-      let a = {img: new Image(), loaded: false}
-      a.img.onload = () => {
-        a.loaded = true
-        setTimeout(()=>{
-          if(starImgs.filter(v=>v.loaded).length == 10) starsLoaded = true
-        }, 0)
-      }
-      a.img.src = `star${i?i:''}.png`
-      return a
+      return v
     })
     
-    bounding = Cylinder(1,20,10,2)
+    iFc = 1500
+    iFv = .05
+    fP = Rn()*Math.PI*2
+    flock = Array(iFc).fill().map((v, i)=>{
+      X = (Rn()-.5) * boundingLs
+      Y = 0
+      Z = (Rn()-.5) * boundingLs
+      return [X,Y,Z,fP,(!i)||Rn()<.05,0]
+    })
   }
   
-  mkP()
-  
-  oX=0, oY=0, oZ=Math.min(16,Math.max(8, (.3+C(t/2))*40))
-  Rl=0, Pt=-.75+C(t/3)/2, Yw = C(t/2)*2
+  oX=0, oY=0, oZ=Math.min(12, Math.max(4,(.3+C(t/2))*20))
+  Rl=0, Pt=-.2+S(t/3)/2, Yw = C(t/2)/1.5
   
   x.globalAlpha = 1
-  x.fillStyle='#000C'
+  x.fillStyle='#0006'
   x.fillRect(0,0,c.width,c.height)
   x.lineJoin = x.lineCap = 'roud'
-  
-  if(!((t*60|0)%bFreq)) spawnB()
 
   ST.map(v=>{
     X = v[0]
@@ -1228,76 +1176,6 @@
   })
 
   x.globalAlpha = 1
-  anticipation = 4
-  bounce = .06
-  grav = .015
-  P.map((v,i)=>{
-    flashes[i][0]/=1.075
-    flashes[i][1]/=1.075
-    x.beginPath()
-    ax=ay=az=0
-    v[0].map(q=>{
-      ax += X = q[0]
-      ay += Y = q[1]
-      az += Z = q[2]
-      R(Rl,Pt,Yw,1)
-      if(Z>0) x.lineTo(...Q())
-    })
-    col1 = `hsla(${360/1/B.length*flashes[i][1]},99%,${100-flashes[i][0]*50}%,${.1+flashes[i][0]*3})`
-    col2 = `hsla(${360/1/B.length*flashes[i][1]},99%,${Math.max(50,100-flashes[i][0]*50)}%,${Math.min(.5,.025+flashes[i][0])})`
-    stroke(col1,col2,1,true)
-    ax /= v[0].length
-    ay /= v[0].length
-    az /= v[0].length
-    
-    B.map(q=>{
-      X1 = q[0]
-      Y1 = q[1]
-      Z1 = q[2]
-      if(Math.hypot(X1-ax,Y1-ay,Z1-az)<ls*2){
-        X2 = X1 + q[3]*anticipation
-        Y2 = Y1 + .4 + q[4]*anticipation
-        Z2 = Z1 + q[5]*anticipation
-        if(l=lineFaceI(X1,Y1,Z1,X2,Y2,Z2,v[0])){
-          n = l[1]
-          d = Math.hypot(...n)
-          n[0] /= d
-          n[1] /= d
-          n[2] /= d
-          n[0] *= bounce
-          n[1] *= bounce
-          n[2] *= bounce
-          q[4] *= q[4] > 0 ? -.033: .75
-          q[3] -= n[0] * 4
-          q[4] -= n[1] + .025
-          q[5] -= n[2] * 4
-          flashes[i][0] = 1
-          flashes[i][1] = i
-        }
-      }
-    })
-  })
-  
-  B = B.filter(v=>v[6]>.1 && v[1]<30)
-  
-  B.map((v,i) => {
-    X = v[0] += v[3]
-    Y = v[1] += v[4] += grav
-    Z = v[2] += v[5]
-    v[3] /= 1.01
-    v[4] /= 1.01
-    v[5] /= 1.01
-    R(Rl,Pt,Yw,1)
-    if(Z>0){
-      s = Math.min(3e3,3e3/Z*(.33+v[6]/3))
-      l = Q()
-      x.globalAlpha = (v[6]*3)**2
-      x.drawImage(starImgs[1+(i%8)].img,l[0]-s/2.07,l[1]-s/2.07,s,s)
-    }
-    v[6] -= .005
-  })
-  
-  x.globalAlpha = 1
 
   bounding.map(v=>{
     x.beginPath()
@@ -1306,11 +1184,65 @@
       Y = q[1]
       Z = q[2]
       R(Rl,Pt,Yw,1)
-      if(Z>0)x.lineTo(...Q())
+      if(Z>0) x.lineTo(...Q())
     })
-    stroke('#40f2', '#40f1',1,false)
+    stroke('','#4400ff05',1,true)
   })
-
+  
+  lim = .25
+  bLs = .05
+  homingRadius = boundingLs/5
+  flock.map((v, i) => {
+    tx = v[0] += S(v[3]) * iFv
+    ty = v[1]
+    tz = v[2] += C(v[3]) * iFv
+    if(tx>boundingLs/2) tx = v[0] = -boundingLs/2
+    if(tx<-boundingLs/2) tx = v[0] = boundingLs/2
+    if(tz>boundingLs/2) tz = v[2] = -boundingLs/2
+    if(tz<-boundingLs/2) tz = v[2] = boundingLs/2
+    if(v[4]){
+      v[5] /= 1.05
+      v[5] += (Rn()-.5)/20
+      v[3] += v[5]
+    } else {
+      v[5] /= 1.05
+      v[5] += (Rn()-.5)/6
+      v[3] += v[5]
+      a = [0, 0]
+      flock.map((q, j)=>{
+        h_ = q[4]?20:1
+        X2 = q[0]
+        Y2 = q[1]
+        Z2 = q[2]
+        d = Math.hypot(X2-tx, Y2-ty, Z2-tz)
+        if(d<homingRadius){
+          d_ = .25+(d)**6
+          a[0] += S(q[3]) * h_ / d_
+          a[1] += C(q[3]) * h_ / d_
+        }
+      })
+      p = Math.atan2(...a)
+      if(Math.abs(p-v[3])>Math.PI){
+        if(p>v[3]){
+          v[3] += Math.PI*2
+        }else{
+          p += Math.PI*2
+        }
+      }
+      v[3] += Math.min(lim,Math.max(-lim, p-v[3]))
+    }
+    x.beginPath()
+    for(j=3;j--;){
+      ls = j==0?bLs*2:bLs
+      X = tx + S(p=Math.PI*2/3*j+v[3]) * ls
+      Y = tz + C(p) * ls
+      Z = 0
+      R(Rl,Pt,Yw,1)
+      if(Z>0) x.lineTo(...Q())
+    }
+    stroke('',v[4]?'#f008':'#0f88', 1, false)
+  })
+	      
 	      
 	      
 	      
