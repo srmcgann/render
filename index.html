@@ -757,7 +757,7 @@
     
     stroke = (scol, fcol, lwo=1, od=true, oga=1) => {
       if(scol){
-        //x.closePath()
+        x.closePath()
         if(od) x.globalAlpha = .2*oga
         x.strokeStyle = scol
         x.lineWidth = Math.min(1000,100*lwo/Z)
@@ -1122,15 +1122,109 @@
       return ret
     }
 
-    G_ = 1e6, iSTc = 1e4
+    G_ = 100000, iSTc = 5e3
     ST = Array(iSTc).fill().map(v=>{
       X = (Rn()-.5)*G_
       Y = (Rn()-.5)*G_
       Z = (Rn()-.5)*G_
       return [X,Y,Z]
     })
+
     
+    iGridStacksc = 3
+    rw = 8
+    cl = 8
+    sp = 2
+    shp = []
+    sd2=3
+    for(j=0;j<sd2;j++){
+      sd = 4+(j/1.5)|0
+      for(i=0;i<sd;i++){
+        a = []
+        l1 = i
+        l2 = j
+        ls = sp*(2**.5/2) / (1+l2/2)
+        X = S(p=Math.PI*2/sd*l1+Math.PI/sd) * ls
+        Y = l2/3
+        Z = C(p) * ls
+        a = [...a, [X,Y,Z]]
+        l1 = i
+        l2 = j+1
+        ls = sp*(2**.5/2) / (1+l2/2)
+        X = S(p=Math.PI*2/sd*l1+Math.PI/sd) * ls
+        Y = l2/3
+        Z = C(p) * ls
+        a = [...a, [X,Y,Z]]
+        l1 = i+1
+        l2 = j+1
+        ls = sp*(2**.5/2) / (1+l2/2)
+        X = S(p=Math.PI*2/sd*l1+Math.PI/sd) * ls
+        Y = l2/3
+        Z = C(p) * ls
+        a = [...a, [X,Y,Z]]
+        l1 = i+1
+        l2 = j
+        ls = sp*(2**.5/2) / (1+l2/2)
+        X = S(p=Math.PI*2/sd*l1+Math.PI/sd) * ls
+        Y = l2/3
+        Z = C(p) * ls
+        a = [...a, [X,Y,Z]]
+        shp = [...shp, a]
+      }
+    }
     
+    grids = Array(iGridStacksc).fill().map((v,i) => {
+      a = []
+      ls = sp*(2**.5/2)
+      for(j=rw*cl;j--;){
+        tx = ((j%cl)-cl/2+.5)*sp
+        ty = (i-iGridStacksc/2+.5) * sp*1.5
+        tz = ((j/cl|0)-rw/2+.5)*sp
+        b = []
+        for(m = 4;m--;){
+          X = S(p = Math.PI*2/4*m + Math.PI/4) * ls
+          Y = 0
+          Z = C(p) * ls
+          b = [...b, [X,Y,Z]]
+        }
+        if(Math.hypot(tx,tz)<cl/2*sp) a = [...a, [tx,ty,tz,b,Rn()<.25?1:0]]
+      }
+      return a
+    })
+    
+    stars = []
+    spawnStar = (X,Y,Z) => {
+      stars = [...stars, [X,Y,Z,1]]
+    }
+    
+    G = sp * cl
+    P = []
+    iPv = .1
+    pFreq = 0
+    spawnP = () => {
+      X = 0
+      Y = -G/3+S(t*10)*G/10
+      Z = 0
+      if(Rn()<.5)spawnStar(X,Y,Z)
+      for(m=3;m--;){
+        vx = S(p=t*6+(Rn()-.5)*.2)*iPv
+        vy = -Rn()*iPv/4
+        vz = C(p)*iPv
+        P = [...P, [X,Y,Z,vx,vy,vz,1]]
+      }
+    }
+    grav = .025
+    
+    sparks = []
+    iSparkv = .04
+    spawnSparks = (X,Y,Z) =>{
+      for(m=1;m--;){
+        vx = S(p=Math.PI*2*Rn()) * S(q=Rn()<.5?Math.PI-Math.PI/2*Rn()**.5:Math.PI/2*Rn()**.5) * iSparkv
+        vy = C(q) * iSparkv
+        vz = C(p) * S(q) * iSparkv
+        sparks = [...sparks, [X,Y,Z,vx,vy,vz,1]]
+      }
+    }
     burst = new Image()
     burst.src = "https://srmcgann.github.io/temp/burst.png"
     
@@ -1145,79 +1239,206 @@
       }
       a.img.src = `https://srmcgann.github.io/temp/stars/star${i?i:''}.png`
       return a
-    })
-    
-    crosshair = new Image
-    crosshair.src = 'https://srmcgann.github.io/shooter/crosshair.png'
-    
-    rl=pt=yw=0
+    })    
   }
-
   
-  vel = Math.min(4e3, Math.max(200,(.3-C(t/4))*5000))
-  oX = 0, oY = 0, oZ = 3e3
-
-  X = 0
-  Y = 0
-  Z = -vel
-  rl += Math.max(-.005, Math.min(.015, (.3-C(t/2))*.05))
-  pt = C(t/3)
-  yw = C(t/4)/1.5
-  R(-rl, 0, 0)
-  R(0, -pt, 0)
-  R(0, 0, -yw)
-  evx = X
-  evy = Y
-  evz = Z
+  oX=0, oY=0, oZ=Math.min(16, Math.max(9,(.3+C(t/3))*70))
+  Rl=0, Pt=Math.min(-.1,Math.max(-Math.PI/3,2*(-Math.PI/4+C(t/2)))), Yw = t/4
   
-  Rl = rl
-  Pt = pt
-  Yw = yw
+  if(!((t*60|0)%pFreq)) spawnP()
   
   x.globalAlpha = 1
-  x.fillStyle='#0008'
+  x.fillStyle='#000C'
   x.fillRect(0,0,c.width,c.height)
   x.lineJoin = x.lineCap = 'roud'
-  
-  x.globalAlpha = .05
-  x.drawImage(crosshair,960-crosshair.width*1.5,540-crosshair.height*1.5,crosshair.width*3,crosshair.height*3)
-  x.globalAlpha = 1
 
-  ST.map((v,i)=>{
-    X = v[0]+=evx
-    Y = v[1]+=evy
-    Z = v[2]+=evz
-    if(X<-G_/2) v[0]=G_/2
-    if(X>G_/2) v[0]=-G_/2
-    if(Y<-G_/2) v[1]=G_/2
-    if(Y>G_/2) v[1]=-G_/2
-    if(Z<-G_/2) v[2]=G_/2
-    if(Z>G_/2) v[2]=-G_/2
+  ST.map(v=>{
+    X = v[0]
+    Y = v[1]
+    Z = v[2]
     R(Rl,Pt,Yw,1)
     if(Z>0){
-      if((x.globalAlpha = Math.min(1,(Z/1e4)**2)/(1+((1+Z)**7)/1e39))>.075){
-        s = Math.min(1e5, 10000000/Z)
-        l = Q()
-        if(!(i%400)){
-          x.globalAlpha *=.75
-          x.drawImage(burst,l[0]-s*2.5,l[1]-s*2.5,s*5,s*5)
-        }else{
-          x.drawImage(starImgs[1+((((i+99)**3.1)**1.5)%1)*8|0].img,l[0]-s/2,l[1]-s/2,s,s)
-        }
-        /*
+      if((x.globalAlpha = Math.min(1,(Z/1e4)**2))>.1){
+        s = Math.min(1e3, 400000/Z)
         x.fillStyle = '#ffffff04'
         l = Q()
         x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
         s/=5
         x.fillStyle = '#fffa'
-        x.fillRect(l[0]-s/2,l[1]-s/2,s,s)*/
+        x.fillRect(l[0]-s/2, l[1]-s/2, s, s)
       }
     }
   })
 
   x.globalAlpha = 1
+  anticipation = 20
+  bounce = -.05
+  grids.map((grid, idx) => {
+    grid.map(v => {
+      tx = v[0]
+      ty = v[1]
+      tz = v[2]
+      let ax, ay, az
+      if(v[4]){
+        shp.map(q=>{
+          /*
+          ax = ay = az = 0
+          q.map(n => {
+            ax += n[0]
+            ay += n[1]
+            az += n[2]
+          })
+          ax /= q.length
+          ay /= q.length
+          az /= q.length
+          P.map(n=>{
+            X1 = n[0]
+            Y1 = n[1]
+            Z1 = n[2]
+            d = Math.hypot(X1-ax,Y1-ay,Z1-az)
+            if(d<1){
+              nx = n[3]
+              ny = n[4]
+              nz = n[5]
+              d1 = Math.hypot(nx,ny,vz)
+              nx *= anticipation * d1
+              ny *= anticipation * d1
+              nz *= anticipation * d1
+              X2 = nx + X1
+              Y2 = ny + Y1+.25
+              Z2 = nz + Z1
+              if(l=lineFaceI(X1,Y1,Z1,X2,Y2,Z2,q)){
+                n[4]/=2
+                n[3] += l[1][0] * bounce
+                n[4] += l[1][1] * bounce - .05
+                n[3] += l[1][2] * bounce
+                spawnSparks(X1,Y1,Z1)
+              }
+            }
+          })
+            */
 
+          x.beginPath()
+          q.map(n=>{
+            X = v[0] + n[0]
+            Y = v[1] + n[1]
+            Z = v[2] + n[2]
+            R(Rl,Pt,Yw,n)
+            if(Z>0) x.lineTo(...Q())
+          })
+          col = `hsla(${360/grids.length*idx-50+t*50},99%,50%,.1)`
+          stroke('#fff1',col,2,false)
+        })
+      }else{
+        ax = ay = az = 0
+        v[3].map(n => {
+          ax += n[0] + tx
+          ay += n[1] + ty
+          az += n[2] + tz
+        })
+        ax /= v[3].length
+        ay /= v[3].length
+        az /= v[3].length
+        P.map(n=>{
+          X1 = n[0]
+          Y1 = n[1]
+          Z1 = n[2]
+          d = Math.hypot(X1-ax, Y1-ay, Z1-az)
+          if(d<2){
+            nx = n[3]
+            ny = n[4]
+            nz = n[5]
+            d1 = Math.hypot(nx,ny,vz)
+            nx *= anticipation * d1
+            ny *= anticipation * d1
+            nz *= anticipation * d1
+            X2 = nx + X1
+            Y2 = ny + Y1+.25
+            Z2 = nz + Z1
+            a = JSON.parse(JSON.stringify(v[3])).map(n=>{
+              return [n[0]+tx, n[1]+ty, n[2]+tz]
+            })
+            if(l=lineFaceI(X1,Y1,Z1,X2,Y2,Z2,a)){
+              n[4]/=4
+              n[3] += l[1][0] * bounce
+              n[4] += l[1][1] * bounce - .0125
+              n[3] += l[1][2] * bounce
+              spawnSparks(X1,Y1,Z1)
+            }
+          }
+        })
+        x.beginPath()
+        v[3].map(q=>{
+          X = v[0] + q[0]
+          Y = v[1] + q[1]
+          Z = v[2] + q[2]
+          R(Rl,Pt,Yw,1)
+          if(Z>0) x.lineTo(...Q())
+        })
+        col = `hsla(${360/grids.length*idx+t*50},99%,50%,.1)`
+        stroke('',col,1,false)
+      }
+    })
+  })
+  
+  P = P.filter(v => v[6] > .15 && v[1] < 20)
+  
+  P.map(v => {
+    X = v[0] += v[3]
+    Y = v[1] += v[4] += grav
+    Z = v[2] += v[5]
+    R(Rl,Pt,Yw,1)
+    if(Z>0){
+      l = Q()
+      s = Math.min(2e3,2e3/Z*v[6])
+      x.fillStyle = '#ff000003'
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      s/=2.5
+      x.fillStyle = '#ff880010'
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      s/=3
+      x.fillStyle = '#ffffffff'
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+    }
+    v[6]-=.005
+  })
+  
+  sparks = sparks.filter(v=>v[6]>.1)
+  sparks.map(v=>{
+    X = v[0] += v[3]
+    Y = v[1] += v[4]
+    Z = v[2] += v[5]
+    R(Rl,Pt,Yw,1)
+    if(Z>0){
+      l = Q()
+      s = Math.min(2e3,1e3/Z*v[6])
+      x.fillStyle = '#4400ff04'
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      s/=3
+      x.fillStyle = '#00ff8815'
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+      s/=3
+      x.fillStyle = '#ffffffff'
+      x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+    }
+    v[6]-=.05
+  })
+  
+  stars = stars.filter(v=>v[3]>.1)
+  stars.map((v,i)=>{
+    X = v[0]
+    Y = v[1]
+    Z = v[2]
+    R(Rl, Pt, Yw, 1)
+    if(Z>0){
+      s = Math.min(3e3,5e3/Z*v[3])
+      l = Q()
+      x.drawImage(starImgs[2+i%7].img,l[0]-s/2,l[1]-s/2,s,s)
+    }
+    v[3]-=.33
+  })
 
+	      
 		  
 	      t+=1/60
 
