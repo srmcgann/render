@@ -141,9 +141,9 @@
       M=Math
       A=M.atan2
       H=M.hypot
-      Y=S(p=A(Y,Z)+Pt)*(d=H(Y,Z))
-      Z=C(p)*d
       X=S(p=A(X,Z)+Yw)*(d=H(X,Z))
+      Z=C(p)*d
+      Y=S(p=A(Y,Z)+Pt)*(d=H(Y,Z))
       Z=C(p)*d
       X=S(p=A(X,Y)+Rl)*(d=H(X,Y))
       Y=C(p)*d
@@ -757,7 +757,7 @@
     
     stroke = (scol, fcol, lwo=1, od=true, oga=1) => {
       if(scol){
-        //x.closePath()
+        x.closePath()
         if(od) x.globalAlpha = .2*oga
         x.strokeStyle = scol
         x.lineWidth = Math.min(1000,100*lwo/Z)
@@ -1146,248 +1146,70 @@
       return a
     })
     
-    starsLoaded = false, starImgs = [{loaded: false}]
-    starImgs = Array(10).fill().map((v,i) => {
-      let a = {img: new Image(), loaded: false}
-      a.img.onload = () => {
-        a.loaded = true
-        setTimeout(()=>{
-          if(starImgs.filter(v=>v.loaded).length == 10) starsLoaded = true
-        }, 0)
-      }
-      a.img.src = `https://srmcgann.github.io/temp/stars/star${i?i:''}.png`
-      return a
-    })
-    
-    cl = 6
-    rw = 6
-    br = 3
-    ocl=orw=obr=-1
-    genMaze = (cl,rw,br) => {
-      if(cl==ocl&&rw==orw&&obr==br) return
-      ocl = cl
-      orw = rw
-      obr = br
-      start = dest = 0
-      sp = 1.75
-      baseCube = Cube(sp*1.06)
-      maze = []
-      Array(cl*rw*br).fill().map((v, i) => {
-        tx = ((i%cl)-cl/2+.5)*sp
-        ty = (((i/cl|0)%rw)-rw/2+.5)*sp
-        tz = ((i/cl/rw|0)-br/2+.5)*sp
-        if(Math.hypot(tx,ty,tz)<(rad=Math.hypot(cl*sp,rw*sp,br*sp)/3.75)) maze = [...maze, [ tx, ty, tz, JSON.parse(JSON.stringify(baseCube))]]
-      })
-      maze.map((v,i)=>{
-        X1 = v[0]
-        Y1 = v[1]
-        Z1 = v[2]
-        a = []
-        maze.map((q,j)=>{
-          if(j!=i){
-            X2 = q[0]
-            Y2 = q[1]
-            Z2 = q[2]
-            d = Math.hypot(X2-X1,Y2-Y1,Z2-Z1)
-            if(d<sp*1.2){
-              a = [...a, j]
-            }
-          }
-        })
-        v[4] = a
-        v[5] = false
-        v[6] = 0
-        v[7] = [] // forward path
-        v[8] = [] // reverse path
-      })
-      
-      oidx = -1
-      idx1 = maze.length * Rn() |0
-      let ct2 = 0
-      do{
-        let ct_=0
-        do{
-          cell1 = maze[idx1]
-          cell1[5] = true
-          cell1[6] = 'c1'
-          let ct=0
-          good = false
-          do{
-            idx2 = cell1[4][cell1[4].length*Rn()|0]
-            ct++
-            if(oidx == -1 || (idx2 != oidx &&
-                              !maze[idx2][7].filter(v=>v==idx1).length  &&
-                              !maze[idx2][8].filter(v=>v==idx1).length &&
-                              !maze[idx1][7].filter(v=>v==idx2).length &&
-                              !maze[idx1][8].filter(v=>v==idx2).length
-                             )) good = true
-          }while(!good  && ct<10);
-          if(good){
-            cell2 = maze[idx2]
-            cell1[7] = [...cell1[7], idx2]
-            cell2[8] = [...cell2[8], idx1]
-            cell2[5] = true
-            cell2[6] = 'c2'
-            dx = Math.abs(cell2[0] - cell1[0])
-            dy = Math.abs(cell2[1] - cell1[1])
-            dz = Math.abs(cell2[2] - cell1[2])
-            if(dx > dy && dx > dz){
-              maze[idx1][3] = maze[idx1][3].filter((q, j) => {
-                if((cell2[0] < cell1[0])){
-                  return j!=0
-                }else{
-                  return j!=3
-                }
-              })
-              maze[idx2][3] = maze[idx2][3].filter((q, j) => {
-                if((cell2[0] < cell1[0])){
-                  return j!=3
-                }else{
-                  return j!=0
-                }
-              })
-              cell2[5] = cell1[5] = '#f004'
-            }
-            if(dy > dx && dy > dz){
-              maze[idx1][3] = maze[idx1][3].filter((q, j) => {
-                if((cell2[1] < cell1[1])){
-                  return j!=1
-                }else{
-                  return j!=4
-                }
-              })
-              maze[idx2][3] = maze[idx2][3].filter((q, j) => {
-                if((cell2[1] < cell1[1])){
-                  return j!=4
-                }else{
-                  return j!=1
-                }
-              })
-              cell2[5] = cell1[5] = '#ff04'
-            }
-            if(dz > dy && dz > dx){
-              maze[idx1][3] = maze[idx1][3].filter((q, j) => {
-                if((cell2[2] < cell1[2])){
-                  return j!=2
-                }else{
-                  return j!=5
-                }
-              })
-              maze[idx2][3] = maze[idx2][3].filter((q, j) => {
-                if((cell2[2] < cell1[2])){
-                  return j!=5
-                }else{
-                  return j!=2
-                }
-              })
-              cell2[5] = cell1[5] = '#04f4'
-            }
-            oidx = idx1
-            idx1 = idx2
-          }else{
-            idx1 = Rn()*maze.length|0
-            if(!(maze[idx1][7].length || maze[idx1][8].length)) oidx=-1
-          }
-          ct_++
-        }while(ct_<8);
-        idx1 = Rn()*maze.length|0
-        if(!(maze[idx1][7].length || maze[idx1][8].length)) oidx=-1
-        ct2++
-      }while(ct2<1200 && maze.filter(v=>v[7].length && v[8].length).length != maze.length);
-    }
-    genMaze(cl,rw,br)
-    
-    md=-6e6
-    drawPath1 = (idx1, depth) => {
-      if(memo1.indexOf(idx1) != -1) return
-      if(depth>md)md=depth
-      memo1 = [...memo1, idx1]
-      maze[idx1][7].map(q=>{
-        x.beginPath()
-        X = maze[idx1][0]
-        Y = maze[idx1][1]
-        Z = maze[idx1][2]
-        R(Rl,Pt,Yw,1)
-        if(Z>0) x.lineTo(...Q())
-        idx2 = q
-        X = maze[idx2][0]
-        Y = maze[idx2][1]
-        Z = maze[idx2][2]
-        R(Rl,Pt,Yw,1)
-        if(Z>0) x.lineTo(...Q())
-        if(depth==((t*400%md)|0))stroke('#f00','',8,true)
-        drawPath1(idx2, depth+1)
-      })
-    }
-
-    drawPath2 = (idx1, depth) => {
-      if(memo2.indexOf(idx1) != -1) return
-      if(depth>md)md=depth
-      memo2 = [...memo2, idx1]
-      maze[idx1][7].map(q=>{
-        x.beginPath()
-        X = maze[idx1][0]
-        Y = maze[idx1][1]
-        Z = maze[idx1][2]
-        R(Rl,Pt,Yw,1)
-        if(Z>0) x.lineTo(...Q())
-        idx2 = q
-        X = maze[idx2][0]
-        Y = maze[idx2][1]
-        Z = maze[idx2][2]
-        R(Rl,Pt,Yw,1)
-        if(Z>0) x.lineTo(...Q())
-        if(depth<((t*400%md)|0))stroke('#ffffff16','',4,false)
-        //stroke('#40f2','',1,true)
-        drawPath2(idx2, depth+1)
-      })
-    }
-    
-    recursePath = (start, dest, depth) => {
-      if(start == dest){
-        path = [...path, dest]
-        return true
-      }
-      if(memo3.indexOf(start) != -1) return false
-      memo3 = [...memo3, start]
-      let ret = false
-      maze[start][8].map(q=>{
-        if(!ret){
-          let idx2 = q
-          if(recursePath(idx2, dest, depth+1)){
-            path = [...path, q]
-            ret = true
-          }
-        }
-      })
-      return ret
-    }    
-    
     showStars = true
     
-    iBv = 0    
-    mazeFreq = 5
+    iBaselinec = 200
+    baseLine = Array(iBaselinec).fill().map((v, i) => {
+      X = c.width/iBaselinec*i
+      Y = c.height/2.66
+      vx = vy = 0
+      return [X, Y, vx, vy]
+    })
+    
+    sparks = []
+    iSparksv = 10
+    spawnSparks = (X, Y) => {
+      for(let m=25; m--;){
+        v = iSparksv*.2+Rn()*(iSparksv*.8)
+        let vx = S(p=Math.PI*2*Rn()) * v
+        let vy = C(p) * v
+        sparks = [...sparks, [X,Y,vx,vy,1]]
+      }
+    }
+    sparks2 = []
+    iSparks2v = 5
+    spawnSparks2 = (X, Y) => {
+      for(let m=2; m--;){
+        v = iSparks2v*.2+Rn()*(iSparks2v*.8)
+        let vx = S(p=Math.PI*2*Rn()) * v
+        let vy = C(p) * v
+        sparks2 = [...sparks2, [X,Y,vx,vy,1]]
+      }
+    }
+    
+    iPv = 30
+    P = []
+    spawnP = () => {
+      let tx = c.width/2 + S(t/3) * c.width/4
+      let ty = c.height/6
+      spawnSparks(tx,ty)
+      sd = 4 + Math.min(2,Math.max(-2,(.3-C(t/2))*5))|0
+      for(let m=sd; m--;){
+        v = iPv
+        vx = S(p=Math.PI/sd+Math.PI*2/sd*m + Math.min(Math.PI,Math.max(-Math.PI,(.3-S(t*2))*5))) * v
+        vy = C(p) * v
+        X = vx * 2 + tx
+        Y = vy * 2 + ty
+        P = [...P, [X,Y,vx,vy,1,m]]
+      }
+    }
+    
+    grav = 5
   }
-  oX=0, oY=0, oZ=Math.min(32, Math.max(25, (.3-C(t/3))*250))
-  Rl=C(t/2)/4, Pt=-C(t/3)/2, Yw = Math.min(Math.PI*.5, Math.max(-Math.PI, (.3+C(t/2-.5))*6))+Math.PI/2
+  
+  oX=0, oY=0, oZ=Math.min(32,Math.max(8,(.3-C(t/4))*150))
+  Rl=0, Pt=-.2+S(t/3)/4, Yw = S(t/16)/2
   
   x.globalAlpha = 1
   x.fillStyle='#000C'
   x.fillRect(0,0,c.width,c.height)
-  x.lineJoin = x.lineCap = 'roud'
-  
-  lr = Math.min(25,Math.max(5,(.3+C(t/2.25))*100))|0
-  if(!((t*60|0)%mazeFreq)) genMaze(cl=lr,rw=lr,br=Math.min(40,Math.max(3,(-.3-C(t/2.25))*250))|0)
-                                   
-  B = Array(2).fill().map((v, i)=>{
-    p_ = C(t)*Math.PI*3
-    X = S(p=Math.PI/2+Math.min(Math.PI,Math.max(-Math.PI,p_))+(i?Math.PI:0))*lr/2
-    Y = C(p)*lr/2
-    Z = 0
-    return [X, Y, Z, 0, 0, 0, 0, 0, 0]
-  })
+  x.lineJoin = x.lineCap = 'round'
 
-  if(showStars)ST.map(v=>{
+  pFreq = (4 + C(t*2) * 3) |0
+  
+  if(!((t*60|0)%pFreq)) spawnP()
+  
+  if(showStars) ST.map(v=>{
     X = v[0]
     Y = v[1]
     Z = v[2]
@@ -1404,240 +1226,103 @@
       }
     }
   })
+
   x.globalAlpha = 1
-
-  maze.map((v,i)=>{
-    X = tx = v[0]
-    Y = ty = v[1]
-    Z = tz = v[2]
-    /*R(Rl,Pt,Yw,1)
-    if(Z>0){
-      l = Q()
-      s = Math.min(2e3,600/Z)
-      x.drawImage(starImgs[1].img,l[0]-s/2,l[1]-s/2,s,s)
-    }*/
-    v[3].map((q,j) => {
-      if(v[6]){
-        ax = ay = az = 0
-        q.map(n=>{
-          ax += n[0] + tx
-          ay += n[1] + ty
-          az += n[2] + tz
-        })
-        X = ax/=q.length
-        Y = ay/=q.length
-        Z = az/=q.length
-        R(Rl,Pt,Yw,1)
-        l = Q()
-        /*x.textAlign = 'center'
-        x.fillStyle = '#fff'
-        x.font = (400/Z)+'px courier'
-        x.fillText(j,...l)
-        x.fillText(v[6],l[0],l[1]+400/Z)*/
-      }
-      x.beginPath()
-      q.map(n=>{
-        X = n[0] + tx
-        Y = n[1] + ty
-        Z = n[2] + tz
-        R(Rl,Pt,Yw,1)
-        if(Z>0) x.lineTo(...Q())
-      })
-      //col = v[5] ? '' : '#4400ff01'
-      col = ''
-      if(start == i) col = '#ff03'
-      if(dest  == i) col = '#ff03'
-      //stroke('',col,1,false)
+  
+  //x.beginPath()
+  //x.lineTo(0, c.height)
+  baseLine.map((v,i) => {
+    v[3] = 0
+    d = 0
+    P.map(q=>{
+      X = q[0]
+      Y = q[1]
+      v[3] += Y > c.height/3?((5+Math.abs(v[1]-Y)**.5)*10 / (3 + (1+(5+Math.abs(v[0] - X))**3/5e3))) * 3 : 0
     })
+    //X = v[0] + v[2]
+    //Y = v[1] + v[3] + 50
+    //x.lineTo(X, Y)
   })
+  //x.lineTo(c.width, c.height)
+  //Z=3
+  //stroke('#40f','#40f4',1,true)
   
-  x.lineJoin = x.lineCap = 'roud'
-  memo1 = []
-  memo2 = []
-  memo3 = []
-  drawPath1(0,0)
-  drawPath2(0,0)
-  
-  squirreliness = 0
-  homing = 0//.0005
-  start = dest = 0
-  B.map((v, i)=>{
-    v[6] /= 1.05
-    v[7] /= 1.05
-    v[8] /= 1.05
-    v[6] += (Rn()-.5)*squirreliness
-    v[7] += (Rn()-.5)*squirreliness
-    v[8] += (Rn()-.5)*squirreliness
-    v[3] += v[6]
-    v[4] += v[7]
-    v[5] += v[8]
-    vx = v[0]
-    vy = v[1]
-    vz = v[2]
-    d = Math.hypot(vx,vy,vz) + .0001
-    vx/=d
-    vy/=d
-    vz/=d
-    v[3] -= vx * homing
-    v[4] -= vy * homing
-    v[5] -= vz * homing
-    d = Math.hypot(v[3],v[4],v[5]) + .0001
-    v[3]/=d
-    v[4]/=d
-    v[5]/=d
-    v[3] *= iBv
-    v[4] *= iBv
-    v[5] *= iBv
-    X = v[0] += v[3]
-    Y = v[1] += v[4]
-    Z = v[2] += v[5]
-    if(Math.abs(v[0])>cl*sp/3.5){
-      v[3] *= -1
-      v[6] *= -1
-      if(v[0]>0){
-        v[0] = cl*sp/3.5
-      }else{
-        v[0] = -cl*sp/3.5
-      }
-    }
-    if(Math.abs(v[1])>rw*sp/3.5){
-      v[4] *= -1
-      v[7] *= -1
-      if(v[1]>0){
-        v[1] = rw*sp/3.5
-      }else{
-        v[1] = -rw*sp/3.5
-      }
-    }
-    if(Math.abs(v[2])>br*sp/3.5){
-      v[5] *= -1
-      v[8] *= -1
-      if(v[2]>0){
-        v[2] = br*sp/3.5
-      }else{
-        v[2] = -br*sp/3.5
-      }
-    }
-    /*if(Math.hypot(v[0],v[1],v[2])>rad){
-      v[3]*=-1
-      v[4]*=-1
-      v[5]*=-1
-      v[6]*=-1
-      v[7]*=-1
-      v[8]*=-1
-    }*/
-    R(Rl,Pt,Yw,1)
-    if(Z>0){
-      l = Q()
-      s = Math.min(2e3,((3e3*S(t*30))+1e4)/Z)
-      //x.drawImage(starImgs[1].img,l[0]-s,l[1]-s,s*2,s*2)
-      x.drawImage(starImgs[i?8:5].img,l[0]-s/2.1,l[1]-s/2.1,s,s)
-    }
+  P = P.filter(v=>v[4]>.05&&v[1]<c.height+250)
+  P.map(v=>{
+    v[0] += v[2]
+    v[1] += v[3]
+    base = 0
     mind = 6e6
-    maze.map((q,j)=>{
-      if((d = Math.hypot(q[0]-v[0],q[1]-v[1],q[2]-v[2]))<mind){
-        mind = d
-        idx = j
+    baseLine.map(q=>{
+      if((d=Math.abs(q[0]-v[0]))<mind){
+        mind=d
+        base = q[1]+q[3]/1.75
       }
     })
-    if(!i){
-      start = idx
+    base_ = Math.max(c.height/2.8,base)
+    if(v[1]>Math.min(base_, c.height*1.25)){
+      spawnSparks2(...v)
+      v[3] -= grav*3
     }else{
-      dest = idx
+      v[3] += grav
     }
+    if(v[1]>base_){
+      v[2] /= 1.05
+      v[3] /= 1.25 + (5/(.5+Math.abs(base_-v[1])/99)**.25/2000)
+    }
+    X = v[0]
+    Y = v[1]
+    ls = 150 * v[4]
+    x.drawImage(starImgs[2+(v[5]+(t*20|0))%8].img,X-ls/1.06,Y-ls/1.06,ls*2,ls*2)
+    x.drawImage(starImgs[1].img,X-ls/2*1.5,Y-ls/2*1.5,ls*1.5,ls*1.5)
+    v[4] -= .02
   })
   
-  path = []
-  recursePath(start, dest)
-  path = [...path, start]
-
-  x.lineJoin = x.lineCap = 'round'
-  fluxSpeed = 2.5
-  path.map((v,i)=>{
-    v2 = path.length/2|0
-    d_ = S(Math.PI*4 / v2 * (i+t*path.length/8*fluxSpeed|0)%v2)
-    col = `hsla(${d_**3*70 - 130 + t*30},99%,${Math.min(100,Math.max(50,-1000+d_*1150))}%, ${Math.min(1, Math.max(.33, .1+(.9 * (d_/2+.5))**4))})`
-    if(path.length>2){
-      if(i==0){
-        X = B[1][0]
-        Y = B[1][1]
-        Z = B[1][2]
-        R(Rl,Pt,Yw,1)
-        x.beginPath()
-        x.moveTo(...Q())
-        X1 = X = maze[path[1]][0]
-        Y1 = Y = maze[path[1]][1]
-        Z1 = Z = maze[path[1]][2]
-        R(Rl,Pt,Yw,1)
-        if(Z>.1) l1 = Q()
-        X = (X1 + maze[path[2]][0]) / 2
-        Y = (Y1 + maze[path[2]][1]) / 2
-        Z = (Z1 + maze[path[2]][2]) / 2
-        R(Rl,Pt,Yw,1)
-        if(Z>.1) l2 = Q()
-        if(Z>.1) x.quadraticCurveTo(...l1, ...l2)
-        if(Z>.1) stroke(col, '', 5, true)
-      }
-      if(i>1&&i<path.length-1){
-        l = i-1
-        X1 = maze[path[l]][0]
-        Y1 = maze[path[l]][1]
-        Z1 = maze[path[l]][2]
-        l = i
-        X2 = maze[path[l]][0]
-        Y2 = maze[path[l]][1]
-        Z2 = maze[path[l]][2]
-        l = i+1
-        X3 = maze[path[l]][0]
-        Y3 = maze[path[l]][1]
-        Z3 = maze[path[l]][2]
-        x.beginPath()
-        X = (X1+X2)/2
-        Y = (Y1+Y2)/2
-        Z = (Z1+Z2)/2
-        R(Rl,Pt,Yw,1)
-        if(Z>.1) l0 = Q()
-        x.moveTo(...l0)
-        X = X2
-        Y = Y2
-        Z = Z2
-        R(Rl,Pt,Yw,1)
-        if(Z>.1) l1 = Q()
-        X = (X2+X3)/2
-        Y = (Y2+Y3)/2
-        Z = (Z2+Z3)/2
-        R(Rl,Pt,Yw,1)
-        if(Z>.1) l2 = Q()
-        if(Z>.1) x.quadraticCurveTo(...l1, ...l2)
-        if(Z>.1) stroke(col, '', 4+((d_+1)*4)**2/10, true)
-      }
-      x.lineJoin = x.lineCap = 'roud'
-
-
-      if(i == path.length-1){
-        x.beginPath()
-        X = B[0][0]
-        Y = B[0][1]
-        Z = B[0][2]
-        R(Rl,Pt,Yw,1)
-        if(Z>0) x.lineTo(...Q())
-        X1 = X = maze[path[path.length-1]][0]
-        Y1 = Y = maze[path[path.length-1]][1]
-        Z1 = Z = maze[path[path.length-1]][2]
-        R(Rl,Pt,Yw,1)
-        if(Z>.1) l1 = Q()
-        X = (X1 + maze[path[path.length-2]][0]) / 2
-        Y = (Y1 + maze[path[path.length-2]][1]) / 2
-        Z = (Z1 + maze[path[path.length-2]][2]) / 2
-        R(Rl,Pt,Yw,1)
-        if(Z>.1) l2 = Q()
-        if(Z>.1) x.quadraticCurveTo(...l1, ...l2)
-        if(Z>.1) stroke(col, '', 5, true)
-      }
-    }
+  sparks = sparks.filter(v=>v[4]>.01)
+  sparks.map(v=>{
+    X = v[0] += v[2]
+    Y = v[1] += v[3] += grav/20
+    s = 100 * v[4]
+    x.fillStyle = '#ff000003'
+    x.fillRect(X-s/2,Y-s/2,s,s)
+    x.fillStyle = '#ff880010'
+    s /= 3.5
+    x.fillRect(X-s/2,Y-s/2,s,s)
+    x.fillStyle = '#ffffffff'
+    s /= 3.5
+    x.fillRect(X-s/2,Y-s/2,s,s)
+    v[4] -= .02
   })
-  x.lineJoin = x.lineCap = 'roud'
-	      
+  
+  sparks2 = sparks2.filter(v=>v[4]>.01)
+  sparks2.map(v=>{
+    X = v[0] += v[2]
+    Y = v[1] += v[3] += grav/20
+    s = 100 * v[4]
+    x.fillStyle = '#00ff8803'
+    x.fillRect(X-s/2,Y-s/2,s,s)
+    x.fillStyle = '#44ffff10'
+    s/=3
+    x.fillRect(X-s/2,Y-s/2,s,s)
+    x.fillStyle = '#ffffffff'
+    s/=4
+    x.fillRect(X-s/2,Y-s/2,s,s)
+    v[4] -= .05
+  })
+  
+  x.beginPath()
+  x.lineTo(-500, c.height+200)
+  baseLine.map((v,i) => {
+    X = v[0] + v[2]
+    Y = v[1] + v[3] + 50
+    x.lineTo(X, Y)
+  })
+  x.lineTo(c.width+500, c.height+200)
+  Z = 3
+  col1=`hsla(${t*100},99%,75%,1)`
+  col2=`hsla(${t*100-30},99%,50%,.1)`
+  stroke(col1, col2, 1, true)
+
 	      
 		  
 	      t+=1/60
