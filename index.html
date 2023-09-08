@@ -153,7 +153,7 @@
         Z+=oZ
       }
     }
-    Q=()=>[c.width/2+X/Z*700,c.height/2+Y/Z*700]
+    Q=()=>[c.width/2+X/Z*800,c.height/2+Y/Z*800]
     I=(A,B,M,D,E,F,G,H)=>(K=((G-E)*(B-F)-(H-F)*(A-E))/(J=(H-F)*(M-A)-(G-E)*(D-B)))>=0&&K<=1&&(L=((M-A)*(B-F)-(D-B)*(A-E))/J)>=0&&L<=1?[A+K*(M-A),B+K*(D-B)]:0
     
     Rn = Math.random
@@ -338,10 +338,10 @@
         x.beginPath()
         X_ = X1_, Y_ = Y1_, Z_ = Z1_
         R_(Rl,Pt,Yw,1)
-        if(Z_>0) x.lineTo(...Q_())
+        if(Z_>.25) x.lineTo(...Q_())
         X_ = X2_, Y_ = Y2_, Z_ = Z2_
         R_(Rl,Pt,Yw,1)
-        if(Z_>0) x.lineTo(...Q_())
+        if(Z_>.25) x.lineTo(...Q_())
         x.lineWidth = 5
         x.strokeStyle='#f004'
         x.stroke()
@@ -760,7 +760,7 @@
         x.closePath()
         if(od) x.globalAlpha = .2*oga
         x.strokeStyle = scol
-        x.lineWidth = Math.min(1000,100*lwo/Z)
+        x.lineWidth = Math.min(100,100*lwo/Z)
         if(od) x.stroke()
         x.lineWidth /= 4
         x.globalAlpha = 1*oga
@@ -941,8 +941,8 @@
     
     Rn = Math.random
     
-    LsystemRecurse = (size, splits, p1, p2, stem, theta, LsystemReduction, twistFactor) => {
-      if(size < .25) return
+    LsystemRecurse = (size, splits, p1, p2, stem, theta, LsystemReduction, twistFactor, depth) => {
+      if(size < 3.5) return
       let X1 = stem[0]
       let Y1 = stem[1]
       let Z1 = stem[2]
@@ -963,39 +963,47 @@
         X+=X2
         Y+=Y2
         Z+=Z2
-        let newStem = [X2, Y2, Z2, X, Y, Z]
+        let newStem = [X2, Y2, Z2, X, Y, Z, depth]
         Lshp = [...Lshp, newStem]
-        LsystemRecurse(size, splits, p1+Math.PI*2/splits*i+twistFactor, p2+theta, newStem, theta, LsystemReduction, twistFactor)
+        LsystemRecurse(size, splits, p1+Math.PI*2/splits*i+twistFactor, p2+theta, newStem, theta, LsystemReduction, twistFactor, depth + 1)
       }
     }
     DrawLsystem = shp => {
-      shp.map(v=>{
+      shp.map((v,i)=>{
         x.beginPath()
         X = v[0]
         Y = v[1]
         Z = v[2]
         R(Rl,Pt,Yw,1)
-        if(Z>0)x.lineTo(...Q())
+        if(Z>.25)x.lineTo(...Q())
         X = v[3]
         Y = v[4]
         Z = v[5]
         R(Rl,Pt,Yw,1)
-        if(Z>0)x.lineTo(...Q())
+        if(Z>.25)x.lineTo(...Q())
         lwo = Math.hypot(v[0]-v[3],v[1]-v[4],v[2]-v[5])*4
-        stroke('#0f82','',lwo)
+        stroke(v[6]?'#fff4':'#fff4','',lwo)
+        //stroke(v[6]?'#fff2':'#fff2','',lwo)
       })
-      
     }
+    
     Lsystem = (size, splits, theta, LsystemReduction, twistFactor) => {
       Lshp = []
       stem = [0,0,0,0,-size,0]
       Lshp = [...Lshp, stem]
-      LsystemRecurse(size, splits, 0, 0, stem, theta, LsystemReduction, twistFactor)
+      LsystemRecurse(size, splits, 0, 0, stem, theta, LsystemReduction, twistFactor, 0)
       Lshp.map(v=>{
         v[1]+=size*1.5
         v[4]+=size*1.5
       })
-      return Lshp
+      maxDepth = -1
+      Lshp.map(v=>{
+        if(v[6]> maxDepth) maxDepth = v[6]
+      })
+      return Lshp.map(v=>{
+        v[6] = v[6] == maxDepth
+        return v
+      })
     }
     
     Sphere = (ls, rw, cl) => {
@@ -1146,75 +1154,158 @@
       return a
     })
     
-    showStars = true
-    
-    iBaselinec = 200
-    baseLine = Array(iBaselinec).fill().map((v, i) => {
-      X = c.width/iBaselinec*i
-      Y = c.height/2.66
-      vx = vy = 0
-      return [X, Y, vx, vy]
-    })
-    
-    sparks = []
-    iSparksv = 10
-    spawnSparks = (X, Y) => {
-      for(let m=25; m--;){
-        v = iSparksv*.2+Rn()*(iSparksv*.8)
-        let vx = S(p=Math.PI*2*Rn()) * v
-        let vy = C(p) * v
-        sparks = [...sparks, [X,Y,vx,vy,1]]
-      }
+    treeSize = 7.5
+    baseNum = 3 // cube=4, etc
+    shapeSize = 16
+    base_shp = subDividedDodecahedron(shapeSize, 1, 1)
+    p3s=Array(base_shp.length).fill(false)
+    p3sAcquired=false
+    genStuff = () => {
+      base_tree = Lsystem(treeSize/2, baseNum, Math.max(0,Math.min(1,(.3+C(t/2+Math.PI/3))*2*(t?-1:1))), 1.5, 0)
+      trees = []
+      base_shp.map((v, i) => {
+        let ax = 0
+        let ay = 0
+        let az = 0
+        v.map(q=>{
+          ax += q[0]
+          ay += q[1]
+          az += q[2]
+        })
+        ax /= v.length
+        ay /= v.length
+        az /= v.length
+        p3sAcquired = p3s.filter(q=>q!==false).length==base_shp.length
+        if(!p3sAcquired) mind_=6e6
+        for(m=!p3sAcquired ? 1000 : 1; m--;){
+          mind = 6e6
+          let b1 = v[2][0]-v[1][0], b2 = v[2][1]-v[1][1], b3 = v[2][2]-v[1][2]
+          let c1 = v[1][0]-v[0][0], c2 = v[1][1]-v[0][1], c3 = v[1][2]-v[0][2]
+          let crs = [b2*c3-b3*c2,b3*c1-b1*c3,b1*c2-b2*c1]
+          d = Math.hypot(...crs)+.001
+          let nls = 1 //normal line length
+          crs = crs.map(q=>q/d*nls)
+          let X1_ = ax, Y1_ = ay, Z1_ = az
+          let flip = 1
+          if(1){
+            let d1_ = Math.hypot(X1_,Y1_,Z1_)
+            let d2_ = Math.hypot(-(ax + crs[0]/99),-(ay + crs[1]/99),-(az + crs[2]/99))
+            flip = d2_<d1_?-1:1
+          }
+          crs[0]*=flip
+          crs[1]*=flip
+          crs[2]*=flip
+          p1 = -Math.atan2(crs[0],crs[2])
+          p2 = Math.acos(crs[1]/(Math.hypot(...crs)+.001))
+          a = JSON.parse(JSON.stringify(base_tree)).map(q => {
+            X = q[0]
+            Y = -q[1]+treeSize*1.5/2
+            Z = q[2]
+            p3=p3sAcquired?p3s[i]:Math.PI*2/1000*m
+            R(0,0,p3)
+            R(0,-p2,0)
+            R(0,0,-p1)
+            q[0] = X
+            q[1] = Y
+            q[2] = Z
+            X = q[3]
+            Y = -q[4]+treeSize*1.5/2
+            Z = q[5]
+            R(0,0,p3)
+            R(0,-p2,0)
+            R(0,0,-p1)
+            q[3] = X
+            q[4] = Y
+            q[5] = Z
+            q[0] += ax
+            q[1] += ay
+            q[2] += az
+            q[3] += ax
+            q[4] += ay
+            q[5] += az
+            if(!p3sAcquired){
+              if(q[6]) v.map(n=>{
+                if((d=Math.hypot(q[3]-n[0],q[4]-n[1],q[5]-n[2])) < mind){
+                  mind = Math.round(d*1000)/1000
+                  if(!p3sAcquired && mind == mind_) p3s[i] = p3
+                  if(mind<mind_) mind_ = mind
+                }
+              })
+            } else {
+              X = q[0] -= ax
+              Y = q[1] -= ay
+              Z = q[2] -= az
+              R(0,0,p1)
+              R(0,p2,0)
+              R(0,0,Math.PI/baseNum)
+              R(0,-p2,0)
+              R(0,0,-p1)
+              q[0] = X
+              q[1] = Y
+              q[2] = Z
+
+              X = q[3] -= ax
+              Y = q[4] -= ay
+              Z = q[5] -= az
+              R(0,0,p1)
+              R(0,p2,0)
+              R(0,0,Math.PI/baseNum)
+              R(0,-p2,0)
+              R(0,0,-p1)
+              q[3] = X
+              q[4] = Y
+              q[5] = Z
+              
+              q[0] += ax
+              q[1] += ay
+              q[2] += az
+              q[3] += ax
+              q[4] += ay
+              q[5] += az
+            }
+            return q
+          })
+        }
+        trees = [...trees, [ax, ay, az, a]]
+      })
     }
-    sparks2 = []
-    iSparks2v = 5
-    spawnSparks2 = (X, Y) => {
-      for(let m=2; m--;){
-        v = iSparks2v*.2+Rn()*(iSparks2v*.8)
-        let vx = S(p=Math.PI*2*Rn()) * v
-        let vy = C(p) * v
-        sparks2 = [...sparks2, [X,Y,vx,vy,1]]
-      }
-    }
+    genStuff()
     
-    iPv = 30
-    P = []
-    spawnP = () => {
-      let tx = c.width/2 + S(t/3) * c.width/4
-      let ty = c.height/6
-      spawnSparks(tx,ty)
-      sd = 4 + Math.min(2,Math.max(-2,(.3-C(t/2))*5))|0
-      for(let m=sd; m--;){
-        v = iPv
-        vx = S(p=Math.PI/sd+Math.PI*2/sd*m + Math.min(Math.PI,Math.max(-Math.PI,(.3-S(t*2))*5))) * v
-        vy = C(p) * v
-        X = vx * 2 + tx
-        Y = vy * 2 + ty
-        P = [...P, [X,Y,vx,vy,1,m]]
-      }
+    P = Array(trees.length).fill().map(v=>Array(baseNum**3).fill().map(q=>[]))
+    pFreq = 0
+    iPv = 1
+    spawnP = (X1, Y1, Z1, X2, Y2, Z2, idx1, idx2) => {
+      vx = X2 - X1
+      vy = Y2 - Y1
+      vz = Z2 - Z1
+      d = Math.hypot(vx, vy, vz)
+      vx /= d
+      vy /= d
+      vz /= d
+      vx *= iPv
+      vy *= iPv
+      vz *= iPv
+      P[idx1][idx2] = [...P[idx1][idx2], [X2, Y2, Z2, vx, vy, vz, 1]]
     }
-    
-    grav = 5
   }
   
-  oX=0, oY=0, oZ=Math.min(32,Math.max(8,(.3-C(t/4))*150))
-  Rl=0, Pt=-.2+S(t/3)/4, Yw = S(t/16)/2
+  oX=0, oY=0, oZ=Math.min(40,Math.max(.25,(.3-C(t/2))*100))
+  Rl=C(t/4)/2, Pt=C(t/4), Yw = C(t/2)*2
   
   x.globalAlpha = 1
   x.fillStyle='#000C'
   x.fillRect(0,0,c.width,c.height)
   x.lineJoin = x.lineCap = 'round'
-
-  pFreq = (4 + C(t*2) * 3) |0
   
-  if(!((t*60|0)%pFreq)) spawnP()
+  genStuff()
   
-  if(showStars) ST.map(v=>{
+  ST.map(v=>{
     X = v[0]
     Y = v[1]
     Z = v[2]
     R(Rl,Pt,Yw,1)
-    if(Z>0){
+    
+    if(Z>.25){
       if((x.globalAlpha = Math.min(1,(Z/5e3)**2))>.1){
         s = Math.min(1e3, 4e5/Z)
         x.fillStyle = '#ffffff04'
@@ -1229,102 +1320,122 @@
 
   x.globalAlpha = 1
   
-  //x.beginPath()
-  //x.lineTo(0, c.height)
-  baseLine.map((v,i) => {
-    v[3] = 0
-    d = 0
-    P.map(q=>{
+  base_shp.map(v=>{
+    x.beginPath()
+    v.map(q=>{
       X = q[0]
       Y = q[1]
-      v[3] += Y > c.height/3?((5+Math.abs(v[1]-Y)**.5)*10 / (3 + (1+(5+Math.abs(v[0] - X))**3/5e3))) * 3 : 0
+      Z = q[2]
+      R(Rl,Pt,Yw,1)
+      if(Z>.25) x.lineTo(...Q())
     })
-    //X = v[0] + v[2]
-    //Y = v[1] + v[3] + 50
-    //x.lineTo(X, Y)
+    col2 = `hsla(${t*500},99%,50%,.05)`
+    stroke('#fff2',col2,4,true)
   })
-  //x.lineTo(c.width, c.height)
-  //Z=3
-  //stroke('#40f','#40f4',1,true)
   
-  P = P.filter(v=>v[4]>.05&&v[1]<c.height+250)
-  P.map(v=>{
-    v[0] += v[2]
-    v[1] += v[3]
-    base = 0
-    mind = 6e6
-    baseLine.map(q=>{
-      if((d=Math.abs(q[0]-v[0]))<mind){
-        mind=d
-        base = q[1]+q[3]/1.75
+  fire = !((t*60|0)%pFreq)
+  trees.map((tree, idx) => {
+    tree[3].map((q, j)=>{
+      if(fire && q[6]){
+        spawnP(q[0],q[1],q[2],q[3],q[4],q[5], idx, j-1)
       }
     })
-    base_ = Math.max(c.height/2.8,base)
-    if(v[1]>Math.min(base_, c.height*1.25)){
-      spawnSparks2(...v)
-      v[3] -= grav*3
-    }else{
-      v[3] += grav
-    }
-    if(v[1]>base_){
-      v[2] /= 1.05
-      v[3] /= 1.25 + (5/(.5+Math.abs(base_-v[1])/99)**.25/2000)
-    }
-    X = v[0]
-    Y = v[1]
-    ls = 150 * v[4]
-    x.drawImage(starImgs[2+(v[5]+(t*20|0))%8].img,X-ls/1.06,Y-ls/1.06,ls*2,ls*2)
-    x.drawImage(starImgs[1].img,X-ls/2*1.5,Y-ls/2*1.5,ls*1.5,ls*1.5)
-    v[4] -= .02
+    X = tree[0]
+    Y = tree[1]
+    Z = tree[2]
+    R(Rl,Pt,Yw,1)
+    DrawLsystem(tree[3])
   })
   
-  sparks = sparks.filter(v=>v[4]>.01)
-  sparks.map(v=>{
-    X = v[0] += v[2]
-    Y = v[1] += v[3] += grav/20
-    s = 100 * v[4]
-    x.fillStyle = '#ff000003'
-    x.fillRect(X-s/2,Y-s/2,s,s)
-    x.fillStyle = '#ff880010'
-    s /= 3.5
-    x.fillRect(X-s/2,Y-s/2,s,s)
-    x.fillStyle = '#ffffffff'
-    s /= 3.5
-    x.fillRect(X-s/2,Y-s/2,s,s)
-    v[4] -= .02
+  P.map((el,idx)=>{
+    el = el.map(q=>{
+      q = q.filter(v=>v[6]>.1)
+      return q
+    })
+    el.map(n => {
+      n.map((v, i)=>{
+        X1 = v[0]
+        Y1 = v[1]
+        Z1 = v[2]
+        trees.map((q, j)=>{
+          tx = q[0]
+          ty = q[1]
+          tz = q[2]
+          if(Math.hypot(tx-X1, ty-Y1, tz-Z1)<16){
+            if(idx !=j){
+              vx = vy = vz = 0
+              q[3].map(n=>{
+                if(n[6]){
+                  X2 = n[3]
+                  Y2 = n[4]
+                  Z2 = n[5]
+                  d_ = Math.hypot(a=X2-X1, b=Y2-Y1, e=Z2-Z1)
+                  if(d_<.25) v[6] = 0
+                  d = (1+d_)**7.25
+                  vx += a * 6e3 / d
+                  vy += b * 6e3 / d
+                  vz += e * 6e3 / d
+                }
+              })
+              v[3] += vx
+              v[4] += vy
+              v[5] += vz
+            }
+          }
+        })
+        d=Math.hypot(v[3],v[4],v[5])
+        v[3]/=d
+        v[4]/=d
+        v[5]/=d
+        v[3] *= iPv
+        v[4] *= iPv
+        v[5] *= iPv
+        X = v[0]
+        Y = v[1]
+        Z = v[2]
+        R(Rl, Pt, Yw, 1)
+        X1 = X
+        Y1 = Y
+        Z1 = Z
+        x.beginPath()
+        if(Z>.25){
+          l = Q()
+          if(i){
+            x.lineTo(...l)
+            if(Math.hypot(X-ox,Y-oy,Z-oz)<10){
+              X = ox
+              Y = oy
+              Z = oz
+              if(Z>.25){
+                x.lineTo(...Q())
+                col = `hsla(${360/2/n.length*i+t*1500},99%,50%,.5)`
+                stroke(col,'',6*v[6],true)
+              }
+            }
+          }
+          ox = X1
+          oy = Y1
+          oz = Z1
+          s = Math.min(3e3, 6e4/Z**2*v[6])
+          x.drawImage(starImgs[3].img,l[0]-s/2/1.05,l[1]-s/2/1.05,s,s)
+          x.drawImage(starImgs[1].img,l[0]-s/2,l[1]-s/2,s,s)
+          /*x.fillStyle = '#ff000005'
+          x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+          s/=3
+          x.fillStyle = '#ff880015'
+          x.fillRect(l[0]-s/2,l[1]-s/2,s,s)
+          s/=3
+          x.fillStyle = '#ffffffff'
+          x.fillRect(l[0]-s/2,l[1]-s/2,s,s)*/
+        }
+        v[0] += v[3]
+        v[1] += v[4]
+        v[2] += v[5]
+        v[6] -= .2
+      })
+    })
   })
-  
-  sparks2 = sparks2.filter(v=>v[4]>.01)
-  sparks2.map(v=>{
-    X = v[0] += v[2]
-    Y = v[1] += v[3] += grav/20
-    s = 100 * v[4]
-    x.fillStyle = '#00ff8803'
-    x.fillRect(X-s/2,Y-s/2,s,s)
-    x.fillStyle = '#44ffff10'
-    s/=3
-    x.fillRect(X-s/2,Y-s/2,s,s)
-    x.fillStyle = '#ffffffff'
-    s/=4
-    x.fillRect(X-s/2,Y-s/2,s,s)
-    v[4] -= .05
-  })
-  
-  x.beginPath()
-  x.lineTo(-500, c.height+200)
-  baseLine.map((v,i) => {
-    X = v[0] + v[2]
-    Y = v[1] + v[3] + 50
-    x.lineTo(X, Y)
-  })
-  x.lineTo(c.width+500, c.height+200)
-  Z = 3
-  col1=`hsla(${t*100},99%,75%,1)`
-  col2=`hsla(${t*100-30},99%,50%,.1)`
-  stroke(col1, col2, 1, true)
-
-	      
-		  
+		
 	      t+=1/60
 
       }
